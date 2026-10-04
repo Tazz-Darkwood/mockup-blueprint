@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PixiJS takes no notice of the reduced-motion setting</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  await real('motion', 'reduce');
+  const app = await stage();
+  let ticks = 0;
+  app.ticker.add(() => ticks++);
+  await frames(20);
+  const asked = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  await real('motion', 'no-preference');
+  return { pass: asked && ticks >= 15, detail: 'the browser reported that the visitor asked for less motion: ' + asked + '. The ticker still ran ' + ticks + ' times in 20 frames' };
+});
+</script>
+</body>
+</html>

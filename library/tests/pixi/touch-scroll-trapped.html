@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A finger that starts on the canvas cannot scroll the page, until touch-action is changed</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+<div style="height:3000px;position:absolute;top:300px;width:10px"></div>
+<script>
+run(async () => {
+  const app = await stage({ width: 300, height: 300 });
+  await frames(3);
+  const style = app.canvas.style.touchAction;
+  await real('swipe', '150,250,-200');
+  await sleep(400);
+  const trapped = Math.round(scrollY);
+  window.scrollTo(0, 0);
+  app.canvas.style.touchAction = 'pan-y';
+  await real('swipe', '150,250,-200');
+  await sleep(400);
+  const freed = Math.round(scrollY);
+  return { pass: style === 'none' && trapped === 0 && freed > 50,
+           detail: 'PixiJS gave its canvas touch-action: ' + style + '. A finger dragged 200 pixels up the canvas scrolled the page by ' + trapped + '. With canvas.style.touchAction = "pan-y" the same drag scrolled it by ' + freed };
+});
+</script>
+</body>
+</html>

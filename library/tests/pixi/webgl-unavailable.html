@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Where the graphics card cannot be used, PixiJS falls back to an ordinary 2D canvas by itself</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+const realGet = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function (kind) { return /webgl|webgpu/.test(kind) ? null : realGet.apply(this, arguments); };
+run(async () => {
+  const app = new PIXI.Application();
+  let outcome, drawn = null;
+  try {
+    await app.init({ width: 100, height: 80, background: '#102030' });
+    document.body.appendChild(app.canvas);
+    const sprite = new PIXI.Sprite(await PIXI.Assets.load(GREY));
+    sprite.tint = 0xff8000;
+    app.stage.addChild(sprite);
+    app.render();
+    drawn = [...realGet.call(app.canvas, '2d').getImageData(5, 5, 1, 1).data];
+    outcome = 'init() finished, drawing with "' + app.renderer.name + '"';
+  } catch (e) { outcome = 'FAILED: ' + String(e.message || e).slice(0, 120); }
+  return { pass: outcome.includes('"canvas"') && drawn && drawn[0] === 255 && drawn[1] > 100 && drawn[1] < 150,
+           detail: 'with WebGL and WebGPU made unavailable, ' + outcome + '. A sprite tinted orange drew pixel ' + JSON.stringify(drawn) };
+});
+</script>
+</body>
+</html>

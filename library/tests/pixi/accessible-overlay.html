@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A sprite marked accessible becomes a real button for assistive technology, once Tab is pressed</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const sprite = new PIXI.Sprite(await PIXI.Assets.load(GREY));
+  sprite.eventMode = 'static'; sprite.accessible = true; sprite.accessibleTitle = 'Feed the axolotl';
+  let pressed = 0; sprite.on('click', () => pressed++); sprite.on('pointertap', () => pressed++);
+  app.stage.addChild(sprite);
+  const label = new PIXI.Text({ text: 'Hunger: 3 of 5', style: { fill: '#ffffff', fontSize: 20 } });
+  label.y = 100; app.stage.addChild(label);
+  await frames(5);
+  const before = await real('aria', 'body');
+  await real('press', 'Tab');
+  await frames(5);
+  const after = await real('aria', 'body');
+  await real('press', 'Enter');
+  await frames(3);
+  return { pass: !before.includes('Feed the axolotl') && after.includes('button "Feed the axolotl"') && !after.includes('Hunger'),
+           detail: 'before Tab the page offered assistive technology: ' + (before.trim() || 'nothing') + '. After Tab: ' + after.trim().replace(/\n/g, ' / ') + '. Enter on that button reached the sprite ' + pressed + ' time(s). The text drawn in the canvas ("Hunger: 3 of 5") was in neither' };
+});
+</script>
+</body>
+</html>

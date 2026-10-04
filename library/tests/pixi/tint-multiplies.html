@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A tint multiplies: it can colour and darken a layer, never lighten it</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const sprite = new PIXI.Sprite(await PIXI.Assets.load(GREY));
+  app.stage.addChild(sprite);
+  app.render();
+  const plain = [glPixel(app, 5, 5), glPixel(app, 50, 5)];
+  sprite.tint = 0xff8000;
+  app.render();
+  const tinted = [glPixel(app, 5, 5), glPixel(app, 50, 5)];
+  return { pass: tinted[0].join() === '255,128,0,255' && tinted[1][0] === 128 && tinted[1][1] === 64 && tinted[1][2] === 0,
+           detail: 'untinted, the white half read ' + JSON.stringify(plain[0]) + ' and the mid-grey half ' + JSON.stringify(plain[1]) + '. Tinted 0xff8000 (orange), the white half read ' + JSON.stringify(tinted[0]) + ' and the grey half ' + JSON.stringify(tinted[1]) + ': each channel is the picture times the tint' };
+});
+</script>
+</body>
+</html>

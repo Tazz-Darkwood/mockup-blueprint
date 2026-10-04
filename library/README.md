@@ -76,6 +76,14 @@ The entries in this folder come with the skill and are replaced when the skill i
 
 An entry of the user's own can add a tool. It cannot take the name of an entry that comes with the skill. Sending the folder to whoever looks after the skill is how a note becomes part of it.
 
+## Tests for tools that run on a server
+
+Some tools cannot be tried in a page: a server framework, a database, a payment library. Their tests are small Python scripts in the entry's tests folder (`tests/django/atomic-rolls-back.py`). Each ends by printing one line of JSON, `{"pass": true, "detail": "..."}`, with the same meaning as for a page. A file whose name starts with `_` is a helper the scripts share, not a test.
+
+The entry's front matter lists what the scripts need on a `needs:` line, as names for `pip`. They are installed into the skill's own environment, never into the user's project or system: `blueprint.py doctor --setup --for django`. `doctor` says which entries are ready. `library --test` runs scripts and pages alike.
+
+The Django tests start a real Postgres for themselves from a package installed the same way, and throw it away afterwards. Nothing needs installing on the computer itself.
+
 ## Test pages
 
 A test page is a small, complete HTML file that loads the real tool and checks one behaviour. It includes `../harness.js` and calls `run(async () => ({ pass, detail }))`:

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PixiJS also loads as a module through an import map</title>
+<script type="importmap">{"imports":{"pixi.js":"https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.mjs"}}</script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script type="module">
+import { Application, VERSION } from 'pixi.js';
+run(async () => {
+  const app = new Application();
+  await app.init({ width: 100, height: 50 });
+  return { pass: app.canvas.width === 100, detail: 'imported PixiJS ' + VERSION + ' as a module from the CDN on a page opened as ' + location.protocol + ' and made a canvas ' + app.canvas.width + ' wide' };
+});
+</script>
+</body>
+</html>

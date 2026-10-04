@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A picture saved from the canvas is only dependable straight after drawing, or with preserveDrawingBuffer</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const right = (sprite, background) => sprite[0] === 255 && background[0] === 16 && background[2] === 48;
+  const app = await stage();
+  app.stage.addChild(new PIXI.Sprite(await PIXI.Assets.load(GREY)));
+  app.render();
+  const straightAfter = [await savedPixel(app.canvas, 5, 5), await savedPixel(app.canvas, 200, 150)];
+  await frames(5);
+  const later = [await savedPixel(app.canvas, 5, 5), await savedPixel(app.canvas, 200, 150)];
+  const kept = await stage({ preserveDrawingBuffer: true });
+  kept.stage.addChild(new PIXI.Sprite(await PIXI.Assets.load(GREY)));
+  await frames(5);
+  const keptLater = [await savedPixel(kept.canvas, 5, 5), await savedPixel(kept.canvas, 200, 150)];
+  return { pass: straightAfter[0][0] === 255 && right(...keptLater),
+           detail: 'saved with canvas.toDataURL() and preserveDrawingBuffer left off: straight after app.render() the sprite read ' + JSON.stringify(straightAfter[0]) + ' and the background ' + JSON.stringify(straightAfter[1]) + '; five frames later ' + JSON.stringify(later[0]) + ' and ' + JSON.stringify(later[1]) + ' (the background colour is #102030, which is [16,32,48]). With preserveDrawingBuffer: true, five frames later: ' + JSON.stringify(keptLater[0]) + ' and ' + JSON.stringify(keptLater[1]) };
+});
+</script>
+</body>
+</html>

@@ -48,6 +48,26 @@ Confirm with the user which account to use before creating any service. Creating
 - What happens: running migrations by hand is forgotten sooner or later, and the deployed code then disagrees with the database.
 - What to do: run migrations in the deploy command.
 
+### A Django site needs a production server, its files collected, and its host name allowed
+- Status: draft
+- Test: none. Needs a real deployment. The settings side is tested in `django.md`.
+- What happens: Django's own development server is not for live sites, and with `DEBUG` off Django neither serves its own CSS and scripts nor answers for a host name it has not been told about.
+- What to do: start it with a production server (`gunicorn project.wsgi`), run `collectstatic` and the migrations in the build or deploy command, serve the collected files with WhiteNoise, and put both the `.onrender.com` name and any custom domain in `ALLOWED_HOSTS` from the environment.
+- What would confirm it: one Django site deployed, with styles loading and forms working.
+
+### Behind Render's proxy, Django must be told the request was secure
+- Status: draft
+- Test: none. Needs a real deployment.
+- What happens: Render ends HTTPS before the request reaches the app, so Django sees plain HTTP. With `SECURE_SSL_REDIRECT` on and nothing else set, every request is redirected for ever.
+- What to do: set `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")`. Only do this behind a proxy that sets that header itself.
+- What would confirm it: a deployed site with the redirect on that loads.
+
+### The database address comes from the environment
+- Status: draft
+- Test: none. Needs a real deployment.
+- What happens: a Render Postgres database gives an address containing its password. Render can pass it to the web service as an environment variable.
+- What to do: read it from the environment in settings (the `dj-database-url` package parses it). Use a separate database for development; never point a developer's machine at the live one.
+
 ## Questions it raises
 
 - Which account will own the services, and who pays if it outgrows the free tier?

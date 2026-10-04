@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A tint takes hex and rgb() colours but not oklch() or oklab()</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const sprite = new PIXI.Sprite(await PIXI.Assets.load(GREY));
+  app.stage.addChild(sprite);
+  const tries = {};
+  for (const colour of ['#ff8000', 'rgb(255 128 0)', 'orange', 'hsl(30 100% 50%)', 'oklch(0.75 0.18 60)', 'oklab(0.75 0.09 0.15)']) {
+    try { sprite.tint = colour; tries[colour] = 'taken as ' + sprite.tint.toString(16).padStart(6, '0'); } catch (e) { tries[colour] = 'REFUSED: ' + String(e.message).slice(0, 60); }
+  }
+  return { pass: tries['#ff8000'].startsWith('taken') && tries['oklch(0.75 0.18 60)'].startsWith('REFUSED') && tries['oklab(0.75 0.09 0.15)'].startsWith('REFUSED'), detail: JSON.stringify(tries) };
+});
+</script>
+</body>
+</html>

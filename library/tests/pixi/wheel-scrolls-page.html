@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The mouse wheel over a PixiJS canvas still scrolls the page</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+<div style="height:3000px;position:absolute;top:300px;width:10px"></div>
+<script>
+run(async () => {
+  const app = await stage({ width: 300, height: 300 });
+  const sprite = new PIXI.Sprite(await PIXI.Assets.load(GREY));
+  sprite.eventMode = 'static';
+  app.stage.addChild(sprite);
+  await frames(3);
+  await real('wheel', '30,30,300');
+  await sleep(300);
+  return { pass: scrollY >= 250, detail: 'the wheel was turned 300 pixels with the pointer over the canvas, on a sprite that listens for events: the page scrolled ' + Math.round(scrollY) };
+});
+</script>
+</body>
+</html>

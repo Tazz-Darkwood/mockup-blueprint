@@ -1,0 +1,17 @@
+{
+  "about": "A canvas drawn by script with no label, that keeps moving under the reduced-motion setting and takes every touch on a phone, is reported for all three.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must": [
+        "a11y/canvas-alt",
+        "a11y/reduced-motion",
+        "mobile/canvas-traps-scroll"
+      ]
+    }
+  ]
+}

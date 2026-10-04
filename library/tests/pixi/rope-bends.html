@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MeshRope bends a flat picture along a line of points</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const picture = await PIXI.Assets.load(GREY);
+  const points = [0, 1, 2, 3, 4].map((i) => new PIXI.Point(i * 16, 0));
+  const rope = new PIXI.MeshRope({ texture: picture, points });
+  rope.x = 20; rope.y = 100;
+  app.stage.addChild(rope);
+  app.render();
+  const flat = { middle: glPixel(app, 52, 100), above: glPixel(app, 52, 50) };
+  points[2].y = -50;                       // lift the middle of the spine
+  app.render();
+  const bent = { middle: glPixel(app, 52, 100), above: glPixel(app, 52, 50) };
+  const isBackground = (p) => p[0] === 16 && p[1] === 32;
+  return { pass: !isBackground(flat.middle) && isBackground(flat.above) && !isBackground(bent.above),
+           detail: 'flat: the picture covered the middle of the line (' + JSON.stringify(flat.middle) + ') and not a spot 50 pixels above it (' + JSON.stringify(flat.above) + '). After moving the middle point up by 50 and drawing again, that higher spot read ' + JSON.stringify(bent.above) + ' and the old middle read ' + JSON.stringify(bent.middle) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "about": "Tools named in the blueprint's stack, integrations and hosting bring up their library entries, though the page itself loads none of them.",
+  "steps": [
+    {
+      "run": [
+        "library",
+        "."
+      ],
+      "must": [
+        "library/django.md",
+        "library/pixi.md",
+        "library/stripe.md",
+        "library/ko-fi.md",
+        "library/render.md"
+      ],
+      "must_not": [
+        "library/three.md",
+        "style-guide.md"
+      ]
+    }
+  ]
+}

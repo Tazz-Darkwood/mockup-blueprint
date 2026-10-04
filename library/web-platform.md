@@ -103,6 +103,19 @@ Everything here was tested in one browser, Chromium. Safari and Firefox mostly a
 - What would confirm it: opening a two-page test in Firefox and in Safari from a folder.
 - Until then: load `assets/carry-storage.js` first on every page of a mockup whose pages share anything. The audit checks for this.
 
+### Mixing opposite hues in oklab gives grey; in oklch it gives another vivid hue
+- Status: approved
+- Test: `tests/web-platform/colour-mix-oklab.html` (passed 2026-10-03)
+- What happens: a warm red (hue 30) and its opposite (hue 210), of the same lightness and strength, were mixed half and half with `color-mix()`. Mixed `in oklab` the browser gave a grey with no colour in it at all. Mixed `in oklch` it gave a vivid colour at hue 120, a yellow-green that neither colour contains.
+- What to do: choose on purpose. When a design mixes colours the way paints or genes blend, with opposites cancelling towards mud, mix `in oklab` (or add the colours' a and b values yourself). Mixing `in oklch`, or averaging hue angles, walks round the colour wheel and never cancels.
+- Careful: averaging two hue angles as plain numbers has a second fault. 350 and 10, both reds, average to 180, a cyan.
+
+### A canvas turns any CSS colour, oklch() included, into red, green and blue numbers
+- Status: approved
+- Test: `tests/web-platform/canvas-converts-oklch.html` (passed 2026-10-03)
+- What happens: painting one pixel with `fillStyle = 'oklch(0.75 0.18 60)'` and reading it back gave [254, 141, 0], an orange. `oklab(0.6 0 0)` gave an even grey, [128, 128, 128]. A green stronger than a screen can show, `oklch(0.7 0.4 150)`, came back as [0, 214, 0]: the browser brought it into range by itself.
+- What to do: this is the cheapest way, in a mockup, to hand a colour worked out in OKLab or OKLCH to something that only takes hex or `rgb()`, such as a PixiJS tint (see `pixi.md`): no library needed. For the real site, where the server must work out the same colour, use a colour library on both sides so the two agree, and decide there how out-of-range colours are brought into range; the browser's own way was not compared with any library's here.
+
 ## Questions it raises
 
 - Should clicking outside each dialog close it?

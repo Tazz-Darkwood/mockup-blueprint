@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The ticker keeps running when the canvas is scrolled out of sight</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+<div style="height:3000px"></div>
+<script>
+run(async () => {
+  const app = await stage();
+  let ticks = 0;
+  app.ticker.add(() => ticks++);
+  await frames(5);
+  window.scrollTo(0, 2500);
+  const before = ticks;
+  await frames(30);
+  const whileOutOfSight = ticks - before;
+  app.ticker.stop();
+  const stoppedAt = ticks;
+  await frames(10);
+  const whileStopped = ticks - stoppedAt;
+  app.ticker.start();
+  await frames(5);
+  return { pass: whileOutOfSight >= 25 && whileStopped === 0 && ticks > stoppedAt,
+           detail: 'scrolled 2500 pixels away from the canvas, the ticker ran ' + whileOutOfSight + ' times in 30 frames. After ticker.stop() it ran ' + whileStopped + ' times in 10 frames, and ticker.start() set it going again' };
+});
+</script>
+</body>
+</html>

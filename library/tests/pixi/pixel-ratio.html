@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>resolution makes the canvas bigger on the page unless autoDensity is on</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const plain = new PIXI.Application(); await plain.init({ width: 100, height: 50, resolution: 2 });
+  const dense = new PIXI.Application(); await dense.init({ width: 100, height: 50, resolution: 2, autoDensity: true });
+  document.body.append(plain.canvas, dense.canvas);
+  const a = [plain.canvas.width, plain.canvas.getBoundingClientRect().width], b = [dense.canvas.width, dense.canvas.getBoundingClientRect().width];
+  const byDefault = new PIXI.Application(); await byDefault.init({ width: 100, height: 50 });
+  return { pass: a[0] === 200 && a[1] === 200 && b[0] === 200 && b[1] === 100,
+           detail: 'asked for 100 wide at resolution 2: the canvas had ' + a[0] + ' pixels and took ' + a[1] + ' on the page. With autoDensity: true it had ' + b[0] + ' pixels and took ' + b[1] + '. Left alone, resolution was ' + byDefault.renderer.resolution + ' on a screen whose pixel ratio is ' + devicePixelRatio };
+});
+</script>
+</body>
+</html>

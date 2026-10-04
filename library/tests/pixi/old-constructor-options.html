@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Options given to new Application() are ignored; they go to init()</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const old = new PIXI.Application({ width: 120, height: 60 });
+  const before = { renderer: !!old.renderer };
+  await old.init();
+  const sizeFromConstructor = [old.canvas.width, old.canvas.height];
+  const now = new PIXI.Application();
+  await now.init({ width: 120, height: 60 });
+  const sizeFromInit = [now.canvas.width, now.canvas.height];
+  return { pass: !before.renderer && sizeFromConstructor[0] !== 120 && sizeFromInit[0] === 120,
+           detail: 'PixiJS ' + PIXI.VERSION + ': new Application({ width: 120, height: 60 }) raised nothing and had no renderer; after init() with no options its canvas was ' + sizeFromConstructor.join(' by ') + '. With the options given to init() the canvas was ' + sizeFromInit.join(' by ') };
+});
+</script>
+</body>
+</html>

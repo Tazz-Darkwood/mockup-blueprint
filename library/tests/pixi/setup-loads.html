@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One script tag and an awaited init are enough to draw</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const picture = await PIXI.Assets.load(GREY);
+  const sprite = new PIXI.Sprite(picture);
+  sprite.x = 10; sprite.y = 10;
+  app.stage.addChild(sprite);
+  app.render();
+  const onSprite = glPixel(app, 15, 15), off = glPixel(app, 200, 150);
+  return { pass: onSprite[0] === 255 && off[0] === 16 && off[2] === 48,
+           detail: 'PixiJS ' + PIXI.VERSION + ', drawing with ' + app.renderer.name + ', page opened as ' + location.protocol + ' a sprite was drawn (pixel ' + JSON.stringify(onSprite) + ') on the background colour (pixel ' + JSON.stringify(off) + ')' };
+});
+</script>
+</body>
+</html>

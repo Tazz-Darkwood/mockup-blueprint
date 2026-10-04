@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Each Application takes a graphics context, and the browser allows about sixteen</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const first = await stage({ width: 40, height: 40 });
+  let lost = 0;
+  first.canvas.addEventListener('webglcontextlost', () => lost++);
+  const more = [];
+  for (let i = 0; i < 17; i++) { const app = new PIXI.Application(); await app.init({ width: 20, height: 20 }); more.push(app); }
+  await frames(3);
+  const firstLost = first.renderer.gl.isContextLost();
+  const gl = more[16].renderer.gl;
+  more[16].destroy(true);
+  const freed = gl.isContextLost();
+  return { pass: firstLost && lost === 1 && freed,
+           detail: 'with 18 Applications on one page the first one lost its graphics context: ' + firstLost + ' (' + lost + ' contextlost event). app.destroy(true) gave its context back: ' + freed };
+});
+</script>
+</body>
+</html>

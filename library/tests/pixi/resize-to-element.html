@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>resizeTo follows the window, not the box it was given</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+<div id="box" style="width:400px;height:100px"></div>
+<script>
+run(async () => {
+  const box = document.getElementById('box');
+  const app = new PIXI.Application();
+  await app.init({ resizeTo: box });
+  box.appendChild(app.canvas);
+  await frames(3);
+  const start = app.canvas.width;
+  box.style.width = '250px';
+  await frames(6);
+  const afterBoxChanged = app.canvas.width;
+  window.dispatchEvent(new Event('resize'));
+  await frames(6);
+  const afterWindowResize = app.canvas.width;
+  return { pass: start === 400 && afterBoxChanged === 400 && afterWindowResize === 250,
+           detail: 'the box was 400 wide and so was the canvas (' + start + '). The box was narrowed to 250: the canvas stayed ' + afterBoxChanged + '. After a window resize event it was ' + afterWindowResize };
+});
+</script>
+</body>
+</html>

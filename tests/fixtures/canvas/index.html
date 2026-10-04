@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canvas</title>
+<style>body { margin: 0; font: 18px/1.5 sans-serif; } canvas { display: block; touch-action: none; }</style>
+</head>
+<body>
+<main>
+<h1>Canvas</h1>
+<canvas id="tank" width="390" height="600"></canvas>
+<p>Words below the canvas.</p>
+<div style="height: 1200px"></div>
+</main>
+<script>
+  var pen = document.getElementById("tank").getContext("2d"), x = 0;
+  (function draw() { pen.fillStyle = "#102030"; pen.fillRect(0, 0, 390, 600); pen.fillStyle = "#ff8000"; pen.fillRect(x, 100, 60, 30); x = (x + 3) % 330; requestAnimationFrame(draw); })();
+</script>
+</body>
+</html>

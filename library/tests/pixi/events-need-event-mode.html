@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A sprite hears no clicks until its eventMode is set</title>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.22.0/dist/pixi.min.js"></script>
+<script src="../harness.js"></script>
+<script src="common.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; }</style>
+</head>
+<body>
+
+<script>
+run(async () => {
+  const app = await stage();
+  const picture = await PIXI.Assets.load(GREY);
+  const quiet = new PIXI.Sprite(picture), listening = new PIXI.Sprite(picture);
+  listening.x = 150; listening.eventMode = 'static';
+  app.stage.addChild(quiet, listening);
+  const heard = [];
+  quiet.on('pointerdown', () => heard.push('the sprite left as it was'));
+  listening.on('pointerdown', () => heard.push('the sprite with eventMode static'));
+  await frames(3);
+  await real('mouse', '30,30');
+  await real('mouse', '180,30');
+  await frames(3);
+  return { pass: heard.length === 1 && heard[0].includes('static'),
+           detail: 'a new sprite has eventMode "' + new PIXI.Sprite().eventMode + '". Both sprites were clicked; the click was heard by: ' + (heard.join(', ') || 'neither') };
+});
+</script>
+</body>
+</html>

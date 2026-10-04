@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A canvas turns an oklch() colour into ordinary red, green and blue numbers</title>
+<script src="../harness.js"></script>
+<style>body { margin: 1rem; font: 15px sans-serif; }</style>
+</head>
+<body>
+<script>
+// Any CSS colour as [red, green, blue], by painting one pixel and reading it back.
+function toRGB(colour) {
+  const pen = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
+  pen.fillStyle = colour;
+  pen.fillRect(0, 0, 1, 1);
+  return [...pen.getImageData(0, 0, 1, 1).data].slice(0, 3);
+}
+run(async () => {
+  const orange = toRGB('oklch(0.75 0.18 60)'), grey = toRGB('oklab(0.6 0 0)'), tooVivid = toRGB('oklch(0.7 0.4 150)'), hex = toRGB('#ff8000');
+  const asHex = '#' + orange.map((v) => v.toString(16).padStart(2, '0')).join('');
+  return { pass: orange[0] > 200 && orange[2] < 80 && Math.abs(grey[0] - grey[1]) < 3 && Math.abs(grey[1] - grey[2]) < 3 && hex.join() === '255,128,0' && tooVivid.every((v) => v >= 0 && v <= 255),
+           detail: 'painted on a one-pixel canvas and read back: oklch(0.75 0.18 60) gave ' + JSON.stringify(orange) + ' (' + asHex + '); oklab(0.6 0 0) gave ' + JSON.stringify(grey) + '; #ff8000 gave ' + JSON.stringify(hex) + '; oklch(0.7 0.4 150), a green stronger than a screen can show, gave ' + JSON.stringify(tooVivid) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mixing opposite hues in oklab gives grey; in oklch it gives another vivid hue</title>
+<script src="../harness.js"></script>
+<style>body { margin: 1rem; font: 15px sans-serif; }</style>
+</head>
+<body>
+<p id="lab" style="color: color-mix(in oklab, oklch(0.7 0.15 30), oklch(0.7 0.15 210))">mixed in oklab</p>
+<p id="lch" style="color: color-mix(in oklch, oklch(0.7 0.15 30), oklch(0.7 0.15 210))">mixed in oklch</p>
+<script>
+run(async () => {
+  const numbers = (id) => getComputedStyle($(id)).color.match(/-?[\d.]+(?:e-?\d+)?/g).map(Number);
+  const lab = numbers('#lab'), lch = numbers('#lch');
+  const labChroma = Math.hypot(lab[1], lab[2]), lchChroma = lch[1];
+  return { pass: labChroma < 0.01 && lchChroma > 0.14,
+           detail: 'two colours of the same lightness and strength, a warm red (hue 30) and its opposite (hue 210), mixed half and half. In oklab the browser gave ' + getComputedStyle($('#lab')).color + ', strength ' + labChroma.toFixed(3) + ': a grey. In oklch it gave ' + getComputedStyle($('#lch')).color + ', strength ' + lchChroma.toFixed(3) + ': a vivid colour at hue ' + Math.round(lch[2]) };
+});
+</script>
+</body>
+</html>

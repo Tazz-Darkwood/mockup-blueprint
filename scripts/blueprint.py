@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.9.1"
+SKILL_VERSION = "0.10.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -1015,7 +1015,7 @@ def phone_findings(phone):
     if phone.get("traps"):
         out.append(("mobile/canvas-traps-scroll", "warning", 0,
                     f"{phone['traps']} canvas(es) take every touch (touch-action: none) and are over half the screen wide, so a finger that starts "
-                    "on one cannot scroll the page; with OrbitControls set the canvas's touch-action to pan-y"))
+                    "on one cannot scroll the page; set the canvas's touch-action to pan-y after the library has set it up (three.js's OrbitControls and PixiJS both set it to none)"))
     if phone.get("covered"):
         out.append(("mobile/bar-covers-end", "warning", 0,
                     f"at the end of the page the bar fixed to the bottom covers {phone['covered']}; leave room under the last content"))
@@ -1851,13 +1851,54 @@ def real_input(page, action, arg):
         return "ERROR " + str(ex).splitlines()[0][:160]
 
 
+def own_python():
+    """The python of the skill's own environment when 'doctor --setup' has made one, else the one running now."""
+    py = own_home() / "venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    return str(py) if py.exists() else sys.executable
+
+
+def pip_names(entry):
+    """What an entry's tests need installed, from its 'needs:' line."""
+    return entry["meta"].get("needs", "").split()
+
+
+def run_script_tests(entries):
+    """Tests for tools that run on a server, not in a page: each is a small Python script in the entry's tests folder that
+    ends by printing one line of JSON, {"pass": ..., "detail": ...}. They run in the skill's own environment."""
+    import subprocess
+    results = {}
+    for e in entries:
+        folder = e["path"].parent / "tests" / e["slug"]
+        for script in sorted(folder.glob("*.py")):
+            if script.name.startswith("_"):
+                continue
+            key = f"tests/{e['slug']}/{script.name}"
+            try:
+                done = subprocess.run([own_python(), script.name], cwd=folder, capture_output=True, text=True, timeout=180,
+                                      env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+                last = (done.stdout.strip().splitlines() or [""])[-1]
+                try:
+                    result = json.loads(last)
+                    results[key] = {"pass": bool(result.get("pass")), "detail": str(result.get("detail", ""))}
+                except json.JSONDecodeError:
+                    error = (done.stderr.strip().splitlines() or ["no output"])[-1]
+                    if "ModuleNotFoundError" in error or "No module named" in error:
+                        error += f". This entry's tests need: {' '.join(pip_names(e)) or 'packages it does not list'}. Set them up with: doctor --setup --for {e['slug']}"
+                    results[key] = {"pass": False, "detail": "did not finish: " + error[:300]}
+            except subprocess.TimeoutExpired:
+                results[key] = {"pass": False, "detail": "did not finish within 180 seconds"}
+    return results
+
+
 def run_library_tests(entries, as_version):
+    results = run_script_tests(entries)
+    if not any(sorted((e["path"].parent / "tests" / e["slug"]).glob("*.html")) for e in entries):
+        return results
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        die("library tests need a browser: pip install playwright && playwright install chromium")
+        die("library tests that run in a page need a browser: run 'doctor' to see how to set one up")
     import time
-    results = {}
     with sync_playwright() as pw:
         browser = open_browser(pw)
         for e in entries:
@@ -2596,9 +2637,17 @@ def cmd_doctor(args):
         print(f"Setting up the browser checks in {home / 'venv'} (a Python environment of the skill's own, so nothing else on this computer is changed).")
         print("This downloads the Playwright library and a copy of Chromium, about 300 MB in all.")
         home.mkdir(parents=True, exist_ok=True)
-        steps = [[sys.executable, "-m", "venv", str(home / "venv")],
-                 [str(venv_py), "-m", "pip", "install", "--quiet", "--upgrade", "pip", "playwright"],
-                 [str(venv_py), "-m", "playwright", "install", "chromium"]]
+        steps = []
+        if not venv_py.exists():
+            steps.append([sys.executable, "-m", "venv", str(home / "venv")])
+        steps += [[str(venv_py), "-m", "pip", "install", "--quiet", "--upgrade", "pip", "playwright"],
+                  [str(venv_py), "-m", "playwright", "install", "chromium"]]
+        if args.entry:
+            wanted = [e for e in load_entries() if e["slug"] == args.entry]
+            if not wanted or not pip_names(wanted[0]):
+                die(f"no library entry called {args.entry} with a 'needs:' line; entries that have one: "
+                    + (", ".join(e["slug"] for e in load_entries() if pip_names(e)) or "none"))
+            steps.append([str(venv_py), "-m", "pip", "install", "--quiet"] + pip_names(wanted[0]))
         for step in steps:
             print("  running: " + " ".join(private(p) for p in step))
             if subprocess.call(step) != 0:
@@ -2634,6 +2683,12 @@ def cmd_doctor(args):
     reports = len(re.findall(r"^## ", log.read_text(encoding="utf-8"), re.M)) if log.exists() else 0
     print(f"Your own folder   {private(home)}" + ("" if home.exists() else "  (made the first time something is saved there)"))
     print(f"                  {guides} style guide(s) of your own, {own_notes} tool note(s) of your own, {reports} report(s) about the skill")
+    for e in load_entries():
+        if pip_names(e) and venv_py.exists():
+            have = subprocess.run([str(venv_py), "-m", "pip", "show", "--quiet"] + [re.sub(r"\[.*\]", "", n) for n in pip_names(e)], capture_output=True).returncode == 0
+            print(f"Tests for {e['slug']:<8} " + ("ready" if have else f"not set up; they need {' '.join(pip_names(e))}. To set up: blueprint.py doctor --setup --for {e['slug']}"))
+        elif pip_names(e):
+            print(f"Tests for {e['slug']:<8} not set up. To set up: blueprint.py doctor --setup --for {e['slug']}")
     print(f"Viewer            {'carries the same measuring code as the script' if viewer_in_step() else 'OUT OF STEP with scripts/js/measure.js: run selftest --sync'}")
     return 0 if ok and state.startswith("ok") else 1
 
@@ -2824,6 +2879,7 @@ def main():
     s.set_defaults(fn=cmd_study)
     s = sub.add_parser("doctor", help="say what is set up on this computer; --setup installs what the browser checks need")
     s.add_argument("--setup", action="store_true", help="make the skill's own Python environment with Playwright and Chromium (a download of about 300 MB)")
+    s.add_argument("--for", dest="entry", metavar="ENTRY", help="with --setup: also install what that library entry's tests need (django, say)")
     s.set_defaults(fn=cmd_doctor)
     s = sub.add_parser("selftest", help="check the checker against pages with known faults")
     s.add_argument("--sync", action="store_true", help="first copy scripts/js/measure.js into the viewer")
