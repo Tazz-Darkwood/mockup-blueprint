@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>variant and family choose which Font Awesome set an icon comes from</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-icon name="gear"></wa-icon><wa-icon name="bell" variant="regular"></wa-icon><wa-icon name="github" family="brands"></wa-icon>
+<script type="module">
+run(async () => {
+  await defined('wa-icon'); await sleep(1800);
+  const files = performance.getEntriesByType('resource').map((e) => e.name).filter((n) => n.includes('/svgs/')).map((n) => n.split('/svgs/')[1]).sort();
+  return { pass: ['solid/gear.svg', 'regular/bell.svg', 'brands/github.svg'].every((f) => files.includes(f)), detail: 'icon files fetched: ' + JSON.stringify(files) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A component added to the page later is loaded automatically</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button>Start</wa-button>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const before = !!customElements.get('wa-badge');
+  const badge = document.createElement('wa-badge'); badge.textContent = 'new'; document.body.append(badge);
+  await sleep(2000);
+  return { pass: !before && !!customElements.get('wa-badge') && !!badge.shadowRoot,
+           detail: 'wa-badge registered before it was added: ' + before + ', after: ' + !!customElements.get('wa-badge') };
+});
+</script>
+</body>
+</html>

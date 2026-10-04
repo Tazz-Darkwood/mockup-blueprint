@@ -1,0 +1,28 @@
+{
+  "about": "Mockup tooling left on a page is an error when checking for launch, and is not mentioned otherwise.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "index.html",
+        "--no-render",
+        "--launch"
+      ],
+      "must": [
+        "launch/tooling",
+        "carry-storage.js"
+      ],
+      "exit": 1
+    },
+    {
+      "run": [
+        "audit",
+        "index.html",
+        "--no-render"
+      ],
+      "must_not": [
+        "launch/tooling"
+      ]
+    }
+  ]
+}

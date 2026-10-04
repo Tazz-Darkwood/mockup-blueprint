@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A QR code is announced by its value unless given a label</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-qr-code id="bare" value="https://webawesome.com/docs/"></wa-qr-code><wa-qr-code id="named" value="https://webawesome.com/docs/" label="Scan to open the docs"></wa-qr-code><wa-qr-code id="empty"></wa-qr-code>
+<script type="module">
+run(async () => {
+  await defined('wa-qr-code'); await sleep(500);
+  const bare = await real('aria', '#bare'), named = await real('aria', '#named'), empty = await real('aria', '#empty');
+  return { pass: bare.includes('img "https://webawesome.com/docs/"') && named.includes('img "Scan to open the docs"') && empty.trim() === '- img' && !!$('#bare').shadowRoot.querySelector('canvas'),
+           detail: 'no label: ' + JSON.stringify(bare) + '; with label: ' + JSON.stringify(named) + '; no value at all: ' + JSON.stringify(empty) + '; drawn on a canvas: ' + !!$('#bare').shadowRoot.querySelector('canvas') };
+});
+</script>
+</body>
+</html>

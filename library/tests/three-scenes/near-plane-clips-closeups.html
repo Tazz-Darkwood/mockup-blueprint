@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Anything nearer than the camera's near distance is cut away</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(100, 100); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff })); wall.position.z = -0.05;   // five hundredths of a unit in front of the camera
+  scene.add(wall);
+  const got = {};
+  for (const near of [0.1, 0.01]) { const camera = new THREE.PerspectiveCamera(50, 1, near, 100); renderer.render(scene, camera); got['near ' + near] = pixel(renderer, 50, 50)[0]; }
+  const standard = new THREE.PerspectiveCamera();
+  return { pass: got['near 0.1'] === 0 && got['near 0.01'] === 255, detail: 'a wall 0.05 away. Brightness seen: ' + JSON.stringify(got) + '. A new PerspectiveCamera() has near ' + standard.near + ' and far ' + standard.far };
+});
+</script>
+</body>
+</html>

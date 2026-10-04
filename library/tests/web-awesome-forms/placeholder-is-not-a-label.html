@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A field with only a placeholder has no accessible name</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-input id="bare" placeholder="Search"></wa-input><wa-input id="labelled" label="Email" hint="We never share it"></wa-input>
+<script type="module">
+run(async () => {
+  await defined('wa-input');
+  const bare = await real('aria', '#bare'), labelled = await real('aria', '#labelled');
+  return { pass: /textbox:?\s/.test(bare + ' ') && !/textbox "/.test(bare) && labelled.includes('textbox "Email"'),
+           detail: 'placeholder only: ' + JSON.stringify(bare) + '; with label="Email": ' + JSON.stringify(labelled) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choosing a dropdown item fires wa-select on the dropdown with the item, then closes it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-dropdown id="d"><wa-button id="t" slot="trigger" with-caret>Actions</wa-button>
+<wa-dropdown-item id="edit" value="edit">Edit</wa-dropdown-item><wa-dropdown-item value="delete" variant="danger">Delete</wa-dropdown-item></wa-dropdown>
+<script type="module">
+run(async () => {
+  await defined('wa-dropdown', 'wa-dropdown-item', 'wa-button');
+  let chosen = null; $('#d').addEventListener('wa-select', (e) => { chosen = e.detail.item.value; });
+  await real('click', '#t'); await sleep(700); const opened = $('#d').open; const aria = await real('aria', '#d');
+  await real('click', '#edit'); await sleep(700);
+  return { pass: opened && chosen === 'edit' && !$('#d').open && aria.includes('menuitem "Edit"'),
+           detail: 'opened on click: ' + opened + '; wa-select gave item value "' + chosen + '"; open afterwards: ' + $('#d').open + '; announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

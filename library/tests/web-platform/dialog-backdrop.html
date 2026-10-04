@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clicking outside a dialog does not close it</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<dialog id="d" style="width:200px"><p>Inside</p></dialog>
+<script>
+run(async () => {
+  $('#d').showModal(); await sleep(50);
+  await real('mouse', '10,10'); await sleep(100);
+  const asMade = $('#d').open;
+  // the usual fix: a click whose target is the dialog itself landed on the backdrop, not on anything inside
+  $('#d').addEventListener('click', (e) => { if (e.target === $('#d')) $('#d').close(); });
+  $('#d').style.padding = '0'; $('#d').innerHTML = '<div style="padding:16px">Inside</div>';
+  await real('mouse', '10,10'); await sleep(100);
+  return { pass: asMade === true && $('#d').open === false, detail: 'clicked the dimmed page outside an open dialog. Still open as the browser makes it: ' + asMade + '. With a click handler that closes when the click landed on the dialog itself: open is ' + $('#d').open };
+});
+</script>
+</body>
+</html>

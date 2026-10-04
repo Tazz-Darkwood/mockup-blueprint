@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An accordion lets several items be open at once unless mode is set</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-accordion id="acc"><wa-accordion-item id="a" label="First">Body one</wa-accordion-item><wa-accordion-item id="b" label="Second">Body two</wa-accordion-item></wa-accordion>
+<script type="module">
+run(async () => {
+  await defined('wa-accordion', 'wa-accordion-item');
+  await real('click', '#a'); await sleep(600); await real('click', '#b'); await sleep(600);
+  const aria = await real('aria', '#acc');
+  return { pass: $('#a').expanded && $('#b').expanded && aria.includes('heading "First" [level=3]'),
+           detail: 'opened the first then the second: first still open ' + $('#a').expanded + ', second open ' + $('#b').expanded + '; each header is announced as a level 3 heading: ' + aria.includes('[level=3]') };
+});
+</script>
+</body>
+</html>

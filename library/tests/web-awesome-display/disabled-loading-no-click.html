@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A disabled or loading button does not pass clicks on</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="d" disabled>Disabled</wa-button> <wa-button id="l" loading>Saving</wa-button> <wa-button id="ok">Normal</wa-button>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const clicks = { d: 0, l: 0, ok: 0 };
+  Object.keys(clicks).forEach((id) => $('#' + id).addEventListener('click', () => clicks[id]++));
+  await real('click', '#d'); await real('click', '#l'); await real('click', '#ok'); await sleep(300);
+  const aria = await real('aria', '#l');
+  return { pass: clicks.d === 0 && clicks.l === 0 && clicks.ok === 1 && aria.includes('progressbar'),
+           detail: 'click listeners fired: ' + JSON.stringify(clicks) + '; the loading button is announced as ' + JSON.stringify(aria.replace(/\n\s*/g, ' ')) };
+});
+</script>
+</body>
+</html>

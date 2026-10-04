@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The lang attribute changes how dates and money are written</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-format-date id="d" lang="de" date="2026-10-03T12:00:00Z" time-zone="UTC" month="long" day="numeric" year="numeric"></wa-format-date>
+<wa-format-number id="en" value="1234.5" type="currency" currency="EUR"></wa-format-number>
+<wa-format-number id="de" lang="de" value="1234.5" type="currency" currency="EUR"></wa-format-number>
+<script type="module">
+run(async () => {
+  await defined('wa-format-date', 'wa-format-number');
+  const text = (id) => $(id).shadowRoot.textContent.trim().replace(/\u00a0/g, ' ');
+  return { pass: text('#d') === '3. Oktober 2026' && text('#en') === '\u20ac1,234.50' && text('#de') === '1.234,50 \u20ac',
+           detail: 'lang="de" date: "' + text('#d') + '"; 1234.5 EUR in English: "' + text('#en') + '", in German: "' + text('#de') + '"' };
+});
+</script>
+</body>
+</html>

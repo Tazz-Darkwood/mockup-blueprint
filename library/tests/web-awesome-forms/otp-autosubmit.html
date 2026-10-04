@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>With autosubmit, a one-time-code field submits the form when the last character is typed</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-otp-input id="o" name="code" label="Code" length="4" autosubmit></wa-otp-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-otp-input');
+  let submits = 0; $('#f').addEventListener('submit', (e) => { e.preventDefault(); submits++; });
+  await real('click', '#o'); await real('type', '123'); await sleep(300); const early = submits;
+  await real('type', '4'); await sleep(500);
+  return { pass: early === 0 && submits === 1, detail: 'after 3 of 4 digits: ' + early + ' submits; after the fourth: ' + submits };
+});
+</script>
+</body>
+</html>

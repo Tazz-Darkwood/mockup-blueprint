@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HTMX attributes on Web Awesome buttons and fields</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="b" hx-get="/hello" hx-target="#out">Press</wa-button><div id="out"></div>
+<form id="f" hx-post="/save" hx-target="#saved"><wa-input name="title" value="Field notes"></wa-input><wa-button id="s" type="submit">Save</wa-button></form><div id="saved"></div>
+<wa-input id="lone" name="q" value="mint" hx-get="/search" hx-trigger="go" hx-target="#found"></wa-input><div id="found"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+const server = htmxMock({ 'GET /hello': () => 'Hello', 'POST /save': (asked) => 'Saved: ' + asked.params.title, 'GET /search': (asked) => 'Asked for: ' + asked.params.q });
+run(async () => {
+  await ready();
+  await defined('wa-button', 'wa-input');
+  await real('click', '#b'); await sleep(200);
+  await real('click', '#s'); await sleep(300);
+  htmx.trigger('#lone', 'go'); await sleep(200);
+  const got = { button: $('#out').textContent, formWithWaInput: $('#saved').textContent, waInputByItself: $('#found').textContent };
+  return { pass: got.button === 'Hello' && got.formWithWaInput === 'Saved: Field notes' && got.waInputByItself === 'Asked for: mint', detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

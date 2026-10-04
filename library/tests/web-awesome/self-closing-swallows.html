@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A self-closing component tag swallows everything after it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div id="box"><wa-icon name="gear" /><p id="after">I was written as a sibling of the icon.</p></div>
+<script type="module">
+run(async () => {
+  await defined('wa-icon');
+  const after = document.getElementById('after');
+  const parent = after.parentElement.localName;
+  const visible = after.getClientRects().length > 0 && after.getBoundingClientRect().height > 0;
+  return { pass: parent === 'wa-icon' && !visible,
+           detail: 'the paragraph written after <wa-icon /> ended up inside <' + parent + '>, visible on the page: ' + visible };
+});
+</script>
+</body>
+</html>

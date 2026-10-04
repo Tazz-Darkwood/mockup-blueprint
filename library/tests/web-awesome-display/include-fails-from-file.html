@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-include cannot load a file when the page is opened straight from disk</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-include id="i" src="part.html"></wa-include>
+<script>window.includeEvents = []; ['wa-load', 'wa-include-error'].forEach((n) => document.getElementById('i').addEventListener(n, (e) => includeEvents.push(n)));</script>
+<script type="module">
+run(async () => {
+  await defined('wa-include'); await sleep(1500);
+  return { pass: location.protocol === 'file:' && includeEvents.join() === 'wa-include-error' && $('#i').textContent.trim() === '',
+           detail: 'page opened as ' + location.protocol + '//; the include fired ' + JSON.stringify(includeEvents) + ' and shows nothing' };
+});
+</script>
+</body>
+</html>

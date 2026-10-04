@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A time input always stores 24-hour time, however it is displayed</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-time-input id="t" name="start" label="Start time" value="14:30"></wa-time-input>
+<wa-time-input id="t24" name="start24" label="Start time" value="14:30" hour-format="24"></wa-time-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-time-input');
+  const shown = await real('aria', '#t'), shown24 = await real('aria', '#t24');
+  const fired = []; ['input', 'change'].forEach((n) => $('#t').addEventListener(n, () => fired.push(n)));
+  await real('click', '#t'); await real('press', 'ArrowUp'); await sleep(300);
+  return { pass: shown.includes('spinbutton "Hour": "02"') && shown.includes('PM') && shown24.includes('spinbutton "Hour": "14"') && $('#t24').value === '14:30' && $('#t').value === '15:30' && fired.includes('change'),
+           detail: 'value="14:30" is shown as hour 02 PM here and as hour 14 with hour-format="24"; both store "' + $('#t24').value + '"; pressing the up arrow on the hour made it "' + $('#t').value + '" and fired ' + JSON.stringify(fired) };
+});
+</script>
+</body>
+</html>

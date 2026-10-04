@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-markdown passes HTML in the markdown straight through, event handlers included</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-markdown id="m"><script type="text/markdown">Hello <b id="raw" onclick="window.ranHandler = true">world</b></script></wa-markdown>
+<script type="module">
+run(async () => {
+  await defined('wa-markdown'); await sleep(800);
+  const b = document.querySelector('#m > p b, #m b#raw:not(script b)') || [...document.querySelectorAll('#m b')].find((x) => x.closest('script') === null);
+  if (b) b.click();
+  return { pass: !!b && b.hasAttribute('onclick') && window.ranHandler === true, detail: 'the rendered <b> kept its onclick attribute: ' + (!!b && b.hasAttribute('onclick')) + '; clicking it ran the handler: ' + (window.ranHandler === true) };
+});
+</script>
+</body>
+</html>

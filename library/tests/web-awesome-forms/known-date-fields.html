@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A known-date is three labelled boxes, holds an ISO date, and refuses an impossible one</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-known-date id="k" name="born" label="Date of birth"></wa-known-date>
+<wa-known-date id="de" name="de" label="Geburtstag" lang="de" value="2000-01-31"></wa-known-date></form>
+<script type="module">
+run(async () => {
+  await defined('wa-known-date');
+  const en = await real('aria', '#k'), de = await real('aria', '#de');
+  const order = (a) => [...a.matchAll(/textbox "(\w+)"/g)].map((m) => m[1]).join(',');
+  await real('click', '#k'); await real('type', '02302000'); await sleep(400);
+  return { pass: en.includes('group "Date of birth"') && order(en) === 'Month,Day,Year' && order(de) === 'Day,Month,Year' && $('#de').value === '2000-01-31' && $('#k').value === '' && !$('#k').checkValidity(),
+           detail: 'boxes in English: ' + order(en) + '; with lang="de": ' + order(de) + ' (the box names stayed in English); stored value: "' + $('#de').value + '"; typing 30 February 2000 gave value "' + $('#k').value + '", valid: ' + $('#k').checkValidity() };
+});
+</script>
+</body>
+</html>

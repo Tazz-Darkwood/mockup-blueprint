@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A link to a part of the page lands under a sticky header</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .bar { position: sticky; top: 0; height: 80px; background: #ccc; } h2 { margin: 0; }</style>
+</head>
+<body>
+<header class="bar">Header</header>
+<a id="go1" href="#one">to one</a> <a id="go2" href="#two">to two</a>
+<div style="height:1500px"></div><h2 id="one">One</h2><div style="height:1500px"></div><h2 id="two" style="scroll-margin-top:90px">Two</h2><div style="height:1500px"></div>
+<script>
+run(async () => {
+  await real('click', '#go1'); await sleep(150);
+  const one = Math.round($('#one').getBoundingClientRect().top);
+  scrollTo(0, 0); await sleep(50); await real('click', '#go2'); await sleep(150);
+  const two = Math.round($('#two').getBoundingClientRect().top);
+  return { pass: one < 80 && two >= 80, detail: 'the header is 80 pixels tall and stays at the top. After following a link, the heading it points to is ' + one + ' pixels from the top (under the header). A heading with scroll-margin-top: 90px lands at ' + two };
+});
+</script>
+</body>
+</html>

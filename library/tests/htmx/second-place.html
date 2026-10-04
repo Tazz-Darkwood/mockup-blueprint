@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One reply can update a second place on the page</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="add" hx-post="/basket" hx-target="#msg">Add to basket</button><div id="msg"></div>
+<header>Basket: <span id="count">2</span></header>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'POST /basket': () => 'Added.<span id="count" hx-swap-oob="true">3</span>' });
+run(async () => {
+  await ready();
+  await real('click', '#add'); await sleep(200);
+  return { pass: $('#msg').textContent === 'Added.' && $('#count').textContent === '3' && document.querySelectorAll('#count').length === 1,
+           detail: 'the reply held a message and a span marked hx-swap-oob with the id of the basket count. The message: "' + $('#msg').textContent + '". The count in the header: ' + $('#count').textContent };
+});
+</script>
+</body>
+</html>

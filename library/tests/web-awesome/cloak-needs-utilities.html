@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" class="wa-cloak">
+<head>
+<meta charset="utf-8">
+<title>The wa-cloak class does nothing unless utilities.css is loaded</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<script>window.opacityAtParse = getComputedStyle(document.documentElement).opacity;</script>
+<wa-button>Button</wa-button>
+<script type="module">
+run(async () => {
+  const css = [...document.styleSheets].length;
+  await defined('wa-button');
+  return { pass: opacityAtParse === '1',
+           detail: 'theme stylesheet only, <html class="wa-cloak">: page opacity while components were still loading was ' + opacityAtParse + ' (1 means not hidden)' };
+});
+</script>
+</body>
+</html>

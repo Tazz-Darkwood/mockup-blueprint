@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An option with no value attribute submits an empty value</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-select id="s" name="colour" label="Colour"><wa-option id="o">Sky blue</wa-option><wa-option>Green</wa-option></wa-select></form>
+<script type="module">
+run(async () => {
+  await defined('wa-select', 'wa-option');
+  await real('click', '#s'); await sleep(500); await real('click', '#o'); await sleep(500);
+  const shown = $('#s').shadowRoot.querySelector('input').value, sent = formEntries($('#f'));
+  return { pass: $('#s').value === '' && sent.join() === 'colour=' && shown === 'Sky blue',
+           detail: 'chose the option "Sky blue" (no value attribute): the select shows "' + shown + '" but its value is "' + $('#s').value + '" and the form sends ' + JSON.stringify(sent) };
+});
+</script>
+</body>
+</html>

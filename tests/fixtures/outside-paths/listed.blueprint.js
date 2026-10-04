@@ -1,0 +1,1 @@
+window.__BLUEPRINT__ = {"blueprint": 1, "files": ["listed.html", "../../../etc/hosts", "/etc/passwd", "../other.html"], "project": {}, "screens": [], "flows": [], "elements": {}, "questions": [], "waivers": []};

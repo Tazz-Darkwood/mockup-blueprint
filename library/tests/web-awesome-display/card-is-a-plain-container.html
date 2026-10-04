@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A card adds no role or heading of its own</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-card id="c"><h3 slot="header">Pro plan</h3>Everything in Free, plus exports.<wa-button slot="footer">Choose</wa-button></wa-card>
+<script type="module">
+run(async () => {
+  await defined('wa-card', 'wa-button');
+  const aria = await real('aria', '#c');
+  return { pass: $('#c').getAttribute('role') === null && aria.startsWith('- heading "Pro plan" [level=3]') && !/article|region|group/.test(aria),
+           detail: 'announced as ' + JSON.stringify(aria) + ' (only what was put inside it)' };
+});
+</script>
+</body>
+</html>

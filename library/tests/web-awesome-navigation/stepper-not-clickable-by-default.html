@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steps cannot be clicked unless the stepper has the clickable attribute; next() moves it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-stepper id="s" label="Checkout"><wa-step id="one" name="cart">Cart</wa-step><wa-step id="two" name="pay">Pay</wa-step></wa-stepper>
+<script type="module">
+run(async () => {
+  await defined('wa-stepper', 'wa-step'); await sleep(300);
+  const fired = []; ['wa-before-step-change', 'wa-step-change'].forEach((n) => $('#s').addEventListener(n, () => fired.push(n)));
+  $('#s').next(); await sleep(400); const afterNext = $('#s').active;
+  await real('click', '#one'); await sleep(400);
+  return { pass: afterNext === 'pay' && $('#s').active === 'pay', detail: 'after next(): active is "' + afterNext + '" (events: ' + JSON.stringify(fired) + '); after clicking the first step: active is still "' + $('#s').active + '"' };
+});
+</script>
+</body>
+</html>

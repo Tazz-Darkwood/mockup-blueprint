@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One script tag is enough, and an element fetches into itself by default</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="b" hx-get="/hello">Press</button>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+const server = htmxMock({ 'GET /hello': () => '<em>Hello</em>' });
+run(async () => {
+  await ready();
+  await real('click', '#b'); await sleep(200);
+  const b = $('#b');
+  return { pass: typeof htmx === 'object' && htmx.version === '2.0.11' && b.innerHTML === '<em>Hello</em>' && b.tagName === 'BUTTON',
+           detail: 'htmx ' + htmx.version + ' loaded from one script tag. After pressing a button with only hx-get on it, the button itself now contains: ' + b.innerHTML + '. Requests seen by the pretend server: ' + server.requests.length };
+});
+</script>
+</body>
+</html>

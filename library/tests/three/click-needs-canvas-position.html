@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Finding what was clicked must use the canvas's own position, not the window's</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="box" style="margin:180px 0 0 420px"></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); $('#box').appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 10); camera.position.z = 3;
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshBasicMaterial({ color: 0xff0000 })); scene.add(ball);
+  renderer.render(scene, camera);
+  const ray = new THREE.Raycaster(), hit = {};
+  renderer.domElement.addEventListener('click', (event) => {
+    const wrong = new THREE.Vector2((event.clientX / innerWidth) * 2 - 1, -(event.clientY / innerHeight) * 2 + 1);
+    ray.setFromCamera(wrong, camera); hit.usingWindow = ray.intersectObject(ball).length > 0;
+    const r = renderer.domElement.getBoundingClientRect();
+    const right = new THREE.Vector2(((event.clientX - r.left) / r.width) * 2 - 1, -((event.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(right, camera); hit.usingCanvas = ray.intersectObject(ball).length > 0;
+  });
+  const r = renderer.domElement.getBoundingClientRect();
+  await real('mouse', (r.left + r.width / 2) + ',' + (r.top + r.height / 2));
+  await sleep(100);
+  return { pass: hit.usingCanvas === true && hit.usingWindow === false,
+           detail: 'the canvas sits ' + Math.round(r.left) + 'px across and ' + Math.round(r.top) + 'px down the page, with a ball in its middle. A real click on the ball was found using the canvas position: ' + hit.usingCanvas + '; using the window size, as many examples do: ' + hit.usingWindow };
+});
+</script>
+</body>
+</html>

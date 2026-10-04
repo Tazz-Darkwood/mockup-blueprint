@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An open dialog adds the wa-scroll-lock class to the html element</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-dialog id="d" label="Confirm">Body</wa-dialog><p style="height:2000px">Tall page</p>
+<script type="module">
+run(async () => {
+  await defined('wa-dialog');
+  const has = () => document.documentElement.classList.contains('wa-scroll-lock');
+  const before = has(); $('#d').open = true; await sleep(900); const during = has(); $('#d').open = false; await sleep(900);
+  return { pass: !before && during && !has(), detail: 'html has class wa-scroll-lock before: ' + before + ', while open: ' + during + ', after closing: ' + has() };
+});
+</script>
+</body>
+</html>

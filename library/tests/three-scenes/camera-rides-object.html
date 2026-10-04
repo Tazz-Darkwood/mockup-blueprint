@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A camera attached to an object follows it only if the object is in the scene</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(100, 100); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const marker = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: 0x00ff00 })); marker.position.set(40, 0, -6);
+  scene.add(marker);
+  const sees = (rider, inScene) => {
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+    rider.add(camera);                 // the camera rides on the ant, looking the way the ant faces
+    if (inScene) scene.add(rider);
+    renderer.render(scene, camera);
+    const before = pixel(renderer, 50, 50)[1];
+    rider.position.x = 40;             // the ant walks to where the green marker is
+    renderer.render(scene, camera);
+    const after = pixel(renderer, 50, 50)[1];
+    return { before, after, cameraWorldX: Math.round(camera.getWorldPosition(new THREE.Vector3()).x) };
+  };
+  const loose = sees(new THREE.Group(), false), placed = sees(new THREE.Group(), true);
+  return { pass: loose.after === 0 && placed.before === 0 && placed.after === 255,
+           detail: 'green seen in the middle of the view before and after the carrier walks to the marker. Carrier not added to the scene: ' + JSON.stringify(loose) + '. Carrier in the scene: ' + JSON.stringify(placed) };
+});
+</script>
+</body>
+</html>

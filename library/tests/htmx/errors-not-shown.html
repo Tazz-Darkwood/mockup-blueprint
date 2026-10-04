@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A reply that says something went wrong is not put on the page</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f" hx-post="/signup" hx-target="#msg"><input name="email" value=""><button id="go">Sign up</button></form>
+<div id="msg">waiting</div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'POST /signup': () => ({ status: 422, body: '<p class="error">Enter an email address.</p>' }) });
+run(async () => {
+  await ready();
+  const seen = []; document.body.addEventListener('htmx:responseError', () => seen.push('htmx:responseError'));
+  const quiet = console.error; console.error = () => {};
+  await real('click', '#go'); await sleep(200);
+  const asMade = $('#msg').textContent;
+  // tell htmx that a 422 carries something to show
+  htmx.config.responseHandling = [{ code: '204', swap: false }, { code: '[23]..', swap: true }, { code: '422', swap: true }, { code: '[45]..', swap: false, error: true }];
+  await real('click', '#go'); await sleep(200);
+  console.error = quiet;
+  return { pass: asMade === 'waiting' && seen.length === 1 && $('#msg').textContent === 'Enter an email address.',
+           detail: 'the server replied 422 with a message. As htmx is made, the target still says "' + asMade + '" and it fired ' + JSON.stringify(seen) + '. After adding 422 to htmx.config.responseHandling the target says "' + $('#msg').textContent + '"' };
+});
+</script>
+</body>
+</html>

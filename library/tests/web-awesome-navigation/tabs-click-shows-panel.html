@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clicking a tab shows the panel whose name matches its panel attribute</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-tab-group id="g"><wa-tab id="t1" panel="one">One</wa-tab><wa-tab id="t2" panel="two">Two</wa-tab>
+<wa-tab-panel id="p1" name="one">Panel one</wa-tab-panel><wa-tab-panel id="p2" name="two">Panel two</wa-tab-panel></wa-tab-group>
+<script type="module">
+run(async () => {
+  await defined('wa-tab-group', 'wa-tab', 'wa-tab-panel');
+  const fired = []; ['wa-tab-show', 'wa-tab-hide'].forEach((n) => $('#g').addEventListener(n, (e) => fired.push(n + ':' + e.detail.name)));
+  const slots = [...document.querySelectorAll('wa-tab')].map((t) => t.getAttribute('slot'));
+  const before = visible($('#p1')) && !visible($('#p2'));
+  await real('click', '#t2'); await sleep(500);
+  return { pass: before && !visible($('#p1')) && visible($('#p2')) && fired.join() === 'wa-tab-hide:one,wa-tab-show:two' && slots.every((s) => s === 'nav'),
+           detail: 'first panel shown on load: ' + before + '; after clicking the second tab its panel shows: ' + visible($('#p2')) + '; events: ' + JSON.stringify(fired) + '; tabs were given slot=' + JSON.stringify(slots) + ' automatically' };
+});
+</script>
+</body>
+</html>

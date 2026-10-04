@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Preselect several options with selected on each option, not a space-separated value</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f">
+  <wa-select id="byValue" name="a" label="By value attribute" multiple value="x y"><wa-option value="x">X</wa-option><wa-option value="y">Y</wa-option></wa-select>
+  <wa-select id="bySelected" name="b" label="By selected" multiple><wa-option value="x" selected>X</wa-option><wa-option value="y" selected>Y</wa-option><wa-option value="z">Z</wa-option></wa-select>
+</form>
+<script type="module">
+run(async () => {
+  await defined('wa-select', 'wa-option');
+  const a = $('#byValue').value, b = $('#bySelected').value, sent = formEntries($('#f'));
+  return { pass: a.length === 0 && b.join() === 'x,y' && sent.join() === 'b=x,b=y',
+           detail: 'value="x y" selected ' + JSON.stringify(a) + '; selected on two options selected ' + JSON.stringify(b) + '; the form sends ' + JSON.stringify(sent) };
+});
+</script>
+</body>
+</html>

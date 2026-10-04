@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Icons are fetched from a second outside host (Font Awesome)</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-icon id="i" name="gear"></wa-icon>
+<script type="module">
+run(async () => {
+  await defined('wa-icon'); await sleep(1500);
+  const urls = performance.getEntriesByType('resource').map((e) => e.name);
+  const hosts = [...new Set(urls.map((u) => new URL(u).host))];
+  const iconUrl = urls.find((u) => /gear\.svg/.test(u)) || 'none';
+  return { pass: hosts.includes('ka-f.webawesome.com') && hosts.includes('ka-f.fontawesome.com'),
+           detail: 'hosts contacted: ' + JSON.stringify(hosts) + '; the gear icon came from ' + iconUrl + '; requests for this one-icon page: ' + urls.length };
+});
+</script>
+</body>
+</html>

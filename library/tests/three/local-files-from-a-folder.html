@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Opened from a folder, your own module files, models and pictures do not load</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const outcome = (promise) => Promise.race([promise.then(() => 'loaded', (e) => 'FAILED'), sleep(6000).then(() => 'no answer')]);
+run(async () => {
+  const got = {};
+  got.moduleFile = await outcome(import('./local-module.js'));
+  got.classicScript = await outcome(new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'local-classic.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+  got.threeFromClassicScript = window.localClassic ? await outcome(window.localClassic.loadThree()) : 'not tried';
+  got.modelFile = await outcome(new GLTFLoader().loadAsync('./local-model.gltf'));
+  got.pictureFile = await outcome(new THREE.TextureLoader().loadAsync('./local-texture.png'));
+  got.modelAsDataUri = await outcome(new GLTFLoader().loadAsync('data:model/gltf+json;base64,eyJhc3NldCI6IHsidmVyc2lvbiI6ICIyLjAifSwgInNjZW5lIjogMCwgInNjZW5lcyI6IFt7Im5vZGVzIjogWzBdfV0sICJub2RlcyI6IFt7Im1lc2giOiAwfV0sICJtZXNoZXMiOiBbeyJwcmltaXRpdmVzIjogW3siYXR0cmlidXRlcyI6IHsiUE9TSVRJT04iOiAwfX1dfV0sICJidWZmZXJzIjogW3sidXJpIjogImRhdGE6YXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtO2Jhc2U2NCxBQUFBQUFBQUFBQUFBQUFBQUFDQVB3QUFBQUFBQUFBQUFBQUFBQUFBZ0Q4QUFBQUEiLCAiYnl0ZUxlbmd0aCI6IDM2fV0sICJidWZmZXJWaWV3cyI6IFt7ImJ1ZmZlciI6IDAsICJieXRlT2Zmc2V0IjogMCwgImJ5dGVMZW5ndGgiOiAzNiwgInRhcmdldCI6IDM0OTYyfV0sICJhY2Nlc3NvcnMiOiBbeyJidWZmZXJWaWV3IjogMCwgImNvbXBvbmVudFR5cGUiOiA1MTI2LCAiY291bnQiOiAzLCAidHlwZSI6ICJWRUMzIiwgIm1pbiI6IFswLCAwLCAwXSwgIm1heCI6IFsxLCAxLCAwXX1dfQ=='));
+  got.pictureAsDataUri = await outcome(new THREE.TextureLoader().loadAsync('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEElEQVR4nGOQzXKGIwbiOABGIwyhBs4EpAAAAABJRU5ErkJggg=='));
+  const fromFolder = location.protocol === 'file:';
+  const expected = fromFolder
+    ? got.moduleFile === 'FAILED' && got.modelFile === 'FAILED' && got.classicScript === 'loaded' && got.threeFromClassicScript === 'loaded' && got.modelAsDataUri === 'loaded' && got.pictureAsDataUri === 'loaded'
+    : Object.values(got).every((v) => v === 'loaded');
+  return { pass: expected, detail: 'page opened as ' + location.protocol + ' ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

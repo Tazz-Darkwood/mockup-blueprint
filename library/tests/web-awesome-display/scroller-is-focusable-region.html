@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A scroller is a named region that can be reached and scrolled by keyboard</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-scroller id="s" style="width: 300px"><div style="width: 1200px">A very wide line of content inside the scroller</div></wa-scroller>
+<script type="module">
+run(async () => {
+  await defined('wa-scroller');
+  const aria = await real('aria', '#s'), inner = $('#s').shadowRoot.querySelector('[role=region]');
+  return { pass: aria.startsWith('- region "Scrollable region"') && inner.getAttribute('tabindex') === '0',
+           detail: 'announced as ' + JSON.stringify(aria.split(':')[0]) + '; it can take keyboard focus: tabindex=' + inner.getAttribute('tabindex') };
+});
+</script>
+</body>
+</html>

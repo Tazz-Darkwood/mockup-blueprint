@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-format-bytes counts in thousands: 1024 bytes is shown as 1.02 kB</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-format-bytes id="k" value="1024"></wa-format-bytes> <wa-format-bytes id="m" value="1500000"></wa-format-bytes> <wa-format-bytes id="long" value="1500000" display="long"></wa-format-bytes> <wa-format-bytes id="bit" value="1500000" unit="bit"></wa-format-bytes>
+<script type="module">
+run(async () => {
+  await defined('wa-format-bytes');
+  const t = (id) => $(id).shadowRoot.textContent.trim();
+  return { pass: t('#k') === '1.02 kB' && t('#m') === '1.5 MB' && t('#long') === '1.5 megabytes' && t('#bit') === '1.5 Mb',
+           detail: '1024 shows as "' + t('#k') + '"; 1500000 as "' + t('#m') + '", with display="long" as "' + t('#long') + '", with unit="bit" as "' + t('#bit') + '"' };
+});
+</script>
+</body>
+</html>

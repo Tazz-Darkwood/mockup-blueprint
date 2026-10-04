@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The picture does not follow its box unless code resizes it</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="box" style="width:400px;height:200px"></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const box = $('#box');
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(box.clientWidth, box.clientHeight);
+  box.appendChild(renderer.domElement);
+  box.style.width = '200px';
+  await frames(3);
+  const before = { boxWidth: box.clientWidth, canvasShownWidth: renderer.domElement.clientWidth, canvasDrawnWidth: renderer.domElement.width };
+  // the fix: let CSS size the canvas, and resize the drawing to match whenever the box changes
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+  new ResizeObserver(() => {
+    renderer.setSize(box.clientWidth, box.clientHeight, false);
+    camera.aspect = box.clientWidth / box.clientHeight;
+    camera.updateProjectionMatrix();
+  }).observe(box);
+  await frames(3);
+  box.style.width = '260px';
+  await frames(3);
+  const after = { boxWidth: box.clientWidth, canvasShownWidth: renderer.domElement.clientWidth, canvasDrawnWidth: renderer.domElement.width, aspect: +camera.aspect.toFixed(2) };
+  return { pass: before.canvasShownWidth === 400 && before.canvasDrawnWidth === 400 && after.canvasShownWidth === 260 && after.canvasDrawnWidth === 260 && after.aspect === 1.3,
+           detail: 'box shrunk to 200 with no resize code: ' + JSON.stringify(before) + '. With a ResizeObserver, box set to 260: ' + JSON.stringify(after) };
+});
+</script>
+</body>
+</html>

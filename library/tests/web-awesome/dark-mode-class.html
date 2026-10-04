@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Adding the wa-dark class to the html element switches the theme to dark</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button>Button</wa-button>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const token = () => getComputedStyle(document.documentElement).getPropertyValue('--wa-color-surface-default').trim();
+  const light = token();
+  document.documentElement.classList.add('wa-dark'); const dark = token();
+  document.documentElement.classList.remove('wa-dark');
+  return { pass: !!light && !!dark && light !== dark,
+           detail: '--wa-color-surface-default is "' + light + '" normally and "' + dark + '" with class wa-dark on <html>' };
+});
+</script>
+</body>
+</html>

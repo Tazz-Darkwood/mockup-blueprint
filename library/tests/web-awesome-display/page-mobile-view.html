@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Below its mobile-breakpoint, wa-page hides the navigation behind a toggle button</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-page id="p" mobile-breakpoint="2000"><header slot="header">Site name</header><div slot="navigation" id="nav"><a href="#a">Reports</a></div><main>Main content</main></wa-page>
+<script type="module">
+run(async () => {
+  await defined('wa-page'); await sleep(900);
+  const view = $('#p').getAttribute('view'), navBefore = visible($('#nav')) && $('#nav').getBoundingClientRect().left >= 0 && $('#nav').getBoundingClientRect().right <= innerWidth && $('#nav').getBoundingClientRect().width > 0;
+  const aria = await real('aria', 'body');
+  $('#p').showNavigation(); await sleep(900); const opened = $('#p').hasAttribute('nav-open');
+  await real('press', 'Escape'); await sleep(800);
+  return { pass: view === 'mobile' && aria.includes('button "Toggle navigation drawer"') && opened && !$('#p').hasAttribute('nav-open'),
+           detail: 'window is 1000 wide, breakpoint 2000: view="' + view + '"; a "Toggle navigation drawer" button is offered: ' + aria.includes('Toggle navigation drawer') + '; showNavigation() opened the drawer: ' + opened + '; Escape closed it: ' + !$('#p').hasAttribute('nav-open') };
+});
+</script>
+</body>
+</html>

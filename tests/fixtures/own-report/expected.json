@@ -1,0 +1,15 @@
+{
+  "about": "A page that ships its own answer for the viewer's report does not get to mark its own homework.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must": [
+        "#aaaaaa on #ffffff"
+      ]
+    }
+  ]
+}

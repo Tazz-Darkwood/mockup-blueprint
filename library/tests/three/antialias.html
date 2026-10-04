@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edges are jagged unless antialias is asked for when the renderer is made</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const shades = (options) => {
+    const renderer = new THREE.WebGLRenderer(options); renderer.setSize(120, 120);
+    document.body.appendChild(renderer.domElement);
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10); camera.position.z = 3;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ color: 0xffffff })); box.rotation.z = 0.5; scene.add(box);
+    renderer.render(scene, camera);
+    const gl = renderer.getContext(), all = new Uint8Array(120 * 120 * 4); gl.readPixels(0, 0, 120, 120, gl.RGBA, gl.UNSIGNED_BYTE, all);
+    let inBetween = 0; for (let i = 0; i < all.length; i += 4) if (all[i] > 0 && all[i] < 255) inBetween++;
+    return inBetween;
+  };
+  const off = shades({}), on = shades({ antialias: true });
+  return { pass: off === 0 && on > 20, detail: 'pixels that are neither black nor white along the edges of a tilted white box: default ' + off + ', with { antialias: true } ' + on };
+});
+</script>
+</body>
+</html>

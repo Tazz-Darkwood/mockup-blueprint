@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-markdown only renders markdown placed in a script type=text/markdown</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-markdown id="plain"># Heading written directly</wa-markdown>
+<wa-markdown id="script"><script type="text/markdown"># Heading in a script tag</script></wa-markdown>
+<script type="module">
+run(async () => {
+  await defined('wa-markdown'); await sleep(800);
+  return { pass: !$('#plain h1') && !!$('#script h1') && $('#script h1').textContent === 'Heading in a script tag',
+           detail: 'markdown written directly made a heading: ' + !!$('#plain h1') + '; inside the script tag: ' + !!$('#script h1') };
+});
+</script>
+</body>
+</html>

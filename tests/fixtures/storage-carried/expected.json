@@ -1,0 +1,19 @@
+{
+  "about": "The same two pages with carry-storage.js loaded first: nothing to report.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must_not": [
+        "mockup/storage-not-shared",
+        "mockup/script-leaves-storage"
+      ]
+    }
+  ],
+  "assets": [
+    "carry-storage.js"
+  ]
+}

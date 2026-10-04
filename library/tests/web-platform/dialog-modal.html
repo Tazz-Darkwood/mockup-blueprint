@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A dialog opened with showModal takes the focus, blocks the page behind, and closes on Escape</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<button id="open">Open</button> <button id="behind">Behind</button>
+<dialog id="d"><p>Sure?</p><button id="yes">Yes</button><button id="no">No</button></dialog>
+<script>
+run(async () => {
+  let behind = 0, closed = 0; $('#behind').addEventListener('click', () => behind++); $('#d').addEventListener('close', () => closed++);
+  $('#open').addEventListener('click', () => $('#d').showModal());
+  await real('click', '#open'); await sleep(100);
+  const got = { focusGoesTo: document.activeElement.id, open: $('#d').open };
+  const r = $('#behind').getBoundingClientRect(); await real('mouse', (r.left + 5) + ',' + (r.top + 5)); await sleep(50);
+  got.clicksReachingThePageBehind = behind;
+  await real('press', 'Escape'); await sleep(100);
+  got.afterEscape = { open: $('#d').open, closeEvents: closed, focusBackOn: document.activeElement.id };
+  return { pass: got.focusGoesTo === 'yes' && got.clicksReachingThePageBehind === 0 && got.afterEscape.open === false && got.afterEscape.closeEvents === 1 && got.afterEscape.focusBackOn === 'open', detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-intersection-observer adds a class while its content is on screen and fires wa-intersect</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div style="height: 1500px">Scroll down</div>
+<wa-intersection-observer id="i" intersect-class="seen"><div id="box">Far down the page</div></wa-intersection-observer>
+<script type="module">
+run(async () => {
+  await defined('wa-intersection-observer'); await sleep(300);
+  const seen = []; $('#i').addEventListener('wa-intersect', (e) => seen.push(e.detail.entry.isIntersecting));
+  const before = $('#box').className; $('#box').scrollIntoView(); await sleep(600); const during = $('#box').className;
+  window.scrollTo(0, 0); await sleep(600);
+  return { pass: before === '' && during === 'seen' && $('#box').className === '' && seen.join() === 'true,false',
+           detail: 'class before scrolling: "' + before + '", while on screen: "' + during + '", after scrolling away: "' + $('#box').className + '"; wa-intersect reported ' + JSON.stringify(seen) };
+});
+</script>
+</body>
+</html>

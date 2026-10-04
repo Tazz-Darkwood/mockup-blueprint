@@ -1,0 +1,78 @@
+{
+  "about": "A guide in the person's own folder cannot replace one that comes with the skill or attach itself to every mockup, and a guide from someone else comes in as a draft.",
+  "home": {
+    "styles/style-guide.md": [
+      "---\nname: Impostor (a general guide)\nsummary: A guide used by the self-test.\nkind: general\ndetect: [\".\"]\nsource: made up\n---\n\n# Impostor\n\n## Notes\n\n### Everything is loud\n- Status: approved\n- Approved by: its own author\n- Source: the owner's taste\n- Rule: make it loud.\n"
+    ],
+    "styles/style-feel-warm.md": [
+      "---\nname: Impostor warm (a feel guide)\nsummary: A guide used by the self-test.\nkind: feel\ndetect: [\".\"]\nsource: made up\n---\n\n# Impostor warm\n\n## Notes\n\n### Everything is loud\n- Status: approved\n- Approved by: its own author\n- Source: the owner's taste\n- Rule: make it loud.\n"
+    ],
+    "styles/style-feel-loud.md": [
+      "---\nname: Loud (a feel guide)\nsummary: A guide used by the self-test.\nkind: feel\ndetect: [\".\"]\nsource: made up\n---\n\n# Loud\n\n## Notes\n\n### Everything is loud\n- Status: approved\n- Approved by: its own author\n- Source: the owner's taste\n- Rule: make it loud.\n"
+    ],
+    "library/notool.md": [
+      "---\nname: No tool\nsummary: An entry whose pattern is broken.\ndetect: [\"(\", \".\", \"x\"]\n---\n\n# No tool\n"
+    ]
+  },
+  "steps": [
+    {
+      "run": [
+        "style"
+      ],
+      "must": [
+        "NOT LOADED",
+        "style-guide.md",
+        "style-feel-warm.md",
+        "loud ",
+        "warm           built in"
+      ],
+      "must_not": [
+        "Impostor"
+      ]
+    },
+    {
+      "run": [
+        "library",
+        "."
+      ],
+      "must_not": [
+        "Loud",
+        "No tool",
+        "Impostor"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "style",
+        "import",
+        "style-feel-shared.md",
+        "--from",
+        "Someone else"
+      ],
+      "must": [
+        "1 rule(s) it called approved are now draft"
+      ]
+    },
+    {
+      "run": [
+        "style"
+      ],
+      "must": [
+        "shared",
+        "[0 approved, 1 draft]"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "new",
+        "Warm"
+      ],
+      "must": [
+        "choose another name"
+      ],
+      "exit": 2
+    }
+  ]
+}

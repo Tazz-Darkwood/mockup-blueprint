@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A button opens and closes a dialog with data-dialog attributes and no script</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="opener" data-dialog="open d">Open</wa-button>
+<wa-dialog id="d" label="Confirm">Are you sure?<wa-button id="closer" slot="footer" data-dialog="close">Cancel</wa-button></wa-dialog>
+<script type="module">
+run(async () => {
+  await defined('wa-dialog', 'wa-button');
+  await real('click', '#opener'); await sleep(800); const opened = $('#d').open;
+  await real('click', '#closer'); await sleep(800);
+  return { pass: opened && !$('#d').open, detail: 'after pressing the data-dialog="open d" button: open ' + opened + '; after pressing the data-dialog="close" button inside: open ' + $('#d').open };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A point light of intensity 1 is far dimmer than a directional light of 1</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(100, 100);
+  document.body.appendChild(renderer.domElement);
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 20); camera.position.z = 2;
+  const shot = (light) => { const scene = new THREE.Scene(); scene.add(new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshStandardMaterial({ color: 0xffffff }))); scene.add(light); renderer.render(scene, camera); return pixel(renderer, 50, 50)[0]; };
+  const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(0, 0, 3);
+  const bulb = new THREE.PointLight(0xffffff, 1); bulb.position.set(0, 0, 3);
+  const bulb9 = new THREE.PointLight(0xffffff, 9); bulb9.position.set(0, 0, 3);
+  const got = { directional1: shot(sun), point1: shot(bulb), point9: shot(bulb9), pointDecay: bulb.decay };
+  return { pass: got.point1 < got.directional1 / 2 && got.point9 > got.point1 * 2 && got.pointDecay === 2,
+           detail: 'brightness (0 to 255) of a white surface 3 units from the light: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

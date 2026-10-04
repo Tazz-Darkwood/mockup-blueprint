@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Web Awesome's colour, font and corner radius are set with CSS variables on the page</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+<style>
+  :root {
+    --wa-color-brand-fill-loud: #a63a2a;
+    --wa-color-brand-on-loud: #fffaf0;
+    --wa-font-family-body: 'Courier New', monospace;
+    --wa-border-radius-scale: 0;
+    --wa-form-control-border-color: #00aa00;
+    --wa-form-control-background-color: #fff8e0;
+  }
+</style>
+</head>
+<body>
+<wa-button id="b" variant="brand">Brand button</wa-button>
+<wa-input id="i" label="Field"></wa-input>
+<script type="module">
+run(async () => {
+  await defined('wa-button', 'wa-input');
+  const button = getComputedStyle($('#b').shadowRoot.querySelector('button'));
+  const field = [...$('#i').shadowRoot.querySelectorAll('*')].map((el) => getComputedStyle(el));
+  const got = {
+    buttonBackground: button.backgroundColor, buttonText: button.color, buttonFont: button.fontFamily.split(',')[0].replace(/["']/g, ''),
+    buttonRadius: button.borderTopLeftRadius,
+    fieldHasGreenBorder: field.some((cs) => cs.borderTopColor === 'rgb(0, 170, 0)'),
+    fieldHasCreamBackground: field.some((cs) => cs.backgroundColor === 'rgb(255, 248, 224)'),
+  };
+  return { pass: got.buttonBackground === 'rgb(166, 58, 42)' && got.buttonText === 'rgb(255, 250, 240)' && got.buttonFont === 'Courier New'
+                 && got.buttonRadius === '0px' && got.fieldHasGreenBorder && got.fieldHasCreamBackground,
+           detail: 'after setting six --wa- variables on :root: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clicking the current rating again clears it to zero</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-rating id="r" name="stars" label="Quality"></wa-rating></form>
+<script type="module">
+run(async () => {
+  await defined('wa-rating');
+  const fired = []; ['change', 'input'].forEach((n) => $('#r').addEventListener(n, () => fired.push(n)));
+  const b = $('#r').getBoundingClientRect(), at = (b.left + b.width * 0.5) + ',' + (b.top + b.height / 2);
+  await real('mouse', at); await sleep(300); const first = $('#r').value;
+  await real('mouse', at); await sleep(300); const second = $('#r').value;
+  $('#r').focus(); await real('press', 'ArrowRight'); await sleep(200); const arrow = $('#r').value;
+  await real('press', 'End'); await sleep(200);
+  return { pass: first === 3 && second === 0 && arrow === 1 && $('#r').value === 5 && fired.includes('change') && !fired.includes('input'),
+           detail: 'clicked the third star: ' + first + '; clicked it again: ' + second + '; right arrow: ' + arrow + '; End key: ' + $('#r').value + '; events: ' + JSON.stringify([...new Set(fired)]) + '; the form sends ' + JSON.stringify(formEntries($('#f'))) };
+});
+</script>
+</body>
+</html>

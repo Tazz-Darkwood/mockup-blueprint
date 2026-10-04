@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A wa-button with href is a link, not a button</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="b" href="https://webawesome.com/docs/">Read the docs</wa-button>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const aria = await real('aria', '#b'), inner = $('#b').shadowRoot.querySelector('a, button').localName;
+  return { pass: inner === 'a' && aria.includes('link "Read the docs"'), detail: 'renders an <' + inner + '> inside; announced as ' + JSON.stringify(aria.split('\n')[0]) };
+});
+</script>
+</body>
+</html>

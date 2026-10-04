@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-page supplies the page landmarks and a skip link; a nav element in its navigation slot is doubled</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-page id="p"><header slot="header">Site name</header><nav slot="navigation"><a href="#a">Reports</a></nav><main>Main content</main><footer slot="footer">Footer</footer></wa-page>
+<script type="module">
+run(async () => {
+  await defined('wa-page'); await sleep(600);
+  const aria = await real('aria', 'body');
+  const has = (s) => aria.includes(s);
+  return { pass: has('link "Skip to content"') && has('- banner') && has('- main') && has('- contentinfo') && /- navigation:\n\s+- navigation:/.test(aria),
+           detail: 'announced as ' + JSON.stringify(aria.split('\n').filter((l) => !l.includes('/url')).map((l) => l.trim()).join(' | ')) };
+});
+</script>
+</body>
+</html>

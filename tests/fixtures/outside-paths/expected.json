@@ -1,0 +1,32 @@
+{
+  "about": "A mockup or a context file from elsewhere cannot point the script at files outside its own folder.",
+  "steps": [
+    {
+      "run": [
+        "inventory",
+        "index.html"
+      ],
+      "must": [
+        "outside its own folder"
+      ],
+      "exit": 2
+    },
+    {
+      "run": [
+        "check",
+        "listed.blueprint.js",
+        "--no-render"
+      ],
+      "must": [
+        "\"../../../etc/hosts\", which is not an .html page inside this folder",
+        "\"/etc/passwd\", which is not",
+        "\"../other.html\", which is not"
+      ],
+      "must_not": [
+        "127.0.0.1",
+        "root:"
+      ],
+      "exit": 1
+    }
+  ]
+}

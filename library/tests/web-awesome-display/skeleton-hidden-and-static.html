@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A skeleton is hidden from screen readers and does not animate unless effect is set</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-skeleton id="plain"></wa-skeleton><wa-skeleton id="sheen" effect="sheen"></wa-skeleton>
+<script type="module">
+run(async () => {
+  await defined('wa-skeleton');
+  const anim = (id) => getComputedStyle($(id).shadowRoot.querySelector('[part~=indicator]')).animationName;
+  const aria = await real('aria', '#plain');
+  return { pass: aria === '' && anim('#plain') === 'none' && anim('#sheen') === 'sheen',
+           detail: 'announced as ' + JSON.stringify(aria) + ' (nothing); animation with no effect attribute: ' + anim('#plain') + ', with effect="sheen": ' + anim('#sheen') };
+});
+</script>
+</body>
+</html>

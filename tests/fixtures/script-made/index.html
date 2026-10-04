@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Script-made controls</title>
+<style>
+body { font: 18px/1.5 sans-serif; margin: 2rem; }
+</style>
+</head>
+<body>
+<main data-bp-screen="home">
+<h1>Script-made controls</h1>
+<button type="button" data-bp="save">Save</button>
+<div id="more"></div>
+</main>
+<script>
+  ['Delete all', 'Export'].forEach(function (label) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    document.getElementById('more').appendChild(b);
+  });
+</script>
+</body>
+</html>

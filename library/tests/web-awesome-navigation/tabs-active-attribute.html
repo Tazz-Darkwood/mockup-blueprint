@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The active attribute on the tab group chooses which tab starts open</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-tab-group id="g" active="two"><wa-tab panel="one">One</wa-tab><wa-tab panel="two">Two</wa-tab>
+<wa-tab-panel id="p1" name="one">Panel one</wa-tab-panel><wa-tab-panel id="p2" name="two">Panel two</wa-tab-panel></wa-tab-group>
+<script type="module">
+run(async () => {
+  await defined('wa-tab-group', 'wa-tab', 'wa-tab-panel');
+  return { pass: visible($('#p2')) && !visible($('#p1')), detail: 'active="two": second panel showing on load: ' + visible($('#p2')) };
+});
+</script>
+</body>
+</html>

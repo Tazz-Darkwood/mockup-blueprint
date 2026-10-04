@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A click on a crowd says which one was hit</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(400, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 2, 0.1, 100); camera.position.z = 10;
+  const crowd = new THREE.InstancedMesh(new THREE.SphereGeometry(0.6, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }), 5), spot = new THREE.Matrix4();
+  for (let i = 0; i < 5; i++) crowd.setMatrixAt(i, spot.setPosition((i - 2) * 3, 0, 0));
+  scene.add(crowd); renderer.render(scene, camera);
+  const ray = new THREE.Raycaster(); let hit = 'no click yet';
+  renderer.domElement.addEventListener('click', (event) => {
+    const r = renderer.domElement.getBoundingClientRect();
+    ray.setFromCamera(new THREE.Vector2(((event.clientX - r.left) / r.width) * 2 - 1, -((event.clientY - r.top) / r.height) * 2 + 1), camera);
+    const found = ray.intersectObject(crowd)[0];
+    hit = found ? found.instanceId : 'nothing';
+  });
+  // where the fourth ball (number 3, counting from 0) is on the page
+  const at = new THREE.Vector3(3, 0, 0).project(camera), r = renderer.domElement.getBoundingClientRect();
+  await real('mouse', (r.left + (at.x + 1) / 2 * r.width) + ',' + (r.top + (1 - at.y) / 2 * r.height));
+  await sleep(100);
+  const fourth = hit;
+  await real('mouse', (r.left + 20) + ',' + (r.top + 20)); await sleep(100);
+  return { pass: fourth === 3 && hit === 'nothing', detail: 'five balls in one InstancedMesh. A real click on the fourth reported instanceId ' + fourth + '; a click on empty space reported ' + hit };
+});
+</script>
+</body>
+</html>

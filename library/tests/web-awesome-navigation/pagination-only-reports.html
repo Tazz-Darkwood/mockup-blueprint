@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pagination only reports the page chosen; showing that page's content is up to you</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-pagination id="p" total="95" page-size="10" label="Results"></wa-pagination>
+<script type="module">
+run(async () => {
+  await defined('wa-pagination'); await sleep(400);
+  const fired = []; ['wa-before-page-change', 'wa-page-change'].forEach((n) => $('#p').addEventListener(n, (e) => fired.push(n + ' page ' + e.detail.page)));
+  const buttons = [...$('#p').shadowRoot.querySelectorAll('button')].map((b) => b.textContent.trim() || b.getAttribute('aria-label'));
+  [...$('#p').shadowRoot.querySelectorAll('button')].find((b) => b.textContent.trim() === '2').click(); await sleep(400);
+  return { pass: $('#p').page === 2 && fired.join() === 'wa-before-page-change page 2,wa-page-change page 2' && buttons.includes('10') && !buttons.includes('11'),
+           detail: '95 items at 10 per page gives buttons ' + JSON.stringify(buttons) + '; choosing 2 fired ' + JSON.stringify(fired) + ' and page is now ' + $('#p').page };
+});
+</script>
+</body>
+</html>

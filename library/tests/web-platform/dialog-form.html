@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buttons in a form with method dialog close it and say which was pressed</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<dialog id="d"><form method="dialog"><button id="keep" value="keep">Keep</button><button id="delete" value="delete">Delete</button></form></dialog>
+<script>
+run(async () => {
+  let navigated = false; addEventListener('beforeunload', () => { navigated = true; });
+  $('#d').showModal(); await real('click', '#delete'); await sleep(100);
+  const first = { open: $('#d').open, returnValue: $('#d').returnValue };
+  $('#d').showModal(); await real('press', 'Escape'); await sleep(100);
+  return { pass: first.open === false && first.returnValue === 'delete' && $('#d').returnValue === '' && !navigated,
+           detail: 'after pressing Delete: ' + JSON.stringify(first) + '. Opened again and closed with Escape, returnValue is now: "' + $('#d').returnValue + '" (empty). The page went nowhere: ' + !navigated };
+});
+</script>
+</body>
+</html>

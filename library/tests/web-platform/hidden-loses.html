@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The hidden attribute loses to any display rule in the page's own CSS</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .row { display: flex; }</style>
+</head>
+<body>
+<div id="a" class="row" hidden>Should be hidden</div>
+<div id="b" class="row fixed" hidden>Should be hidden</div>
+<script>
+run(async () => {
+  const got = { withDisplayFlexRule: getComputedStyle($('#a')).display, takesUpSpace: $('#a').offsetHeight > 0 };
+  document.head.insertAdjacentHTML('beforeend', '<style>[hidden] { display: none !important; }</style>');
+  got.afterAddingTheGuardRule = getComputedStyle($('#a')).display;
+  return { pass: got.withDisplayFlexRule === 'flex' && got.takesUpSpace && got.afterAddingTheGuardRule === 'none', detail: 'an element with the hidden attribute and a class that sets display: flex. ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

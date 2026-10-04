@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Where two hollow shapes join, the wall between them blocks the view until it is cut away</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(200, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(60, 1, 0.05, 50); camera.lookAt(8, 0, 0);   // inside a chamber, looking down the tunnel that leaves it
+  const inside = (colour) => new THREE.MeshBasicMaterial({ color: colour, side: THREE.BackSide });
+  const tunnel = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(1.5, 0, 0), new THREE.Vector3(8, 0, 0)), 8, 0.6, 16), inside(0x0000ff));
+  const whole = new THREE.SphereGeometry(2, 48, 32).toNonIndexed(), chamber = new THREE.Mesh(whole, inside(0xff0000));
+  scene.add(tunnel, chamber);
+  renderer.render(scene, camera);
+  const blocked = pixel(renderer, 100, 117);
+  // cut the mouth: drop every triangle of the chamber that lies within the tunnel's width of its middle line
+  const p = whole.attributes.position.array, keep = [];
+  for (let t = 0; t < p.length; t += 9) { const x = (p[t] + p[t + 3] + p[t + 6]) / 3, y = (p[t + 1] + p[t + 4] + p[t + 7]) / 3, z = (p[t + 2] + p[t + 5] + p[t + 8]) / 3; if (!(x > 0 && Math.hypot(y, z) < 0.6)) keep.push(...p.slice(t, t + 9)); }
+  const cut = new THREE.BufferGeometry(); cut.setAttribute('position', new THREE.Float32BufferAttribute(keep, 3)); chamber.geometry = cut;
+  renderer.render(scene, camera);
+  const open = pixel(renderer, 100, 117);
+  return { pass: blocked[0] === 255 && blocked[2] === 0 && open[2] === 255 && open[0] === 0,
+           detail: 'from inside a red chamber, looking into the mouth of a blue tunnel. With the chamber whole: ' + JSON.stringify(blocked) + ' (its own wall). With the mouth cut out: ' + JSON.stringify(open) + ' (the tunnel). Triangles removed: ' + (p.length - keep.length) / 9 };
+});
+</script>
+</body>
+</html>

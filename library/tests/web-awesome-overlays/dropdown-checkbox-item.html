@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A dropdown item with type=checkbox toggles its checked state when chosen</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-dropdown id="d"><wa-button id="t" slot="trigger" with-caret>View</wa-button><wa-dropdown-item id="wrap" value="wrap" type="checkbox">Wrap lines</wa-dropdown-item></wa-dropdown>
+<script type="module">
+run(async () => {
+  await defined('wa-dropdown', 'wa-dropdown-item', 'wa-button');
+  await real('click', '#t'); await sleep(700); const aria = await real('aria', '#d'); await real('click', '#wrap'); await sleep(700);
+  return { pass: $('#wrap').checked === true && aria.includes('menuitemcheckbox "Wrap lines"'),
+           detail: 'checked after choosing it: ' + $('#wrap').checked + '; dropdown open afterwards: ' + $('#d').open + '; announced as ' + JSON.stringify(aria.split('\n').pop().trim()) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A drawer is announced as a dialog and closes with Escape</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-drawer id="d" label="Filters">Body</wa-drawer>
+<script type="module">
+run(async () => {
+  await defined('wa-drawer');
+  $('#d').open = true; await sleep(900); const aria = (await real('aria', '#d')).split('\n')[0];
+  await real('press', 'Escape'); await sleep(900);
+  return { pass: aria.includes('dialog "Filters"') && $('#d').open === false, detail: 'announced as ' + JSON.stringify(aria) + '; open after Escape: ' + $('#d').open };
+});
+</script>
+</body>
+</html>

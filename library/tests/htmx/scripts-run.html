@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A script inside a reply is run</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="b" hx-get="/widget" hx-target="#out">Press</button><div id="out"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'GET /widget': () => '<p>Widget</p><script>window.ranFromReply = (window.ranFromReply || 0) + 1;<\/script>' });
+run(async () => {
+  await ready();
+  await real('click', '#b'); await sleep(200);
+  const asMade = window.ranFromReply || 0;
+  htmx.config.allowScriptTags = false;
+  await real('click', '#b'); await sleep(200);
+  return { pass: asMade === 1 && window.ranFromReply === 1, detail: 'a reply containing a script tag. Times it ran, as htmx is made: ' + asMade + '. After htmx.config.allowScriptTags = false, pressed again: ran ' + (window.ranFromReply - asMade) + ' more times' };
+});
+</script>
+</body>
+</html>

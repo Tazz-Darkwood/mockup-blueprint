@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The theme stylesheet plus the loader script is enough for a component to work</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="b">Hello</wa-button>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const b = document.getElementById('b');
+  const inner = b.shadowRoot && b.shadowRoot.querySelector('button');
+  return { pass: !!customElements.get('wa-button') && !!inner,
+           detail: 'wa-button registered: ' + !!customElements.get('wa-button') + ', rendered an inner button: ' + !!inner };
+});
+</script>
+</body>
+</html>

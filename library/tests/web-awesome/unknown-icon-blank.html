@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An unknown icon name shows nothing and reports wa-error</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-icon id="bad" name="no-such-icon-xyz"></wa-icon>
+<script>window.iconEvents = []; ['wa-error', 'wa-load'].forEach((n) => document.getElementById('bad').addEventListener(n, () => iconEvents.push(n)));</script>
+<script type="module">
+run(async () => {
+  await defined('wa-icon'); await sleep(2500);
+  const bad = document.getElementById('bad');
+  const paths = bad.shadowRoot ? bad.shadowRoot.querySelectorAll('svg path, svg use, svg circle, svg rect').length : -1;
+  return { pass: iconEvents.includes('wa-error') && !iconEvents.includes('wa-load'),
+           detail: 'events: ' + JSON.stringify(iconEvents) + ', shapes drawn: ' + paths };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "about": "Two pages share something through the browser's storage with nothing to carry it between files opened from a folder.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must": [
+        "mockup/storage-not-shared"
+      ]
+    }
+  ]
+}

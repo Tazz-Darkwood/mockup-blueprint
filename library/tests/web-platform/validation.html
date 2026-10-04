@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A required field stops the form being sent, and looks wrong before anyone has typed</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<form id="f"><input id="email" type="email" required><button id="go">Send</button></form>
+<form id="g" novalidate><input id="email2" type="email" required><button id="go2">Send</button></form>
+<script>
+run(async () => {
+  let sent = 0, sent2 = 0; $('#f').addEventListener('submit', (e) => { e.preventDefault(); sent++; }); $('#g').addEventListener('submit', (e) => { e.preventDefault(); sent2++; });
+  const got = { beforeAnything: { invalid: $('#email').matches(':invalid'), userInvalid: $('#email').matches(':user-invalid') } };
+  await real('click', '#go'); await sleep(100);
+  got.afterPressingSend = { submitEvents: sent, userInvalid: $('#email').matches(':user-invalid'), message: $('#email').validationMessage };
+  await real('click', '#go2'); await sleep(100);
+  got.withNovalidate = { submitEvents: sent2 };
+  return { pass: got.beforeAnything.invalid && !got.beforeAnything.userInvalid && sent === 0 && got.afterPressingSend.userInvalid && sent2 === 1, detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

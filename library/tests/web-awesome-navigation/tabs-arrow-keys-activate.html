@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Arrow keys move between tabs and switch the panel straight away</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-tab-group id="g"><wa-tab id="t1" panel="one">One</wa-tab><wa-tab id="t2" panel="two">Two</wa-tab>
+<wa-tab-panel id="p1" name="one">Panel one</wa-tab-panel><wa-tab-panel id="p2" name="two">Panel two</wa-tab-panel></wa-tab-group>
+<script type="module">
+run(async () => {
+  await defined('wa-tab-group', 'wa-tab', 'wa-tab-panel');
+  await real('click', '#t1'); await sleep(300); await real('press', 'ArrowRight'); await sleep(500);
+  const aria = await real('aria', '#g');
+  return { pass: $('#g').active === 'two' && visible($('#p2')) && aria.includes('tab "Two" [selected]'),
+           detail: 'after ArrowRight from the first tab: active is "' + $('#g').active + '", second panel showing: ' + visible($('#p2')) + '; announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

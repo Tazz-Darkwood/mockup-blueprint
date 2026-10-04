@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A button in a form sends the form unless it says type=button, and so does Enter</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<form id="f"><input id="name" value="x"><button id="plain">Plain</button><button id="typed" type="button">Typed</button></form>
+<script>
+run(async () => {
+  let sent = 0; $('#f').addEventListener('submit', (e) => { e.preventDefault(); sent++; });
+  await real('click', '#typed'); await sleep(50); const afterTyped = sent;
+  await real('click', '#plain'); await sleep(50); const afterPlain = sent;
+  await real('click', '#name'); await real('press', 'Enter'); await sleep(50);
+  return { pass: afterTyped === 0 && afterPlain === 1 && sent === 2, detail: 'form sent after pressing a button with type="button": ' + afterTyped + ' times. After a button with no type: ' + afterPlain + '. After Enter in the text field: ' + sent };
+});
+</script>
+</body>
+</html>

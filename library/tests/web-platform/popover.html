@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A popover opens from a button, closes on a click outside or Escape, and does not take the focus</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<button id="open" popovertarget="p">Menu</button><div id="p" popover><button id="item">Item</button></div><p id="elsewhere" style="margin-top:200px">Elsewhere</p>
+<script>
+run(async () => {
+  await real('click', '#open'); await sleep(100);
+  const got = { open: $('#p').matches(':popover-open'), focusOn: document.activeElement.id };
+  await real('click', '#elsewhere'); await sleep(100); got.afterClickOutside = $('#p').matches(':popover-open');
+  await real('click', '#open'); await sleep(100); await real('press', 'Escape'); await sleep(100); got.afterEscape = $('#p').matches(':popover-open');
+  return { pass: got.open && got.focusOn === 'open' && !got.afterClickOutside && !got.afterEscape, detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

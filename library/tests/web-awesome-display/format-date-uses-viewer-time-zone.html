@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-format-date shows the date in the viewer's own time zone unless time-zone is set</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-format-date id="utc" date="2026-10-03T23:30:00Z" time-zone="UTC" month="long" day="numeric" year="numeric"></wa-format-date>
+<wa-format-date id="tokyo" date="2026-10-03T23:30:00Z" time-zone="Asia/Tokyo" month="long" day="numeric" year="numeric"></wa-format-date>
+<wa-format-date id="local" date="2026-10-03T23:30:00Z" month="long" day="numeric" year="numeric" hour="numeric" minute="numeric"></wa-format-date>
+<script type="module">
+run(async () => {
+  await defined('wa-format-date');
+  const text = (id) => $(id).shadowRoot.textContent.trim();
+  const expected = new Intl.DateTimeFormat('en', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date('2026-10-03T23:30:00Z'));
+  return { pass: text('#utc') === 'October 3, 2026' && text('#tokyo') === 'October 4, 2026' && text('#local') === expected,
+           detail: 'the same moment shows as "' + text('#utc') + '" in UTC and "' + text('#tokyo') + '" in Tokyo; with no time-zone it shows "' + text('#local') + '" here (' + Intl.DateTimeFormat().resolvedOptions().timeZone + ')' };
+});
+</script>
+</body>
+</html>

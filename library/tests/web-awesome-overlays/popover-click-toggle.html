@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A popover opens when its anchor is clicked and closes on a click outside</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="a">Details</wa-button><wa-popover id="p" for="a">Popover body</wa-popover><p id="away" style="margin-top:300px">Elsewhere</p>
+<script type="module">
+run(async () => {
+  await defined('wa-popover', 'wa-button');
+  await real('click', '#a'); await sleep(700); const opened = $('#p').open;
+  await real('click', '#away'); await sleep(700);
+  return { pass: opened && !$('#p').open, detail: 'open after clicking the anchor: ' + opened + '; after clicking elsewhere: ' + $('#p').open };
+});
+</script>
+</body>
+</html>

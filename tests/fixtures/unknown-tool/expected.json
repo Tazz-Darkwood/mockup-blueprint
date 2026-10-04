@@ -1,0 +1,34 @@
+{
+  "about": "A tool the library has no notes on is named, so nobody assumes it was checked.",
+  "steps": [
+    {
+      "run": [
+        "library",
+        "."
+      ],
+      "must": [
+        "NO NOTES",
+        "alpinejs",
+        "tailwindcss"
+      ]
+    },
+    {
+      "run": [
+        "init",
+        "index.html"
+      ]
+    },
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "library/no-notes",
+        "alpinejs"
+      ],
+      "exit": 1
+    }
+  ]
+}

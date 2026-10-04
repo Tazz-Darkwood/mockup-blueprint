@@ -1,0 +1,25 @@
+{
+  "about": "Faint text is reported, on a plain background and on a shape drawn behind the words (by ::before, or by an empty element of its own); readable text and text inside a closed fold-out are not.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must": [
+        "a11y/contrast",
+        "#aaaaaa on #ffffff",
+        "#777777 on #555555",
+        "Browser checks: ran on 1 page",
+        "#666666 on #505050"
+      ],
+      "must_not": [
+        "#ffffff on #112233",
+        "#eeeeee",
+        "#fbf6ec on",
+        "#666666 on #ffffff"
+      ]
+    }
+  ]
+}

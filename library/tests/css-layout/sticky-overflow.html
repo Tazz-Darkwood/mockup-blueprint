@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sticky stops working inside anything that has overflow set</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .wrap { height: 2000px; } .clip { overflow: hidden; } .bar { position: sticky; top: 0; height: 40px; background: #ccc; } .tall { height: 1900px; }</style>
+</head>
+<body>
+<div id="a" class="wrap"><div class="bar" id="ba">Bar</div><div class="tall"></div></div>
+<div id="b" class="wrap clip"><div class="bar" id="bb">Bar</div><div class="tall"></div></div>
+<script>
+run(async () => {
+  scrollTo(0, 300); await sleep(100);
+  const plain = Math.round($('#ba').getBoundingClientRect().top);
+  scrollTo(0, 2300); await sleep(100);
+  const clipped = Math.round($('#bb').getBoundingClientRect().top);
+  return { pass: plain === 0 && clipped < -100, detail: 'a bar with position: sticky; top: 0, after scrolling 300 pixels into its section. In a plain section its top is at ' + plain + ' (stuck). In a section with overflow: hidden its top is at ' + clipped + ' (scrolled away)' };
+});
+</script>
+</body>
+</html>

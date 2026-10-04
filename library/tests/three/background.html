@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The background is solid black unless the renderer is made with alpha</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+  const solid = new THREE.WebGLRenderer(); solid.setSize(50, 50); solid.render(scene, camera);
+  const a = pixel(solid, 25, 25);
+  const clear = new THREE.WebGLRenderer({ alpha: true }); clear.setSize(50, 50); clear.render(scene, camera);
+  const b = pixel(clear, 25, 25);
+  scene.background = new THREE.Color('#f8f0e0'); clear.render(scene, camera);
+  const c = pixel(clear, 25, 25);
+  return { pass: a.join() === '0,0,0,255' && b.join() === '0,0,0,0' && c[0] === 248 && c[3] === 255,
+           detail: 'empty scene, default renderer: ' + JSON.stringify(a) + '. Renderer made with { alpha: true }: ' + JSON.stringify(b) + ' (see-through). With scene.background set to #f8f0e0: ' + JSON.stringify(c) };
+});
+</script>
+</body>
+</html>

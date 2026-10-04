@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>With the import map, add-ons load by short names</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+run(async () => {
+  const names = { OrbitControls: 'three/addons/controls/OrbitControls.js', GLTFLoader: 'three/addons/loaders/GLTFLoader.js',
+                  RoundedBoxGeometry: 'three/addons/geometries/RoundedBoxGeometry.js', RoomEnvironment: 'three/addons/environments/RoomEnvironment.js' };
+  const got = {};
+  for (const [name, path] of Object.entries(names)) got[name] = await import(path).then((m) => typeof m[name], (e) => 'FAILED ' + e.message);
+  return { pass: Object.values(got).every((t) => t === 'function'), detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

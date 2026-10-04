@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrast fixture</title>
+<style>
+body { margin: 2rem; background: #fff; color: #111; font: 18px/1.5 sans-serif; }
+.faint { color: #aaaaaa; }
+.paper { position: relative; isolation: isolate; padding: 1rem; }
+.paper::before { content: ""; position: absolute; inset: 0; z-index: -1; }
+.bad { color: #777777; } .bad::before { background: #555555; }
+.good { color: #ffffff; } .good::before { background: #112233; }
+details p { color: #eeeeee; }
+.cover { position: relative; isolation: isolate; padding: 1rem; margin-top: 1rem; }
+.layer { position: absolute; inset: 0; z-index: -1; }
+.cover.fine { color: #fbf6ec; } .cover.fine .layer { background: #223344; }
+.cover.poor { color: #666666; } .cover.poor .layer { background: #505050; }
+</style>
+</head>
+<body>
+<main>
+<h1>Contrast fixture</h1>
+<p class="faint">Faint grey words on white.</p>
+<p class="paper bad">Grey words on dark paper drawn behind them.</p>
+<p class="paper good">White words on dark paper drawn behind them.</p>
+<div class="cover fine"><span class="layer" aria-hidden="true"></span><p>Cream words on a dark shape that is an element of its own.</p></div>
+<div class="cover poor"><span class="layer" aria-hidden="true"></span><p>Grey words on a grey shape that is an element of its own.</p></div>
+<details><summary>Closed</summary><p>Near-white words inside a closed fold-out.</p></details>
+</main>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Focus moves into a dialog when it opens and back to the opener when it closes</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="opener" data-dialog="open d">Open</wa-button>
+<wa-dialog id="d" label="Confirm">Are you sure?<wa-button id="closer" slot="footer" data-dialog="close">Cancel</wa-button></wa-dialog>
+<script type="module">
+run(async () => {
+  await defined('wa-dialog', 'wa-button');
+  const inside = (el) => !!el && (el.getRootNode().host === $('#d') || $('#d').contains(el));
+  await real('click', '#opener'); await sleep(900); const during = focused(); const wasInside = inside(during);
+  await real('click', '#closer'); await sleep(900); const after = focused();
+  return { pass: wasInside && after.getRootNode().host === $('#opener'),
+           detail: 'while open, focus was inside the dialog: ' + wasInside + ' (on <' + during.localName + '>); after closing, focus was back on the opener: ' + (after.getRootNode().host === $('#opener')) };
+});
+</script>
+</body>
+</html>

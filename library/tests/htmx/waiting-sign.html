@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The class htmx-request is on the element while it waits</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<style>.spinner { opacity: 0; } .htmx-request .spinner, .htmx-request.spinner { opacity: 1; }</style>
+<button id="b" hx-get="/slow" hx-target="#out">Load <span class="spinner">…</span></button><div id="out"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'GET /slow': () => 'done' }, { delay: 400 });
+run(async () => {
+  await ready();
+  const b = $('#b'), spinner = $('.spinner'), before = getComputedStyle(spinner).opacity;
+  b.click(); await sleep(150);
+  const during = { hasClass: b.classList.contains('htmx-request'), spinner: getComputedStyle(spinner).opacity };
+  await sleep(600);
+  return { pass: before === '0' && during.hasClass && during.spinner === '1' && !b.classList.contains('htmx-request'),
+           detail: 'spinner opacity before: ' + before + '. While waiting: ' + JSON.stringify(during) + '. After the reply the class is gone: ' + !b.classList.contains('htmx-request') };
+});
+</script>
+</body>
+</html>

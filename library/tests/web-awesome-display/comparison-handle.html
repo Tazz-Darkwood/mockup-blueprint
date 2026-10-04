@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A comparison's handle moves with the arrow keys and is announced as an unnamed scrollbar</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-comparison id="c" style="width: 400px"><div slot="before" style="height: 100px; background: #ccc">Before</div><div slot="after" style="height: 100px; background: #888">After</div></wa-comparison>
+<script type="module">
+run(async () => {
+  await defined('wa-comparison');
+  let changes = 0; $('#c').addEventListener('change', () => changes++);
+  const aria = await real('aria', '#c'), start = $('#c').position;
+  $('#c').shadowRoot.querySelector('[part~=handle]').focus(); await real('press', 'ArrowRight'); await sleep(200);
+  return { pass: start === 50 && $('#c').position === 51 && changes === 1 && /- scrollbar$/.test(aria.trim()),
+           detail: 'position starts at ' + start + '; after the right arrow: ' + $('#c').position + ' (change fired ' + changes + ' time); announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

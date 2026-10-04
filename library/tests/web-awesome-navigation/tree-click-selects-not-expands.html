@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clicking a parent tree item selects it without expanding it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-tree id="t"><wa-tree-item id="parent">Fruit<wa-tree-item id="child">Apple</wa-tree-item></wa-tree-item><wa-tree-item id="other">Bread</wa-tree-item></wa-tree>
+<script type="module">
+run(async () => {
+  await defined('wa-tree', 'wa-tree-item');
+  const picked = []; $('#t').addEventListener('wa-selection-change', (e) => picked.push(e.detail.selection.map((i) => i.id).join()));
+  await real('click', '#parent'); await sleep(600);
+  return { pass: $('#parent').selected && !$('#parent').expanded && picked.join() === 'parent' && !visible($('#child')),
+           detail: 'clicked the parent label: selected ' + $('#parent').selected + ', expanded ' + $('#parent').expanded + ', child visible ' + visible($('#child')) + '; wa-selection-change reported ' + JSON.stringify(picked) };
+});
+</script>
+</body>
+</html>

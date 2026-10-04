@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Drawing only the inside of a tunnel makes it a cutaway from the front</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+const flat = (w, h) => { const c = new THREE.OrthographicCamera(-w / 100, w / 100, h / 100, -h / 100, 0.1, 50); c.position.z = 10; return c; };   // 50 pixels to a unit, looking from the front
+
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = flat(300, 200);
+  const wall = new THREE.MeshBasicMaterial({ color: 0x8a5a2b });
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(-3, 0, 0), new THREE.Vector3(3, 0, 0)), 4, 1, 32), wall));
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })));   // something in the middle of the tunnel
+  const got = {};
+  for (const side of ['FrontSide', 'DoubleSide', 'BackSide']) { wall.side = THREE[side]; wall.needsUpdate = true; renderer.render(scene, camera); got[side] = pixel(renderer, 150, 100)[2] === 255 ? 'the ball' : 'the tunnel wall'; }
+  return { pass: got.FrontSide === 'the tunnel wall' && got.DoubleSide === 'the tunnel wall' && got.BackSide === 'the ball', detail: 'looking at a tunnel from the front, with a white ball inside it. What shows in the middle: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

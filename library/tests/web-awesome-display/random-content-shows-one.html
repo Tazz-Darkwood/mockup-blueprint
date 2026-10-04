@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-random-content shows one child, hides the rest, and announces the change</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-random-content id="r"><p class="tip">Tip one</p><p class="tip">Tip two</p><p class="tip">Tip three</p></wa-random-content>
+<script type="module">
+run(async () => {
+  await defined('wa-random-content'); await sleep(500);
+  const tips = [...document.querySelectorAll('.tip')], shown = () => tips.filter(visible).map((t) => t.textContent);
+  const first = shown(), hidden = tips.filter((t) => t.hidden).length;
+  let changes = 0; $('#r').addEventListener('wa-content-change', () => changes++);
+  $('#r').randomize(); await sleep(800);
+  const aria = await real('aria', '#r');
+  return { pass: first.length === 1 && hidden === 2 && shown().length === 1 && shown()[0] !== first[0] && changes === 1 && aria.includes('status'),
+           detail: 'showing ' + JSON.stringify(first) + ', with ' + hidden + ' others given the hidden attribute; after randomize(): ' + JSON.stringify(shown()) + ' (wa-content-change fired ' + changes + ' time); announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

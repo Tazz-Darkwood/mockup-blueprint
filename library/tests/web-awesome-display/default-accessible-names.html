@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spinner and progress bar announce a default name; set label when it should say more</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-spinner id="s"></wa-spinner><wa-progress-bar id="bare" value="40"></wa-progress-bar><wa-progress-bar id="named" value="40" label="Uploading photo"></wa-progress-bar><wa-badge id="b">3</wa-badge>
+<script type="module">
+run(async () => {
+  await defined('wa-spinner', 'wa-progress-bar', 'wa-badge');
+  const s = await real('aria', '#s'), bare = await real('aria', '#bare'), named = await real('aria', '#named'), badge = await real('aria', '#b');
+  return { pass: s.includes('progressbar "Loading"') && bare.includes('progressbar "Progress"') && named.includes('progressbar "Uploading photo"') && badge.includes('status'),
+           detail: 'spinner: ' + JSON.stringify(s) + '; bar without label: ' + JSON.stringify(bare) + '; with label: ' + JSON.stringify(named) + '; badge: ' + JSON.stringify(badge) };
+});
+</script>
+</body>
+</html>

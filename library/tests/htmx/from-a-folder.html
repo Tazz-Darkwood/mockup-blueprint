@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Opened from a folder, HTMX cannot fetch a file beside the page</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<!-- no pretend server on this page, on purpose -->
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="b" hx-get="piece.htm" hx-target="#out">Press</button><div id="out">nothing yet</div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+run(async () => {
+  await ready();
+  const seen = [];
+  ['htmx:sendError', 'htmx:responseError', 'htmx:afterSwap'].forEach((name) => document.body.addEventListener(name, () => seen.push(name)));
+  const quiet = console.error; console.error = () => {};
+  await real('click', '#b'); await sleep(1200);
+  console.error = quiet;
+  const out = $('#out').textContent, fromFolder = location.protocol === 'file:';
+  return { pass: fromFolder ? out === 'nothing yet' && seen.includes('htmx:sendError') : out.includes('A piece of a page'),
+           detail: 'page opened as ' + location.protocol + ' After hx-get to a file beside the page, the target holds: "' + out + '". Events: ' + JSON.stringify(seen) };
+});
+</script>
+</body>
+</html>

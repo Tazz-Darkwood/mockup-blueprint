@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A number above max is kept, not clamped, and makes the form invalid</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-number-input id="n" name="qty" label="Quantity" value="200" max="10"></wa-number-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-number-input');
+  return { pass: $('#n').value === '200' && $('#n').checkValidity() === false && $('#f').checkValidity() === false,
+           detail: 'value="200" with max="10": the field still holds "' + $('#n').value + '", field valid: ' + $('#n').checkValidity() + ', form valid: ' + $('#f').checkValidity() };
+});
+</script>
+</body>
+</html>

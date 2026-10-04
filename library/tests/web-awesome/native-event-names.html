@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Typing in a wa-input fires the native input and change events, not wa- ones</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-input id="field" label="Name"></wa-input>
+<script type="module">
+run(async () => {
+  await defined('wa-input');
+  const field = document.getElementById('field'); await field.updateComplete;
+  const fired = [];
+  ['input', 'change', 'focus', 'blur', 'wa-input', 'wa-change', 'wa-focus', 'wa-blur'].forEach((n) => field.addEventListener(n, () => fired.push(n)));
+  const inner = field.shadowRoot.querySelector('input');
+  inner.focus(); inner.value = 'Ada';
+  inner.dispatchEvent(new InputEvent('input', { bubbles: true, composed: true }));
+  inner.dispatchEvent(new Event('change', { bubbles: true }));
+  inner.blur(); await sleep(300);
+  const seen = [...new Set(fired)];
+  return { pass: seen.includes('input') && seen.includes('change') && !seen.some((n) => /^wa-(input|change)$/.test(n)) && field.value === 'Ada',
+           detail: 'events seen on the wa-input: ' + JSON.stringify(seen) + ', value: ' + field.value };
+});
+</script>
+</body>
+</html>

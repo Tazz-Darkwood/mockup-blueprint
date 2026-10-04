@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A slider with no value starts at 0 and always submits</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-slider id="one" name="volume" label="Volume"></wa-slider>
+<wa-slider id="two" name="price" label="Price" range min-value="10" max-value="40"></wa-slider>
+<input id="native" type="range" name="native"></form>
+<script type="module">
+run(async () => {
+  await defined('wa-slider');
+  const sent = formEntries($('#f'));
+  return { pass: $('#one').value === 0 && sent.includes('volume=0') && sent.includes('price=10') && sent.includes('price=40') && sent.includes('native=50'),
+           detail: 'untouched wa-slider value: ' + $('#one').value + ' (a native range input starts at ' + $('#native').value + '); the form sends ' + JSON.stringify(sent) };
+});
+</script>
+</body>
+</html>

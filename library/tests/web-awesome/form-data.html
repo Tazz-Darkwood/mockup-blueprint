@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Web Awesome fields are included in the form's data like native ones</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f">
+  <wa-input name="email" label="Email" value="a@b.co"></wa-input>
+  <wa-checkbox name="agree" checked>Agree</wa-checkbox>
+  <wa-checkbox name="news">News</wa-checkbox>
+  <wa-input label="No name attribute" value="lost"></wa-input>
+</form>
+<script type="module">
+run(async () => {
+  await defined('wa-input', 'wa-checkbox');
+  const data = Object.fromEntries(new FormData(document.getElementById('f')).entries());
+  return { pass: data.email === 'a@b.co' && data.agree === 'on' && !('news' in data) && Object.keys(data).length === 2,
+           detail: 'FormData: ' + JSON.stringify(data) + ' (unchecked box and the field with no name are left out)' };
+});
+</script>
+</body>
+</html>

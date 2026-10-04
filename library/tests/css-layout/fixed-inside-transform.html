@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Something fixed to the screen is fixed to its ancestor instead, if that ancestor is rotated or moved with transform</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .card { height: 100px; width: 300px; margin-bottom: 10px; background: #eee; } .turned { rotate: 1deg; } .toast { position: fixed; bottom: 10px; left: 10px; }</style>
+</head>
+<body>
+<div style="height:300px"></div>
+<div class="card" id="plain"><div class="toast" id="t1">toast</div></div>
+<div class="card turned" id="turned"><div class="toast" id="t2">toast</div></div>
+<script>
+run(async () => {
+  const fromBottom = (id) => Math.round(innerHeight - $(id).getBoundingClientRect().bottom);
+  const got = { inAPlainCard: fromBottom('#t1'), inARotatedCard: fromBottom('#t2') };
+  return { pass: got.inAPlainCard === 10 && got.inARotatedCard > 100, detail: 'a message with position: fixed; bottom: 10px. Distance from the bottom of the window: ' + JSON.stringify(got) + '. Inside the rotated card it is placed against the card, not the window' };
+});
+</script>
+</body>
+</html>

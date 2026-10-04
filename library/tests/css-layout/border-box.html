@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Width 100% plus padding is wider than its parent unless box-sizing is border-box</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .parent { width: 200px; margin-bottom: 8px; } .child { width: 100%; padding: 0 20px; background: #ddd; }</style>
+</head>
+<body>
+<div class="parent"><div class="child" id="a">a</div></div>
+<div class="parent"><div class="child" id="b" style="box-sizing:border-box">b</div></div>
+<script>
+run(async () => {
+  const got = { asMade: $('#a').offsetWidth, withBorderBox: $('#b').offsetWidth };
+  return { pass: got.asMade === 240 && got.withBorderBox === 200, detail: 'a child with width: 100% and 20 pixels of padding each side, in a 200-pixel parent. Its width: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

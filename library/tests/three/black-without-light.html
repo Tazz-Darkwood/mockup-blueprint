@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A standard material is black until the scene has a light</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(200, 200);
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+  camera.position.z = 1;
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+  scene.add(plane);
+  renderer.render(scene, camera);
+  const standardNoLight = pixel(renderer, 100, 100);
+  plane.material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  renderer.render(scene, camera);
+  const basicNoLight = pixel(renderer, 100, 100);
+  plane.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+  renderer.render(scene, camera);
+  const standardAmbient = pixel(renderer, 100, 100);
+  return { pass: standardNoLight[0] === 0 && basicNoLight[0] === 255 && standardAmbient[0] > 100,
+           detail: 'white MeshStandardMaterial, no light: ' + JSON.stringify(standardNoLight) + '. White MeshBasicMaterial, no light: ' + JSON.stringify(basicNoLight) + '. Standard with AmbientLight(white, 1): ' + JSON.stringify(standardAmbient) };
+});
+</script>
+</body>
+</html>

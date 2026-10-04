@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two quick presses send two requests unless the button is switched off meanwhile</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="plain" hx-post="/buy" hx-target="#out">Buy</button>
+<button id="guarded" hx-post="/buy2" hx-target="#out" hx-disabled-elt="this">Buy</button>
+<div id="out"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+const server = htmxMock({ 'POST /buy': () => 'bought', 'POST /buy2': () => 'bought' }, { delay: 300 });
+run(async () => {
+  await ready();
+  $('#plain').click(); $('#plain').click(); await sleep(60);
+  const whileWaiting = $('#guarded').disabled;
+  $('#guarded').click(); await sleep(30); const during = $('#guarded').disabled; $('#guarded').click(); await sleep(700);
+  const plain = server.requests.filter((r) => r.path === '/buy').length, guarded = server.requests.filter((r) => r.path === '/buy2').length;
+  return { pass: plain === 2 && guarded === 1 && during === true && $('#guarded').disabled === false,
+           detail: 'two presses in quick succession while the server takes 0.3 seconds. Plain button: ' + plain + ' requests. With hx-disabled-elt="this": ' + guarded + ' request; the button was disabled while waiting (' + during + ') and enabled again after' };
+});
+</script>
+</body>
+</html>

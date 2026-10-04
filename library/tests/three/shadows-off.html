@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nothing casts a shadow until four separate things are switched on</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(200, 200);
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 30); camera.position.set(0, 0, 8);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+  const card = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 0.2), new THREE.MeshStandardMaterial({ color: 0xffffff })); card.position.z = 2;
+  const light = new THREE.DirectionalLight(0xffffff, 2); light.position.set(3, 0, 8);   // from the right, so the shadow falls to the left of the card
+  scene.add(floor, card, light);
+  const darkPixels = () => {
+    renderer.render(scene, camera);
+    const gl = renderer.getContext(), all = new Uint8Array(200 * 200 * 4); gl.readPixels(0, 0, 200, 200, gl.RGBA, gl.UNSIGNED_BYTE, all);
+    let dark = 0; for (let i = 0; i < all.length; i += 4) if (all[i] < 40) dark++;
+    return dark;
+  };
+  const got = { nothingOn: darkPixels() };
+  renderer.shadowMap.enabled = true; got.rendererOnly = darkPixels();
+  light.castShadow = true; got.plusLight = darkPixels();
+  card.castShadow = true; got.plusCard = darkPixels();
+  floor.receiveShadow = true; floor.material.needsUpdate = true; got.plusFloor = darkPixels();
+  return { pass: got.nothingOn === 0 && got.rendererOnly === 0 && got.plusLight === 0 && got.plusCard === 0 && got.plusFloor > 50,
+           detail: 'dark pixels in a picture of a white block held over a white floor: ' + JSON.stringify(got) + '. On in turn: renderer.shadowMap.enabled, light.castShadow, card.castShadow, floor.receiveShadow' };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Colours match CSS, but a picture used as a texture must be marked as colour</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const want = [29, 106, 67];   // #1d6a43
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(100, 100);
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+  camera.position.z = 1;
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ color: '#1d6a43' }));
+  scene.add(plane);
+  renderer.render(scene, camera);
+  const flat = pixel(renderer, 50, 50);
+  const paint = document.createElement('canvas'); paint.width = paint.height = 8;
+  const ctx = paint.getContext('2d'); ctx.fillStyle = '#1d6a43'; ctx.fillRect(0, 0, 8, 8);
+  const texture = new THREE.CanvasTexture(paint);
+  plane.material = new THREE.MeshBasicMaterial({ map: texture });
+  renderer.render(scene, camera);
+  const unmarked = pixel(renderer, 50, 50);
+  texture.colorSpace = THREE.SRGBColorSpace; texture.needsUpdate = true;
+  plane.material = new THREE.MeshBasicMaterial({ map: texture });
+  renderer.render(scene, camera);
+  const marked = pixel(renderer, 50, 50);
+  const near = (p) => want.every((v, i) => Math.abs(p[i] - v) <= 2);
+  return { pass: near(flat) && !near(unmarked) && near(marked),
+           detail: 'wanted ' + JSON.stringify(want) + '. Material colour #1d6a43 drew ' + JSON.stringify(flat.slice(0, 3)) + '. The same colour as a texture, not marked: ' + JSON.stringify(unmarked.slice(0, 3)) + '. Marked SRGBColorSpace: ' + JSON.stringify(marked.slice(0, 3)) + '. Renderer output: ' + renderer.outputColorSpace };
+});
+</script>
+</body>
+</html>

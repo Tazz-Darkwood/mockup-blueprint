@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>When 3D cannot start, making the renderer throws an error</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import WebGL from 'three/addons/capabilities/WebGL.js';
+run(async () => {
+  const availableBefore = WebGL.isWebGL2Available();
+  const realGetContext = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (kind, ...rest) { return /webgl/.test(kind) ? null : realGetContext.call(this, kind, ...rest); };   // stand in for a device with 3D switched off
+  let thrown = 'nothing thrown';
+  const quiet = console.error; console.error = () => {};
+  try { new THREE.WebGLRenderer(); } catch (e) { thrown = e.message; }
+  console.error = quiet;
+  const availableAfter = WebGL.isWebGL2Available();
+  HTMLCanvasElement.prototype.getContext = realGetContext;
+  return { pass: availableBefore === true && availableAfter === false && thrown !== 'nothing thrown',
+           detail: 'WebGL.isWebGL2Available() on this machine: ' + availableBefore + '; with 3D blocked: ' + availableAfter + '. new WebGLRenderer() with 3D blocked threw: "' + thrown + '"' };
+});
+</script>
+</body>
+</html>

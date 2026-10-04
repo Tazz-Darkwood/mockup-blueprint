@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A breadcrumb item without href is announced as a button, not as the current page</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-breadcrumb id="b" label="You are here"><wa-breadcrumb-item href="#home">Home</wa-breadcrumb-item><wa-breadcrumb-item>Settings</wa-breadcrumb-item></wa-breadcrumb>
+<script type="module">
+run(async () => {
+  await defined('wa-breadcrumb', 'wa-breadcrumb-item'); await sleep(300);
+  const aria = await real('aria', '#b');
+  return { pass: aria.includes('navigation "You are here"') && aria.includes('link "Home"') && aria.includes('button "Settings"') && !/current/.test(aria),
+           detail: 'announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

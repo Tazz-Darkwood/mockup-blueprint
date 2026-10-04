@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A model on a CDN loads, and is black until the scene has light</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(300, 200);
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x4466aa);
+  const camera = new THREE.PerspectiveCamera(40, 1.5, 1, 2000);
+  const gltf = await new GLTFLoader().loadAsync('https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/Duck/glTF-Binary/Duck.glb');
+  scene.add(gltf.scene);
+  const box = new THREE.Box3().setFromObject(gltf.scene), centre = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()).length();
+  camera.position.copy(centre).add(new THREE.Vector3(0, 0, size * 1.2));
+  camera.lookAt(centre);
+  let meshes = 0; gltf.scene.traverse((o) => { if (o.isMesh) meshes++; });
+  renderer.render(scene, camera);
+  const dark = pixel(renderer, 150, 100);
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment()).texture;
+  renderer.render(scene, camera);
+  const lit = pixel(renderer, 150, 100);
+  const sum = (p) => p[0] + p[1] + p[2];
+  return { pass: meshes > 0 && sum(dark) < 30 && sum(lit) > 150,
+           detail: 'meshes in the model: ' + meshes + '. Middle of the duck with no light: ' + JSON.stringify(dark) + '; with RoomEnvironment as scene.environment: ' + JSON.stringify(lit) };
+});
+</script>
+</body>
+</html>

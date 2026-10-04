@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A page can only keep about sixteen 3D canvases alive</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const lost = [];
+  const renderers = [];
+  const quiet = console.warn; const warnings = []; console.warn = (...a) => warnings.push(a.join(' '));
+  for (let i = 0; i < 20; i++) {
+    const renderer = new THREE.WebGLRenderer(); renderer.setSize(40, 40);
+    renderer.domElement.addEventListener('webglcontextlost', () => lost.push(i));
+    document.body.appendChild(renderer.domElement);
+    renderers.push(renderer);
+  }
+  await sleep(800);
+  console.warn = quiet;
+  const dead = renderers.map((r, i) => (r.getContext().isContextLost() ? i : null)).filter((i) => i !== null);
+  return { pass: dead.length > 0 && dead.length < 20 && dead[0] === 0,
+           detail: 'made 20 renderers on one page. Canvases that stopped working, counting from the first made: ' + JSON.stringify(dead) + ' (' + (20 - dead.length) + ' still alive)' };
+});
+</script>
+</body>
+</html>

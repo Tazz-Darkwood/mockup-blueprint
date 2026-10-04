@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clicking outside a dialog closes it only with the light-dismiss attribute</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-dialog id="plain" label="Plain">Body</wa-dialog><wa-dialog id="light" label="Light" light-dismiss>Body</wa-dialog>
+<script type="module">
+run(async () => {
+  await defined('wa-dialog');
+  $('#plain').open = true; await sleep(900); await real('mouse', '5,5'); await sleep(700);
+  const plainStillOpen = $('#plain').open; $('#plain').open = false; await sleep(800);
+  $('#light').open = true; await sleep(900); await real('mouse', '5,5'); await sleep(700);
+  return { pass: plainStillOpen && !$('#light').open,
+           detail: 'after a click outside: the plain dialog is still open: ' + plainStillOpen + '; the light-dismiss dialog is still open: ' + $('#light').open };
+});
+</script>
+</body>
+</html>

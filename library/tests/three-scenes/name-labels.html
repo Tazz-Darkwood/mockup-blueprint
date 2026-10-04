@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CSS2DRenderer keeps ordinary HTML labels pinned to things in the scene</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="box" style="position:relative;width:400px;height:200px"></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+run(async () => {
+  const box = $('#box');
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(400, 200); box.appendChild(renderer.domElement);
+  const labels = new CSS2DRenderer(); labels.setSize(400, 200);
+  labels.domElement.style.position = 'absolute'; labels.domElement.style.top = '0'; labels.domElement.style.left = '0';
+  box.appendChild(labels.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 2, 0.1, 100); camera.position.z = 10;
+  const ant = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshBasicMaterial({ color: 0xffffff })); scene.add(ant);
+  const tag = document.createElement('div'); tag.textContent = 'Bertha'; tag.style.cssText = 'color:#fff;font:14px sans-serif';
+  ant.add(new CSS2DObject(tag));
+  const where = () => { renderer.render(scene, camera); labels.render(scene, camera); const r = tag.getBoundingClientRect(), b = box.getBoundingClientRect(); return Math.round(r.left + r.width / 2 - b.left); };
+  const middle = where(); ant.position.x = 4; const moved = where();
+  let clicks = 0; renderer.domElement.addEventListener('click', () => { clicks++; });
+  const b = box.getBoundingClientRect(), spot = (b.left + 50) + ',' + (b.top + 50);
+  await real('mouse', spot); await sleep(100);
+  const reachedWithLayerOnTop = clicks;
+  labels.domElement.style.pointerEvents = 'none';   // the label layer covers the canvas and swallows every click meant for it
+  await real('mouse', spot); await sleep(100);
+  const reachedAfterFix = clicks - reachedWithLayerOnTop;
+  const read = (await real('aria', '#box')).trim();
+  return { pass: Math.abs(middle - 200) <= 2 && moved > 270 && reachedWithLayerOnTop === 0 && reachedAfterFix === 1 && /Bertha/.test(read),
+           detail: 'label centre, in pixels across a 400-wide view: ' + middle + ' with the ant in the middle, ' + moved + ' after it moved right. Clicks that reached the canvas with the label layer on top: ' + reachedWithLayerOnTop + '; after setting the layer to pointer-events none: ' + reachedAfterFix + '. A screen reader is given: ' + JSON.stringify(read) };
+});
+</script>
+</body>
+</html>

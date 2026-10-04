@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The pretend server answers gets and posts, with what was sent</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<input id="q" name="q" value="mint" hx-get="/search" hx-trigger="go" hx-target="#found">
+<ul id="found"></ul>
+<form id="f" hx-post="/items" hx-target="#list" hx-swap="beforeend"><input name="name" value="Rosemary"><button id="add">Add</button></form>
+<ul id="list"><li>Sage</li></ul>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+const server = htmxMock({
+  'GET /search': (asked) => '<li>Results for ' + asked.params.q + '</li>',
+  'POST /items': (asked) => '<li>' + asked.params.name + '</li>',
+});
+run(async () => {
+  await ready();
+  htmx.trigger('#q', 'go'); await sleep(150);
+  await real('click', '#add'); await sleep(150);
+  const found = $('#found').textContent, list = [...document.querySelectorAll('#list li')].map((li) => li.textContent);
+  const post = server.requests.find((r) => r.method === 'POST');
+  return { pass: found === 'Results for mint' && list.join() === 'Sage,Rosemary' && post.headers['HX-Request'] === 'true',
+           detail: 'a get with a field: "' + found + '". A form posted and added to the end of a list: ' + JSON.stringify(list) + '. The post arrived with the header HX-Request: ' + post.headers['HX-Request'] };
+});
+</script>
+</body>
+</html>

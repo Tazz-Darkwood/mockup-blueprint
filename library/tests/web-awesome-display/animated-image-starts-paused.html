@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An animated image starts paused and is a play button</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-animated-image id="a" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Ants carrying a leaf"></wa-animated-image>
+<script type="module">
+run(async () => {
+  await defined('wa-animated-image'); await sleep(600);
+  const aria = await real('aria', '#a'), before = !!$('#a').play;
+  await real('click', '#a'); await sleep(300);
+  return { pass: !before && $('#a').play === true && aria.includes('button "Play animation Ants carrying a leaf"'),
+           detail: 'playing on load: ' + before + '; announced as ' + JSON.stringify(aria.split('\n')[0]) + '; playing after a click: ' + $('#a').play };
+});
+</script>
+</body>
+</html>

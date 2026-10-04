@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Something too deep inside a tunnel is swallowed by its far wall</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+const flat = (w, h) => { const c = new THREE.OrthographicCamera(-w / 100, w / 100, h / 100, -h / 100, 0.1, 50); c.position.z = 10; return c; };   // 50 pixels to a unit, looking from the front
+
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = flat(300, 200);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(-3, 0, 0), new THREE.Vector3(3, 0, 0)), 4, 1, 32), new THREE.MeshBasicMaterial({ color: 0x8a5a2b, side: THREE.BackSide })));   // a tunnel of radius 1, seen from the front
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), new THREE.MeshBasicMaterial({ color: 0x00ff00 })); scene.add(ball);
+  const seen = (y, z) => { ball.position.set(0, y, z); renderer.render(scene, camera); return pixel(renderer, 150, 100 + y * 50)[1] === 255; };
+  const got = { 'height 0.8, depth 0.4': seen(0.8, -0.4), 'height 0.8, depth 0.8': seen(0.8, -0.8), 'height 0, depth 0.8': seen(0, -0.8) };
+  return { pass: got['height 0.8, depth 0.4'] === true && got['height 0.8, depth 0.8'] === false && got['height 0, depth 0.8'] === true,
+           detail: 'is a small green ball inside a tunnel of radius 1 seen from the front? ' + JSON.stringify(got) + '. At height 0.8 the tunnel is only 0.6 deep (the square root of 1 minus 0.8 squared), so at depth 0.8 the ball is behind the wall' };
+});
+</script>
+</body>
+</html>

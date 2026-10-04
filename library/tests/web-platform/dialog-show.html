@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A dialog opened with show, or with the open attribute, does none of that</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<button id="open">Open</button> <button id="behind">Behind</button>
+<dialog id="d"><p>Note</p><button id="ok">OK</button></dialog>
+<script>
+run(async () => {
+  let behind = 0; $('#behind').addEventListener('click', () => behind++);
+  $('#open').focus(); $('#d').show(); await sleep(100);
+  const r = $('#behind').getBoundingClientRect(); await real('mouse', (r.left + 5) + ',' + (r.top + 5)); await sleep(50);
+  await real('press', 'Escape'); await sleep(100);
+  const got = { clicksReachingThePageBehind: behind, stillOpenAfterEscape: $('#d').open };
+  return { pass: got.clicksReachingThePageBehind === 1 && got.stillOpenAfterEscape === true, detail: 'opened with show(): ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

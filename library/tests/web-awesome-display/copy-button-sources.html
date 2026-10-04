@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A copy button copies its value, or the text or a property of the element named in from</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<span id="words">Text on the page</span><input id="field" value="Text in a field" aria-label="Field">
+<wa-copy-button id="v" value="A fixed value"></wa-copy-button><wa-copy-button id="t" from="words"></wa-copy-button><wa-copy-button id="p" from="field.value"></wa-copy-button><wa-copy-button id="bad" from="no-such-id"></wa-copy-button>
+<script type="module">
+run(async () => {
+  await defined('wa-copy-button');
+  const got = {};
+  for (const id of ['v', 't', 'p', 'bad']) {
+    const fired = []; ['wa-copy', 'wa-error'].forEach((n) => $('#' + id).addEventListener(n, () => fired.push(n)));
+    await navigator.clipboard.writeText('(nothing)');
+    await real('click', '#' + id); await sleep(400);
+    got[id] = { event: fired[0], clipboard: await navigator.clipboard.readText() };
+  }
+  return { pass: got.v.clipboard === 'A fixed value' && got.t.clipboard === 'Text on the page' && got.p.clipboard === 'Text in a field' && got.bad.event === 'wa-error' && got.bad.clipboard === '(nothing)',
+           detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

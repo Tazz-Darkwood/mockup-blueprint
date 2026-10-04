@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The pretend server matches addresses with changing parts</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<button id="a" hx-post="/sessions/7/signup/" hx-target="#out">Book</button>
+<button id="b" hx-get="places?session=9" hx-target="#out2">Places</button>
+<div id="out"></div><div id="out2"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'POST /sessions/:id/signup/': (asked) => 'Booked on session ' + asked.params.id, 'GET /places': (asked) => 'Places for ' + asked.params.session + ' at ' + asked.path });
+run(async () => {
+  await ready();
+  await real('click', '#a'); await real('click', '#b'); await sleep(200);
+  return { pass: $('#out').textContent === 'Booked on session 7' && $('#out2').textContent === 'Places for 9 at /places', detail: 'a route written with :id answered /sessions/7/signup/ with: "' + $('#out').textContent + '". A relative address with a question mark: "' + $('#out2').textContent + '"' };
+});
+</script>
+</body>
+</html>

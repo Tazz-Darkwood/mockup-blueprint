@@ -1,0 +1,32 @@
+{
+  "about": "The try command finds a message that is tied to a field rather than announced, takes its options anywhere, and says when a control is switched off.",
+  "steps": [
+    {
+      "run": [
+        "try",
+        "index.html",
+        "--phone",
+        "click #save"
+      ],
+      "browser": true,
+      "must": [
+        "Enter your name.",
+        "fields marked as wrong: input#name",
+        "focus is on: input#name"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "try",
+        "index.html",
+        "click #off"
+      ],
+      "browser": true,
+      "must": [
+        "switched off (disabled)"
+      ],
+      "exit": 1
+    }
+  ]
+}

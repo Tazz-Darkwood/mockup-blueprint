@@ -1,0 +1,20 @@
+{
+  "about": "A block wider than a phone and a control too small to tap are errors; a bar at the bottom with room left under the page, and labels inside a closed fold-out, are not reported as covered.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "."
+      ],
+      "browser": true,
+      "must": [
+        "mobile/sideways-scroll",
+        "mobile/tap-size"
+      ],
+      "must_not": [
+        "mobile/bar-covers-end"
+      ],
+      "exit": 1
+    }
+  ]
+}

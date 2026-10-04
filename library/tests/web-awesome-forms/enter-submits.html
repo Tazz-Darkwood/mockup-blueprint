@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pressing Enter in a wa-input submits the form</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-input id="q" name="q" label="Search"></wa-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-input');
+  let submits = 0; $('#f').addEventListener('submit', (e) => { e.preventDefault(); submits++; });
+  await real('click', '#q'); await real('type', 'ants'); await real('press', 'Enter'); await sleep(300);
+  return { pass: submits === 1 && $('#q').value === 'ants', detail: 'typed "' + $('#q').value + '" and pressed Enter: form submitted ' + submits + ' time(s), with no submit button on the page' };
+});
+</script>
+</body>
+</html>

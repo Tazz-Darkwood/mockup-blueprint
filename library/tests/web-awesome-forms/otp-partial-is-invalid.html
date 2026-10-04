@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A one-time-code field rejects wrong characters, is invalid until full, and fires wa-complete</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-otp-input id="o" name="code" label="Code"></wa-otp-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-otp-input');
+  let complete = 0; $('#o').addEventListener('wa-complete', () => complete++);
+  await real('click', '#o'); await real('type', '12a3'); await sleep(300);
+  const partial = { value: $('#o').value, valid: $('#o').checkValidity(), sent: formEntries($('#f')) };
+  await real('type', '456'); await sleep(400);
+  return { pass: partial.value === '123' && !partial.valid && partial.sent.join() === 'code=123' && $('#o').value === '123456' && $('#o').checkValidity() && complete === 1,
+           detail: 'typed "12a3": value "' + partial.value + '" (the letter was refused), valid: ' + partial.valid + ', form would send ' + JSON.stringify(partial.sent) + '; after three more digits: "' + $('#o').value + '", valid: ' + $('#o').checkValidity() + ', wa-complete fired ' + complete + ' time(s)' };
+});
+</script>
+</body>
+</html>

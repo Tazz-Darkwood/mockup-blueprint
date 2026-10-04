@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>toast.create() shows a message that removes itself and never blocks the page</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-toast id="t"></wa-toast><p>Page content</p>
+<script type="module">
+run(async () => {
+  await defined('wa-toast');
+  const item = await $('#t').create('Saved', { duration: 1000 }); await sleep(400);
+  const shown = $('#t').querySelectorAll('wa-toast-item').length, text = $('#t').textContent.trim();
+  const blocks = getComputedStyle($('#t')).pointerEvents;
+  await sleep(2600);
+  return { pass: item.localName === 'wa-toast-item' && shown === 1 && text === 'Saved' && blocks === 'none' && $('#t').querySelectorAll('wa-toast-item').length === 0,
+           detail: 'create() returned a <' + item.localName + '>; showing "' + text + '"; the toast area has pointer-events: ' + blocks + '; items left after the 1 second duration: ' + $('#t').querySelectorAll('wa-toast-item').length };
+});
+</script>
+</body>
+</html>

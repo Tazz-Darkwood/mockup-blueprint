@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A radio group carries the name, and sends nothing until one radio is chosen</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-radio-group id="g" name="size" label="Size"><wa-radio value="s">Small</wa-radio><wa-radio id="m" value="m">Medium</wa-radio></wa-radio-group></form>
+<script type="module">
+run(async () => {
+  await defined('wa-radio-group', 'wa-radio');
+  const fired = []; ['input', 'change'].forEach((n) => $('#g').addEventListener(n, () => fired.push(n)));
+  const before = formEntries($('#f'));
+  await real('click', '#m'); await sleep(400);
+  return { pass: before.length === 0 && formEntries($('#f')).join() === 'size=m' && fired.includes('change'),
+           detail: 'nothing chosen: form sends ' + JSON.stringify(before) + '; after choosing Medium: ' + JSON.stringify(formEntries($('#f'))) + '; events on the group: ' + JSON.stringify(fired) };
+});
+</script>
+</body>
+</html>

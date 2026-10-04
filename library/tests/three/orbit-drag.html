@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dragging with OrbitControls moves the camera and fires a change event</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 10); camera.position.z = 3;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  let changes = 0, draws = 0;
+  const draw = () => { draws++; renderer.render(scene, camera); };
+  controls.addEventListener('change', () => { changes++; draw(); });   // draw only when something moved: no loop needed
+  draw();
+  await real('drag', '100,100,150,100');
+  await sleep(100);
+  const moved = camera.position.distanceTo(new THREE.Vector3(0, 0, 3)) > 0.5;
+  return { pass: moved && changes > 0 && draws === changes + 1,
+           detail: 'after dragging 50px across the canvas the camera is at ' + JSON.stringify(camera.position.toArray().map((n) => +n.toFixed(2))) + ' (it began at [0,0,3]). change events: ' + changes + '; pictures drawn: ' + draws + ', with no animation loop running' };
+});
+</script>
+</body>
+</html>

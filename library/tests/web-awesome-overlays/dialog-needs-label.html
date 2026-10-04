@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A dialog without a label has no accessible name</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-dialog id="bare">Body</wa-dialog><wa-dialog id="named" label="Delete colony">Body</wa-dialog>
+<script type="module">
+run(async () => {
+  await defined('wa-dialog');
+  $('#bare').open = true; await sleep(900); const bare = (await real('aria', '#bare')).split('\n')[0]; $('#bare').open = false; await sleep(800);
+  $('#named').open = true; await sleep(900); const named = (await real('aria', '#named')).split('\n')[0];
+  return { pass: bare.trim() === '- dialog:' && named.includes('dialog "Delete colony"'), detail: 'no label: ' + JSON.stringify(bare) + '; with label: ' + JSON.stringify(named) };
+});
+</script>
+</body>
+</html>

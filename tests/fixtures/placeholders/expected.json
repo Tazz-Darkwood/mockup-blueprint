@@ -1,0 +1,30 @@
+{
+  "about": "Filler text, a reserved example address and a dummy phone number are counted as placeholders.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "content/placeholder",
+        "filler text",
+        "example address",
+        "dummy phone number"
+      ]
+    },
+    {
+      "run": [
+        "audit",
+        ".",
+        "--no-render",
+        "--launch"
+      ],
+      "must": [
+        "Not ready to launch"
+      ],
+      "exit": 1
+    }
+  ]
+}

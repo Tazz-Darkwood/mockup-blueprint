@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moving or recolouring one of a crowd shows only after a flag is set</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(200, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100); camera.position.z = 10;
+  const crowd = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }), 2);
+  const spot = new THREE.Matrix4();
+  crowd.setMatrixAt(0, spot.setPosition(-2, 0, 0)); crowd.setMatrixAt(1, spot.setPosition(50, 0, 0));
+  crowd.setColorAt(0, new THREE.Color('#ffffff')); crowd.setColorAt(1, new THREE.Color('#ffffff'));
+  scene.add(crowd); renderer.render(scene, camera);
+  const left = () => pixel(renderer, 61, 100), right = () => pixel(renderer, 139, 100);
+  const got = { start: [left()[0], right()[0]] };
+  crowd.setMatrixAt(0, spot.setPosition(2, 0, 0)); renderer.render(scene, camera);
+  got.movedNoFlag = [left()[0], right()[0]];
+  crowd.instanceMatrix.needsUpdate = true; renderer.render(scene, camera);
+  got.movedWithFlag = [left()[0], right()[0]];
+  crowd.setColorAt(0, new THREE.Color('#ff0000')); renderer.render(scene, camera);
+  got.recolouredNoFlag = right().slice(0, 3);
+  crowd.instanceColor.needsUpdate = true; renderer.render(scene, camera);
+  got.recolouredWithFlag = right().slice(0, 3);
+  return { pass: got.start.join() === '255,0' && got.movedNoFlag.join() === '255,0' && got.movedWithFlag.join() === '0,255' && got.recolouredNoFlag.join() === '255,255,255' && got.recolouredWithFlag.join() === '255,0,0',
+           detail: 'brightness at the left and right spots. ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

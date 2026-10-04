@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A rating is announced as a slider, and has no name without a label</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-rating id="named" label="Quality" value="3"></wa-rating><wa-rating id="bare" value="3"></wa-rating>
+<script type="module">
+run(async () => {
+  await defined('wa-rating');
+  const named = await real('aria', '#named'), bare = await real('aria', '#bare');
+  return { pass: named.includes('slider "Quality"') && bare.trim() === '- slider', detail: 'with label: ' + JSON.stringify(named) + '; without: ' + JSON.stringify(bare) };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Listeners on replaced content are gone; htmx.onLoad sets up what arrives</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div id="box"><button class="like">Like</button></div>
+<button id="refresh" hx-get="/box" hx-target="#box">Refresh</button>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'GET /box': () => '<button class="like">Like</button>' });
+run(async () => {
+  await ready();
+  let direct = 0, viaOnLoad = 0, onBody = 0; const handed = [];
+  $('.like').addEventListener('click', () => direct++);                                         // set up once, on the element that is there now
+  htmx.onLoad((arrived) => { handed.push(arrived.tagName.toLowerCase() + (arrived.className ? '.' + arrived.className : '')); (arrived.matches('.like') ? [arrived] : arrived.querySelectorAll('.like')).forEach((b) => b.addEventListener('click', () => viaOnLoad++)); });   // set up on anything that arrives
+  document.body.addEventListener('click', (e) => { if (e.target.closest('.like')) onBody++; }); // or listen higher up
+  await real('click', '#refresh'); await sleep(200);
+  await real('click', '.like'); await sleep(50);
+  return { pass: direct === 0 && viaOnLoad === 1 && onBody === 1, detail: 'after the button was replaced by a reply and pressed once. Listener added to the old button: ' + direct + '. Added by htmx.onLoad: ' + viaOnLoad + '. Listening on the body: ' + onBody + '. What htmx.onLoad was handed, in order: ' + JSON.stringify(handed) };
+});
+</script>
+</body>
+</html>

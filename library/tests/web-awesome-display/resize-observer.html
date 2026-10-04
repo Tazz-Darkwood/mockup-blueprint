@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-resize-observer fires wa-resize when its content changes size</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-resize-observer id="r"><div id="box" style="width: 100px; height: 20px">Box</div></wa-resize-observer>
+<script type="module">
+run(async () => {
+  await defined('wa-resize-observer'); await sleep(300);
+  let fired = 0, width = null; $('#r').addEventListener('wa-resize', (e) => { fired++; width = Math.round(e.detail.entries[0].contentRect.width); });
+  $('#box').style.width = '220px'; await sleep(400);
+  return { pass: fired >= 1 && width === 220, detail: 'widened the box to 220 pixels: wa-resize fired ' + fired + ' time(s) and reported width ' + width };
+});
+</script>
+</body>
+</html>

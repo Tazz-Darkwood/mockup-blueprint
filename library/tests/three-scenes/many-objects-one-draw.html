@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Five hundred separate objects are five hundred draw calls; one InstancedMesh is one</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); document.body.appendChild(renderer.domElement);
+  const camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 100); camera.position.z = 30;
+  const geometry = new THREE.SphereGeometry(0.2, 8, 6), material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const place = (i) => new THREE.Vector3((i % 25) - 12, Math.floor(i / 25) - 10, 0);
+  const separate = new THREE.Scene();
+  for (let i = 0; i < 500; i++) { const m = new THREE.Mesh(geometry, material); m.position.copy(place(i)); separate.add(m); }
+  renderer.render(separate, camera);
+  const a = { calls: renderer.info.render.calls, lit: litPixels(renderer) };
+  const together = new THREE.Scene(), crowd = new THREE.InstancedMesh(geometry, material, 500), spot = new THREE.Matrix4();
+  for (let i = 0; i < 500; i++) crowd.setMatrixAt(i, spot.setPosition(place(i)));
+  together.add(crowd);
+  renderer.render(together, camera);
+  const b = { calls: renderer.info.render.calls, lit: litPixels(renderer) };
+  return { pass: a.calls === 500 && b.calls === 1 && a.lit === b.lit && a.lit > 500,
+           detail: '500 separate meshes: ' + JSON.stringify(a) + '. One InstancedMesh of 500: ' + JSON.stringify(b) + '. "calls" is how many times the graphics card was asked to draw; "lit" is how many pixels were drawn, the same picture both ways' };
+});
+</script>
+</body>
+</html>

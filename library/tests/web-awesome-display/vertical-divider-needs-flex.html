@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A vertical divider is only one line of text tall unless it sits in a flex row</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div>Left <wa-divider id="block" orientation="vertical"></wa-divider> Right</div>
+<div style="display: flex; height: 60px">Left <wa-divider id="flex" orientation="vertical"></wa-divider> Right</div>
+<script type="module">
+run(async () => {
+  await defined('wa-divider');
+  const h = (id) => Math.round($(id).getBoundingClientRect().height);
+  return { pass: h('#block') < 30 && h('#flex') === 60, detail: 'in an ordinary block: ' + h('#block') + ' pixels tall; in a 60 pixel flex row: ' + h('#flex') };
+});
+</script>
+</body>
+</html>

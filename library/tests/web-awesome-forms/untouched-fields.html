@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What each kind of field sends when nobody has touched it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f">
+  <wa-input name="input" label="Input"></wa-input><wa-textarea name="textarea" label="Textarea"></wa-textarea>
+  <wa-select name="select" label="Select"><wa-option value="a">A</wa-option></wa-select>
+  <wa-radio-group name="radio" label="Radio"><wa-radio value="a">A</wa-radio></wa-radio-group>
+  <wa-checkbox name="checkbox">Checkbox</wa-checkbox><wa-switch name="switch">Switch</wa-switch>
+  <wa-slider name="slider" label="Slider"></wa-slider><wa-rating name="rating" label="Rating"></wa-rating>
+  <wa-color-picker name="color" label="Colour"></wa-color-picker><wa-otp-input name="otp" label="Code"></wa-otp-input>
+</form>
+<script type="module">
+run(async () => {
+  await defined('wa-input', 'wa-textarea', 'wa-select', 'wa-radio-group', 'wa-checkbox', 'wa-switch', 'wa-slider', 'wa-rating', 'wa-color-picker', 'wa-otp-input');
+  await sleep(600);
+  const sent = formEntries($('#f')), has = (x) => sent.includes(x), absent = (n) => !sent.some((x) => x.startsWith(n + '='));
+  return { pass: has('input=') && has('textarea=') && has('slider=0') && has('rating=0') && has('color=') && has('otp=')
+                 && absent('select') && absent('radio') && absent('checkbox') && absent('switch'),
+           detail: 'the form sends ' + JSON.stringify(sent) + ' (select, radio group, checkbox and switch are left out entirely)' };
+});
+</script>
+</body>
+</html>

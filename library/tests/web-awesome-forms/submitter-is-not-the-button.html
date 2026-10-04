@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>In a submit handler the submitter is a stand-in, and the button's name and value need it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-input name="title" label="Title" value="Hi"></wa-input><wa-button id="save" type="submit" name="action" value="save">Save</wa-button></form>
+<script type="module">
+run(async () => {
+  await defined('wa-input', 'wa-button');
+  let seen = null;
+  $('#f').addEventListener('submit', (e) => { e.preventDefault(); seen = {
+    submitterTag: e.submitter && e.submitter.localName, isTheWaButton: e.submitter === $('#save'),
+    plain: formEntries($('#f')), withSubmitter: [...new FormData($('#f'), e.submitter).entries()].map(([k, v]) => k + '=' + v) }; });
+  await real('click', '#save'); await sleep(400);
+  return { pass: !!seen && !seen.isTheWaButton && !seen.plain.includes('action=save') && seen.withSubmitter.includes('action=save'),
+           detail: JSON.stringify(seen) };
+});
+</script>
+</body>
+</html>

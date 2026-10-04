@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A search box asks once after a pause, not on every key</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<input id="every" name="q" hx-get="/a" hx-trigger="keyup" hx-target="#out">
+<input id="paused" name="q" hx-get="/b" hx-trigger="keyup changed delay:300ms" hx-target="#out">
+<div id="out"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+const server = htmxMock({ 'GET /a': () => 'a', 'GET /b': (asked) => 'b:' + asked.params.q });
+run(async () => {
+  await ready();
+  await real('click', '#every'); await real('type', 'mint'); await sleep(500);
+  const everyKey = server.requests.filter((r) => r.path === '/a').length;
+  await real('click', '#paused'); await real('type', 'sage'); await sleep(700);
+  const afterPause = server.requests.filter((r) => r.path === '/b');
+  return { pass: everyKey > 1 && afterPause.length === 1 && afterPause[0].params.q === 'sage',
+           detail: 'four letters typed. With hx-trigger="keyup": ' + everyKey + ' requests. With "keyup changed delay:300ms": ' + afterPause.length + ' request, asking for "' + (afterPause[0] && afterPause[0].params.q) + '"' };
+});
+</script>
+</body>
+</html>

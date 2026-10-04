@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkbox and switch toggle with the space bar and are announced with their roles</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-checkbox id="c">Agree</wa-checkbox> <wa-switch id="s">Alerts</wa-switch>
+<script type="module">
+run(async () => {
+  await defined('wa-checkbox', 'wa-switch');
+  $('#c').focus(); await real('press', 'Space'); await sleep(200);
+  $('#s').focus(); await real('press', 'Space'); await sleep(200);
+  const c = await real('aria', '#c'), s = await real('aria', '#s');
+  return { pass: $('#c').checked && $('#s').checked && c.includes('checkbox "Agree"') && s.includes('switch "Alerts"'),
+           detail: 'after Space: checkbox checked ' + $('#c').checked + ', switch checked ' + $('#s').checked + '; announced as ' + JSON.stringify(c.split('\n')[0]) + ' and ' + JSON.stringify(s.split('\n')[0]) };
+});
+</script>
+</body>
+</html>

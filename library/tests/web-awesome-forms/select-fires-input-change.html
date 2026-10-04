@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choosing an option fires input and change and updates the form data</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-select id="s" name="size" label="Size"><wa-option value="s">Small</wa-option><wa-option value="m">Medium</wa-option></wa-select></form>
+<script type="module">
+run(async () => {
+  await defined('wa-select', 'wa-option');
+  const fired = []; ['input', 'change', 'wa-show', 'wa-hide'].forEach((n) => $('#s').addEventListener(n, () => fired.push(n)));
+  const before = formEntries($('#f'));
+  await real('click', '#s'); await sleep(500); await real('click', '#s wa-option[value=m]'); await sleep(600);
+  return { pass: before.length === 0 && fired.includes('input') && fired.includes('change') && formEntries($('#f')).join() === 'size=m',
+           detail: 'before choosing, the form sends ' + JSON.stringify(before) + '; after choosing Medium it sends ' + JSON.stringify(formEntries($('#f'))) + '; events: ' + JSON.stringify(fired) };
+});
+</script>
+</body>
+</html>

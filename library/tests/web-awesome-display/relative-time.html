@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-relative-time writes a phrase like '7 years ago' in the page's language, inside a time element</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-relative-time id="en" date="2020-01-01T00:00:00Z"></wa-relative-time> <wa-relative-time id="de" lang="de" date="2020-01-01T00:00:00Z"></wa-relative-time>
+<script type="module">
+run(async () => {
+  await defined('wa-relative-time');
+  const text = (id) => $(id).shadowRoot.textContent.trim(), time = $('#en').shadowRoot.querySelector('time');
+  return { pass: /^\d+ years ago$/.test(text('#en')) && /^vor \d+ Jahren$/.test(text('#de')) && time.getAttribute('datetime') === '2020-01-01T00:00:00.000Z',
+           detail: 'English: "' + text('#en') + '"; German: "' + text('#de') + '"; the exact moment is kept in datetime="' + time.getAttribute('datetime') + '"' };
+});
+</script>
+</body>
+</html>

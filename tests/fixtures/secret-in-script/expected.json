@@ -1,0 +1,23 @@
+{
+  "about": "A key in a script file the page loads from its own folder is found, not only one written in the HTML.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "sec/secret",
+        "app.js"
+      ],
+      "exit": 1
+    }
+  ],
+  "write": {
+    "app.js": [
+      "var key = '-----BEGIN ",
+      "PRIVATE KEY-----';\n"
+    ]
+  }
+}

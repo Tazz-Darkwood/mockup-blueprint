@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A disabled field is left out of the form data, a readonly one is kept</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-input name="off" label="Disabled" value="x" disabled></wa-input><wa-input name="fixed" label="Readonly" value="y" readonly></wa-input></form>
+<script type="module">
+run(async () => {
+  await defined('wa-input');
+  const sent = formEntries($('#f'));
+  return { pass: sent.join() === 'fixed=y', detail: 'the form sends ' + JSON.stringify(sent) };
+});
+</script>
+</body>
+</html>

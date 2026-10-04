@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try</title>
+<style>body { font: 18px/1.5 sans-serif; margin: 2rem; } button, input { font: inherit; min-height: 44px; }</style>
+</head>
+<body>
+<main>
+<h1>Try</h1>
+<p><label for="name">Your name</label> <input id="name" aria-describedby="name-help"></p>
+<p id="name-help" hidden>Enter your name.</p>
+<p><button type="button" id="save">Save</button> <button type="button" id="off" disabled>Switched off</button></p>
+</main>
+<script>document.getElementById("save").addEventListener("click", function () { var f = document.getElementById("name"); f.setAttribute("aria-invalid", "true"); document.getElementById("name-help").hidden = false; f.focus(); });</script>
+</body>
+</html>

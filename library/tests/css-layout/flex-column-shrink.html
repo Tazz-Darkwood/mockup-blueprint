@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>In a column flex box with align-items set, a child with nothing solid in it collapses to no width</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .col { display: flex; flex-direction: column; width: 300px; margin-bottom: 8px; } .start { align-items: flex-start; } .plate { aspect-ratio: 2 / 1; position: relative; background: #ddd; } .pin { position: absolute; }</style>
+</head>
+<body>
+<div class="col start" id="a"><div class="plate"><span class="pin">x</span></div></div>
+<div class="col start" id="b"><div class="plate" style="width:100%"><span class="pin">x</span></div></div>
+<div class="col" id="c"><div class="plate"><span class="pin">x</span></div></div>
+<script>
+run(async () => {
+  const size = (id) => { const r = $(id + ' .plate').getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); };
+  const got = { 'align-items: flex-start': size('#a'), 'the same, with width: 100% on the child': size('#b'), 'align-items left alone (stretch)': size('#c') };
+  return { pass: got['align-items: flex-start'] === '0x0' && got['the same, with width: 100% on the child'] === '300x150' && got['align-items left alone (stretch)'] === '300x150',
+           detail: 'a child with aspect-ratio 2 / 1 whose only content is positioned absolutely, in a 300-pixel column. Its size: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

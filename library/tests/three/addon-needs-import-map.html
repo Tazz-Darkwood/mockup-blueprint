@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An add-on loaded by its full address fails without an import map</title>
+<!-- no import map on this page, on purpose -->
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+run(async () => {
+  const core = await import('https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js').then((m) => 'loaded r' + m.REVISION, (e) => 'FAILED ' + e.message);
+  const addon = await import('https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/controls/OrbitControls.js').then(() => 'loaded', (e) => 'FAILED ' + e.message);
+  return { pass: core.startsWith('loaded') && addon.startsWith('FAILED'), detail: 'three itself: ' + core + '. OrbitControls with no import map: ' + addon };
+});
+</script>
+</body>
+</html>

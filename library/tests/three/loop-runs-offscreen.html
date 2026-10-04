@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The animation loop keeps drawing when the canvas is scrolled out of sight</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div style="height:3000px">A long page.</div><div id="far"></div><div style="height:800px"></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(200, 150);
+  $('#far').appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera();
+  let drawn = 0;
+  const draw = () => { drawn++; renderer.render(scene, camera); };
+  renderer.setAnimationLoop(draw);
+  await sleep(600);
+  const whileOutOfSight = drawn;
+  // the fix: only run the loop while the canvas is on screen
+  renderer.setAnimationLoop(null);
+  new IntersectionObserver(([entry]) => renderer.setAnimationLoop(entry.isIntersecting ? draw : null)).observe(renderer.domElement);
+  await sleep(200); drawn = 0; await sleep(600);
+  const withObserver = drawn;
+  renderer.domElement.scrollIntoView(); await sleep(600);
+  const onceInView = drawn;
+  return { pass: whileOutOfSight > 10 && withObserver === 0 && onceInView > 5,
+           detail: 'canvas is ' + Math.round(renderer.domElement.getBoundingClientRect().top + scrollY) + 'px down a page showing 700px. Frames drawn in 0.6s while out of sight: ' + whileOutOfSight + '. With an IntersectionObserver switching the loop: ' + withObserver + ' out of sight, ' + onceInView + ' after scrolling to it' };
+});
+</script>
+</body>
+</html>

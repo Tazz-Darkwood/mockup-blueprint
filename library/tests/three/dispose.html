@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Taking an object out of the scene does not free its memory</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(100, 100);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 10); camera.position.z = 3;
+  const paint = document.createElement('canvas'); paint.width = paint.height = 8;
+  const texture = new THREE.CanvasTexture(paint);
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ map: texture })); scene.add(mesh);
+  renderer.render(scene, camera);
+  const count = () => ({ geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures });
+  const drawn = count();
+  scene.remove(mesh); renderer.render(scene, camera);
+  const removed = count();
+  mesh.geometry.dispose(); mesh.material.dispose(); texture.dispose();
+  const disposed = count();
+  return { pass: drawn.geometries === 1 && drawn.textures === 1 && removed.geometries === 1 && removed.textures === 1 && disposed.geometries === 0 && disposed.textures === 0,
+           detail: 'held in graphics memory after drawing: ' + JSON.stringify(drawn) + '; after scene.remove(mesh): ' + JSON.stringify(removed) + '; after dispose() on the geometry, material and texture: ' + JSON.stringify(disposed) };
+});
+</script>
+</body>
+</html>

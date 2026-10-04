@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A copy button has no accessible name</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-copy-button id="plain" value="hello"></wa-copy-button><wa-copy-button id="labelled" value="hello" copy-label="Copy the invite link"></wa-copy-button>
+<script type="module">
+run(async () => {
+  await defined('wa-copy-button'); await sleep(500);
+  const plain = await real('aria', '#plain'), labelled = await real('aria', '#labelled');
+  return { pass: plain.trim() === '- button', detail: 'default: ' + JSON.stringify(plain) + '; with copy-label="Copy the invite link": ' + JSON.stringify(labelled) };
+});
+</script>
+</body>
+</html>

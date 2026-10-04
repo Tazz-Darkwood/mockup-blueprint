@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Merging shapes gives nothing back unless they are the same kind</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+run(async () => {
+  const said = []; const error = console.error; console.error = (...a) => said.push(a.join(' '));
+  const box = () => new THREE.BoxGeometry(1, 1, 1);
+  const noUv = box().toNonIndexed(); noUv.deleteAttribute('uv');
+  const got = { indexedWithNot: mergeGeometries([box(), box().toNonIndexed()]), withAndWithoutUv: mergeGeometries([box().toNonIndexed(), noUv]), bothTheSame: mergeGeometries([box().toNonIndexed(), box().toNonIndexed()]) };
+  console.error = error;
+  const kind = (g) => (g === null ? 'null' : g && g.isBufferGeometry ? 'a shape with ' + g.attributes.position.count + ' points' : String(g));
+  return { pass: got.indexedWithNot === null && got.withAndWithoutUv === null && !!got.bothTheSame && got.bothTheSame.attributes.position.count === 72,
+           detail: 'a box that shares corners merged with one that does not: ' + kind(got.indexedWithNot) + '. One with texture positions and one without: ' + kind(got.withAndWithoutUv) + '. Two of the same kind: ' + kind(got.bothTheSame) + '. It reported: ' + JSON.stringify(said.map((s) => s.slice(0, 110))) };
+});
+</script>
+</body>
+</html>

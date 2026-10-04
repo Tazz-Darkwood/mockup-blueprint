@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Typing is interrupted when a field is replaced, unless the field has an id</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div id="a"><input name="plain" value="abc" hx-get="/plain" hx-trigger="go" hx-target="#a"></div>
+<div id="b"><input id="named" name="named" value="abc" hx-get="/named" hx-trigger="go" hx-target="#b"></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'GET /plain': () => '<input name="plain" value="abc">', 'GET /named': () => '<input id="named" name="named" value="abc">' });
+run(async () => {
+  await ready();
+  const got = {};
+  const plain = $('#a input'); plain.focus(); htmx.trigger(plain, 'go'); await sleep(200);
+  got.withoutId = document.activeElement === $('#a input') ? 'still in the field' : 'focus lost (now on ' + document.activeElement.tagName.toLowerCase() + ')';
+  const named = $('#named'); named.focus(); named.setSelectionRange(2, 2); htmx.trigger(named, 'go'); await sleep(200);
+  got.withId = document.activeElement === $('#named') ? 'still in the field, caret at ' + $('#named').selectionStart : 'focus lost';
+  return { pass: got.withoutId.startsWith('focus lost') && got.withId === 'still in the field, caret at 2', detail: 'a field with focus was replaced by the server\'s reply. ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

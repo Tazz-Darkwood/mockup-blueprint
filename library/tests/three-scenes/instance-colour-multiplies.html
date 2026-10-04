@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Each member's colour is multiplied by the crowd's own colour</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+const flat = (w, h) => { const c = new THREE.OrthographicCamera(-w / 100, w / 100, h / 100, -h / 100, 0.1, 50); c.position.z = 10; return c; };   // 50 pixels to a unit, looking from the front
+
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(200, 200); document.body.appendChild(renderer.domElement);
+  const camera = flat(200, 200), spot = new THREE.Matrix4();
+  const shot = (crowdColour) => { const scene = new THREE.Scene(), crowd = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: crowdColour }), 1); crowd.setMatrixAt(0, spot); crowd.setColorAt(0, new THREE.Color('#0000ff')); scene.add(crowd); renderer.render(scene, camera); return pixel(renderer, 100, 100).slice(0, 3); };
+  const got = { redCrowd: shot('#ff0000'), whiteCrowd: shot('#ffffff'), greyCrowd: shot('#808080') };
+  return { pass: got.redCrowd.join() === '0,0,0' && got.whiteCrowd.join() === '0,0,255' && got.greyCrowd[2] > 100 && got.greyCrowd[2] < 160,
+           detail: 'one member given blue with setColorAt. In a red crowd it draws ' + JSON.stringify(got.redCrowd) + ', in a white crowd ' + JSON.stringify(got.whiteCrowd) + ', in a grey crowd ' + JSON.stringify(got.greyCrowd) };
+});
+</script>
+</body>
+</html>

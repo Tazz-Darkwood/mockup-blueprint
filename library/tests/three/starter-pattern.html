@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The starter pattern draws, pauses, respects reduced motion and falls back</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="stage" style="width:320px;height:240px"><img alt="A terracotta block" width="320" height="240"></div>
+<div id="stage2" style="width:320px;height:240px"><img alt="A terracotta block" width="320" height="240"></div>
+<div style="height:5000px"></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+
+function start(stage, label) {
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });   // throws if 3D cannot start
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const canvas = renderer.domElement;
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', label);
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  camera.position.z = 4;
+  const thing = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({ color: '#b8481f' }));
+  scene.add(thing, new THREE.HemisphereLight('#ffffff', '#806040', 3));
+
+  let frames = 0;
+  const draw = () => { frames++; renderer.render(scene, camera); };
+  const tick = () => { thing.rotation.y += 0.01; draw(); };
+
+  new ResizeObserver(() => {
+    renderer.setSize(stage.clientWidth, stage.clientHeight, false);
+    camera.aspect = stage.clientWidth / stage.clientHeight;
+    camera.updateProjectionMatrix();
+    draw();
+  }).observe(stage);
+
+  let onScreen = false;
+  const setLoop = () => renderer.setAnimationLoop(onScreen && !still.matches ? tick : null);
+  new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; setLoop(); }).observe(canvas);
+  still.addEventListener('change', setLoop);
+
+  stage.replaceChildren(canvas);   // the fallback picture gives way only once 3D has started
+  return { renderer, thing, frames: () => frames };
+}
+
+run(async () => {
+  const got = {};
+  const a = start($('#stage'), 'A terracotta block, turning slowly');
+  await sleep(500);
+  const gl = a.renderer.getContext(); const c = a.renderer.domElement;
+  got.fillsItsBox = c.clientWidth === 320 && c.clientHeight === 240 && c.width === 320 * Math.min(devicePixelRatio, 2);
+  a.renderer.render; const before = a.frames(); await sleep(400); got.turningInView = a.frames() - before > 5;
+  got.named = (await real('aria', '#stage')).includes('img "A terracotta block, turning slowly"');
+  await real('motion', 'reduce'); await sleep(200);
+  const calm = a.frames(); await sleep(400); got.stillWhenAskedForLessMotion = a.frames() === calm;
+  await real('motion', 'no-preference'); await sleep(300);
+  const again = a.frames(); await sleep(300); got.turnsAgain = a.frames() > again;
+  scrollTo(0, 4000); await sleep(300);
+  const away = a.frames(); await sleep(400); got.stopsOutOfSight = a.frames() === away;
+  scrollTo(0, 0);
+  // a device where 3D cannot start: the picture already in the box must stay
+  const realGetContext = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (kind, ...rest) { return /webgl/.test(kind) ? null : realGetContext.call(this, kind, ...rest); };
+  const quiet = console.error; console.error = () => {};
+  try { start($('#stage2'), 'x'); got.fallbackKept = false; } catch (e) { got.fallbackKept = !!$('#stage2 img'); }
+  console.error = quiet; HTMLCanvasElement.prototype.getContext = realGetContext;
+  return { pass: Object.values(got).every((v) => v === true), detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

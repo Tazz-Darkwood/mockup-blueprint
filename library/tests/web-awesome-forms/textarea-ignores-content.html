@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Text written between wa-textarea tags is ignored</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-textarea id="between" name="a" label="Between the tags">Typed between the tags</wa-textarea>
+<wa-textarea id="attr" name="b" label="Value attribute" value="In the value attribute"></wa-textarea></form>
+<script type="module">
+run(async () => {
+  await defined('wa-textarea');
+  return { pass: $('#between').value === '' && $('#attr').value === 'In the value attribute',
+           detail: 'text between the tags gave value "' + $('#between').value + '"; the value attribute gave "' + $('#attr').value + '"; the form sends ' + JSON.stringify(formEntries($('#f'))) };
+});
+</script>
+</body>
+</html>

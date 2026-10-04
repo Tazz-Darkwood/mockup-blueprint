@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" class="wa-cloak">
+<head>
+<meta charset="utf-8">
+<title>With utilities.css, wa-cloak hides the page until components are ready</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/utilities.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button>Button</wa-button>
+<script>window.opacityAtParse = getComputedStyle(document.documentElement).opacity;</script>
+<script type="module">
+run(async () => {
+  await defined('wa-button'); await sleep(600);
+  const after = getComputedStyle(document.documentElement).opacity;
+  return { pass: opacityAtParse === '0' && after === '1',
+           detail: 'page opacity while loading: ' + opacityAtParse + ', once components were ready: ' + after };
+});
+</script>
+</body>
+</html>

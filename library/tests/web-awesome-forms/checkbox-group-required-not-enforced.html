@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>required on a checkbox group adds an asterisk but does not stop the form submitting</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<form id="f"><wa-checkbox-group id="g" label="Toppings" required><wa-checkbox name="t" value="a">Olives</wa-checkbox><wa-checkbox name="t" value="b">Peppers</wa-checkbox></wa-checkbox-group>
+<wa-button id="go" type="submit">Order</wa-button></form>
+<script type="module">
+run(async () => {
+  await defined('wa-checkbox-group', 'wa-checkbox', 'wa-button');
+  let submits = 0; $('#f').addEventListener('submit', (e) => { e.preventDefault(); submits++; });
+  const aria = await real('aria', '#g');
+  await real('click', '#go'); await sleep(400);
+  return { pass: submits === 1 && aria.includes('Toppings *') && $('#f').checkValidity(),
+           detail: 'the label is shown as "Toppings *"; with nothing ticked, pressing submit sent the form ' + submits + ' time(s); form valid: ' + $('#f').checkValidity() };
+});
+</script>
+</body>
+</html>

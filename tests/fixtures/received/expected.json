@@ -1,0 +1,42 @@
+{
+  "about": "A blueprint from someone else: what the sender marked confirmed becomes inferred, and a check the sender switched off is switched back on.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "waived 1 finding(s) of sec/insecure-link"
+      ]
+    },
+    {
+      "run": [
+        "receive",
+        ".",
+        "--from",
+        "a stranger"
+      ],
+      "must": [
+        "3 item(s) the sender had marked confirmed are now inferred",
+        "1 switched-off check(s) switched back on"
+      ]
+    },
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "sec/insecure-link",
+        "0 confirmed",
+        "check(s) the sender had switched off are back on"
+      ],
+      "must_not": [
+        "waived 1 finding"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab reaches links with an address and buttons, and nothing else</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<a id="link" href="#x">Link</a> <a id="nolink">Link with no address</a> <div id="div" onclick="void 0" style="cursor:pointer">Clickable div</div> <span id="tab" tabindex="0" role="button">Span made focusable</span> <button id="button">Button</button>
+<script>
+run(async () => {
+  const reached = [];
+  for (let i = 0; i < 5; i++) { await real('press', 'Tab'); const id = document.activeElement && document.activeElement.id; if (id && !reached.includes(id)) reached.push(id); }
+  let fired = 0; $('#tab').addEventListener('click', () => fired++); $('#tab').focus(); await real('press', 'Enter'); await real('press', ' '); await sleep(50);
+  return { pass: reached.join() === 'link,tab,button' && fired === 0,
+           detail: 'pressing Tab reached, in order: ' + JSON.stringify(reached) + '. The link with no address and the clickable div were skipped. The span made focusable with tabindex was reached, but Enter and Space on it fired ' + fired + ' clicks' };
+});
+</script>
+</body>
+</html>

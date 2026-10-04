@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Details that share a name close each other</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-details id="a" summary="Shipping" name="faq">Text A</wa-details><wa-details id="b" summary="Returns" name="faq">Text B</wa-details>
+<script type="module">
+run(async () => {
+  await defined('wa-details');
+  await real('click', '#a'); await sleep(600); const first = $('#a').open;
+  await real('click', '#b'); await sleep(700);
+  return { pass: first && !$('#a').open && $('#b').open, detail: 'opened the first: ' + first + '; then opened the second: first is now open ' + $('#a').open + ', second open ' + $('#b').open };
+});
+</script>
+</body>
+</html>

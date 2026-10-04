@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>height 100% means nothing when the parent's height comes from min-height</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .parent { min-height: 300px; margin-bottom: 10px; background: #eee; }</style>
+</head>
+<body>
+<div class="parent" id="a"><div class="child" style="height:100%">child</div></div>
+<div class="parent" id="b" style="display:flex"><div class="child">child</div></div>
+<div class="parent" id="c" style="display:grid"><div class="child">child</div></div>
+<script>
+run(async () => {
+  const h = (id) => Math.round($(id + ' .child').getBoundingClientRect().height);
+  const got = { 'height: 100%': h('#a'), 'parent is flex': h('#b'), 'parent is grid': h('#c') };
+  return { pass: got['height: 100%'] < 50 && got['parent is flex'] === 300 && got['parent is grid'] === 300, detail: 'a child inside a parent with min-height: 300px. Height of the child: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

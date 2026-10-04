@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Components are not ready when the page is first parsed</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-button id="b">Hello</wa-button>
+<script>window.atParse = { registered: !!customElements.get('wa-button'), rendered: !!document.getElementById('b').shadowRoot };</script>
+<script type="module">
+run(async () => {
+  await defined('wa-button');
+  const later = { registered: !!customElements.get('wa-button'), rendered: !!document.getElementById('b').shadowRoot };
+  return { pass: !atParse.registered && !atParse.rendered && later.registered && later.rendered,
+           detail: 'at parse: ' + JSON.stringify(atParse) + ', after whenDefined: ' + JSON.stringify(later) };
+});
+</script>
+</body>
+</html>

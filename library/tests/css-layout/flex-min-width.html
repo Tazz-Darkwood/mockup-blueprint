@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A flex item will not shrink below its content until it is given min-width 0</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .row { display: flex; width: 200px; overflow: auto; } .grow { flex: 1; white-space: nowrap; } .tamed { min-width: 0; overflow: hidden; text-overflow: ellipsis; }</style>
+</head>
+<body>
+<div class="row" id="a"><div class="grow">A_very_long_unbroken_piece_of_text_such_as_an_email_address@example.org</div><button>Go</button></div>
+<div class="row" id="b"><div class="grow tamed">A_very_long_unbroken_piece_of_text_such_as_an_email_address@example.org</div><button>Go</button></div>
+<script>
+run(async () => {
+  const spill = (el) => el.scrollWidth - el.clientWidth;
+  const got = { asMade: spill($('#a')), withMinWidth0: spill($('#b')), buttonStillInsideWithFix: $('#b button').getBoundingClientRect().right <= $('#b').getBoundingClientRect().right };
+  return { pass: got.asMade > 50 && got.withMinWidth0 === 0 && got.buttonStillInsideWithFix, detail: 'a 200-pixel row holding long text and a button. Pixels spilling out: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

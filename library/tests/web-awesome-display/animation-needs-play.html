@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wa-animation does nothing until it has the play attribute, which it removes when finished</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-animation id="off" name="bounce" duration="300" iterations="1"><div>Still</div></wa-animation>
+<wa-animation id="on" name="bounce" duration="300" iterations="1" play><div>Moving</div></wa-animation>
+<script>window.seen = []; ['wa-start', 'wa-finish'].forEach((n) => document.addEventListener(n, (e) => seen.push(n + ' ' + e.target.id), true));</script>
+<script type="module">
+run(async () => {
+  await defined('wa-animation'); await sleep(900);
+  const first = [...new Set(seen)];
+  $('#off').play = true; await sleep(800);
+  return { pass: !first.some((s) => s.endsWith(' off')) && first.includes('wa-finish on') && !$('#on').hasAttribute('play') && seen.includes('wa-finish off'),
+           detail: 'on load: ' + JSON.stringify(first) + '; the play attribute is still on the finished one: ' + $('#on').hasAttribute('play') + '; after setting play on the other: ' + JSON.stringify([...new Set(seen)].filter((s) => s.endsWith(' off'))) };
+});
+</script>
+</body>
+</html>

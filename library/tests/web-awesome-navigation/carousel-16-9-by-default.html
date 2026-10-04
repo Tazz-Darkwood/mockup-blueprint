@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A carousel is 16:9 tall by default, whatever it contains</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-carousel id="c" navigation pagination><wa-carousel-item>One</wa-carousel-item><wa-carousel-item>Two</wa-carousel-item></wa-carousel>
+<script type="module">
+run(async () => {
+  await defined('wa-carousel', 'wa-carousel-item'); await sleep(400);
+  const r = $('#c').getBoundingClientRect(), ratio = getComputedStyle($('#c')).getPropertyValue('--aspect-ratio').trim();
+  const aria = (await real('aria', '#c')).split('\n')[0];
+  return { pass: r.height > 400 && ratio === '16 / 9', detail: 'two one-word slides: the carousel is ' + Math.round(r.width) + ' by ' + Math.round(r.height) + ' pixels; --aspect-ratio is "' + ratio + '"; announced as ' + JSON.stringify(aria) };
+});
+</script>
+</body>
+</html>

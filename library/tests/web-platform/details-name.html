@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Details open and close without script, and those sharing a name open one at a time</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } </style>
+</head>
+<body>
+<details id="a" name="faq"><summary id="sa">First</summary><p>One</p></details>
+<details id="b" name="faq"><summary id="sb">Second</summary><p>Two</p></details>
+<details id="c"><summary id="sc">Alone</summary><p>Three</p></details>
+<script>
+run(async () => {
+  let toggles = 0; document.querySelectorAll('details').forEach((d) => d.addEventListener('toggle', () => toggles++));
+  await real('click', '#sa'); await real('click', '#sc'); await sleep(50);
+  const one = [$('#a').open, $('#b').open, $('#c').open];
+  await real('click', '#sb'); await sleep(50);
+  const two = [$('#a').open, $('#b').open, $('#c').open];
+  return { pass: one.join() === 'true,false,true' && two.join() === 'false,true,true' && toggles >= 4,
+           detail: 'open states [first, second, alone]. After opening the first and the one alone: ' + JSON.stringify(one) + '. After opening the second, which shares a name with the first: ' + JSON.stringify(two) + '. toggle events: ' + toggles };
+});
+</script>
+</body>
+</html>

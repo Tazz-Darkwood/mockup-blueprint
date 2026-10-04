@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The remove button on a tag only fires wa-remove; the tag stays until you remove it</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<wa-tag id="t" with-remove>Urgent</wa-tag>
+<script type="module">
+run(async () => {
+  await defined('wa-tag');
+  let fired = 0; $('#t').addEventListener('wa-remove', () => fired++);
+  $('#t').shadowRoot.querySelector('[part~=remove-button]').click(); await sleep(500);
+  return { pass: fired === 1 && visible($('#t')), detail: 'wa-remove fired ' + fired + ' time(s); the tag is still on the page: ' + visible($('#t')) };
+});
+</script>
+</body>
+</html>

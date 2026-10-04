@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A first child's top margin pushes its parent down instead of making room inside it</title>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 16px/1.4 sans-serif; } .parent { background: #eee; } .child { margin: 40px 0 0; }</style>
+</head>
+<body>
+<div style="height:20px"></div>
+<div class="parent" id="a"><p class="child">text</p></div>
+<div style="height:20px"></div>
+<div class="parent" id="b" style="display:flow-root"><p class="child">text</p></div>
+<script>
+run(async () => {
+  const gap = (id) => Math.round($(id + ' .child').getBoundingClientRect().top - $(id).getBoundingClientRect().top);
+  const got = { asMade: gap('#a'), withFlowRoot: gap('#b') };
+  return { pass: got.asMade === 0 && got.withFlowRoot === 40, detail: 'a paragraph with margin-top: 40px as the first thing in a coloured box. Space between the top of the box and the paragraph: ' + JSON.stringify(got) + '. As made, the margin has moved outside the box' };
+});
+</script>
+</body>
+</html>

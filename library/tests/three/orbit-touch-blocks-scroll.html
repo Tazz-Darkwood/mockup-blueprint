@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>With OrbitControls, a finger that starts on the canvas cannot scroll the page</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="top"></div><div style="height:3000px">A long page below the canvas.</div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(400, 300); $('#top').appendChild(renderer.domElement);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 4 / 3, 0.1, 100); camera.position.z = 5;
+  const before = getComputedStyle(renderer.domElement).touchAction;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  const withControls = getComputedStyle(renderer.domElement).touchAction;
+  await real('swipe', '200,150,-250');
+  const blocked = Math.round(scrollY);
+  renderer.domElement.style.touchAction = 'pan-y';   // the fix: up-and-down swipes belong to the page
+  await real('swipe', '200,150,-250');
+  const allowed = Math.round(scrollY);
+  return { pass: before === 'auto' && withControls === 'none' && blocked === 0 && allowed > 100,
+           detail: 'touch-action on the canvas: ' + before + ' before OrbitControls, ' + withControls + ' after. A finger swiped up 250px over the canvas scrolled the page ' + blocked + 'px. With touch-action set back to pan-y: ' + allowed + 'px' };
+});
+</script>
+</body>
+</html>

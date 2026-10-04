@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>three.js is a large download, and the minified file saves little</title>
+<!-- no import map on this page, on purpose -->
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+run(async () => {
+  const sizes = {};
+  for (const file of ['three.module.js', 'three.core.js', 'three.module.min.js']) {
+    const url = 'https://cdn.jsdelivr.net/npm/three@0.186.1/build/' + file + '?size-test';
+    await fetch(url).then((r) => r.text());
+    await sleep(100);
+    const entry = performance.getEntriesByName(url)[0];
+    sizes[file] = entry ? Math.round(entry.encodedBodySize / 1024) : null;
+  }
+  const minSource = await fetch('https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js').then((r) => r.text());
+  const minPulls = [...new Set([...minSource.matchAll(/from"(\.\/[^"]+)"/g)].map((m) => m[1]))];
+  const plain = sizes['three.module.js'] + sizes['three.core.js'], min = sizes['three.module.min.js'] + sizes['three.core.js'];
+  return { pass: plain > 300 && minPulls.join() === './three.core.js' && min > plain * 0.8,
+           detail: 'kilobytes sent, compressed: ' + JSON.stringify(sizes) + '. three.module.js pulls in three.core.js: ' + plain + ' KB in all. three.module.min.js pulls in ' + JSON.stringify(minPulls) + ', the full-size core: ' + min + ' KB in all' };
+});
+</script>
+</body>
+</html>

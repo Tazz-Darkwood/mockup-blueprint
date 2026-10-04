@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One renderer can draw two views of the same scene</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+// How many pixels of the picture are not the black background.
+function litPixels(renderer) {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, all = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, all);
+  let n = 0; for (let i = 0; i < all.length; i += 4) if (all[i] + all[i + 1] + all[i + 2] > 0) n++;
+  return n;
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  const renderer = new THREE.WebGLRenderer(); renderer.setSize(400, 200); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const red = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: 0xff0000 })); red.position.x = -50;
+  const blue = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: 0x0000ff })); blue.position.x = 50;
+  scene.add(red, blue);
+  const atRed = new THREE.PerspectiveCamera(50, 1, 0.1, 100); atRed.position.set(-50, 0, 4);
+  const atBlue = new THREE.PerspectiveCamera(50, 1, 0.1, 100); atBlue.position.set(50, 0, 4);
+  renderer.setScissorTest(true);
+  renderer.setViewport(0, 0, 200, 200); renderer.setScissor(0, 0, 200, 200); renderer.render(scene, atRed);
+  renderer.setViewport(200, 0, 200, 200); renderer.setScissor(200, 0, 200, 200); renderer.render(scene, atBlue);
+  const left = pixel(renderer, 100, 100), right = pixel(renderer, 300, 100);
+  // without the scissor, the second render wipes the first
+  renderer.setScissorTest(false);
+  renderer.setViewport(0, 0, 200, 200); renderer.render(scene, atRed);
+  renderer.setViewport(200, 0, 200, 200); renderer.render(scene, atBlue);
+  const leftNoScissor = pixel(renderer, 100, 100);
+  return { pass: left[0] === 255 && left[2] === 0 && right[2] === 255 && right[0] === 0 && leftNoScissor[0] === 0,
+           detail: 'left half through one camera: ' + JSON.stringify(left) + '; right half through another: ' + JSON.stringify(right) + '. The same two renders with the scissor test off leave the left half ' + JSON.stringify(leftNoScissor) + ', wiped by the second' };
+});
+</script>
+</body>
+</html>

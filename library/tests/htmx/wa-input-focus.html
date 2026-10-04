@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A focused Web Awesome field that is replaced by one with the same id</title>
+<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.14.0/styles/themes/default.css">
+<script type="module" src="https://ka-f.webawesome.com/webawesome@3.14.0/webawesome.loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"></script>
+<script src="../../../assets/htmx-mock.js"></script>
+<script src="../harness.js"></script>
+</head>
+<body>
+<div id="plain"><input id="p-email" name="email" value="abc" hx-get="/plain" hx-trigger="go" hx-target="#plain"></div>
+<div id="wa"><wa-input id="w-email" name="email" value="abc" hx-get="/wa" hx-trigger="go" hx-target="#wa"></wa-input></div>
+<div id="wa2"><wa-input name="email2" value="abc" hx-get="/wa2" hx-trigger="go" hx-target="#wa2"></wa-input></div>
+<script>
+// htmx sets the page up once it has finished loading; wait for that before doing anything
+const ready = () => new Promise((done) => (document.readyState === 'complete' ? setTimeout(done, 60) : addEventListener('load', () => setTimeout(done, 60))));
+htmxMock({ 'GET /plain': () => '<input id="p-email" name="email" value="abc">', 'GET /wa': () => '<wa-input id="w-email" name="email" value="new"></wa-input>', 'GET /wa2': () => '<wa-input name="email2" value="new"></wa-input>' });
+run(async () => {
+  await ready();
+  await defined('wa-input');
+  const seen = []; document.body.addEventListener('htmx:swapError', () => seen.push('swapError'));
+  const quiet = console.error; console.error = () => {};
+  const got = {};
+  $('#p-email').focus(); htmx.trigger('#p-email', 'go'); await sleep(300); got.plainFieldWithId = document.activeElement === $('#p-email') ? 'focus kept' : 'focus lost';
+  $('#w-email').focus(); await sleep(100); htmx.trigger('#w-email', 'go'); await sleep(600);
+  got.waFieldWithId = { swapped: $('#wa wa-input').getAttribute('value') === 'new', swapErrors: seen.length, focusOn: document.activeElement && document.activeElement.id === 'w-email' ? 'the new field' : 'elsewhere' };
+  const lone = $('#wa2 wa-input'), before = seen.length; lone.focus(); await sleep(100); htmx.trigger(lone, 'go'); await sleep(600);
+  got.waFieldWithoutId = { swapped: $('#wa2 wa-input').getAttribute('value') === 'new', swapErrors: seen.length - before };
+  console.error = quiet;
+  return { pass: got.plainFieldWithId === 'focus kept' && got.waFieldWithId.swapped === true && got.waFieldWithId.focusOn === 'elsewhere' && got.waFieldWithoutId.swapped === true, detail: JSON.stringify(got) };
+});
+</script>
+</body>
+</html>

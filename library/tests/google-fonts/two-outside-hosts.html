@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A Google Fonts link makes the visitor's browser contact two Google hosts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap">
+<script src="../harness.js"></script>
+<style>body { font-family: 'Instrument Sans', sans-serif; }</style>
+</head>
+<body>
+<p>Text set in the web font, so the browser has a reason to download it.</p>
+<script type="module">
+run(async () => {
+  await document.fonts.ready; await sleep(800);
+  const link = document.querySelector('link[rel=stylesheet]').href;
+  const css = await (await fetch(link)).text();
+  const fontHosts = [...new Set([...css.matchAll(/url\((https:\/\/[^/)]+)/g)].map((m) => new URL(m[1]).host))];
+  const loaded = [...document.fonts].filter((f) => f.status === 'loaded').length;
+  return { pass: new URL(link).host === 'fonts.googleapis.com' && fontHosts.includes('fonts.gstatic.com') && loaded > 0,
+           detail: 'stylesheet came from ' + new URL(link).host + '; it points the browser at ' + JSON.stringify(fontHosts) + ' for the font files; font files loaded: ' + loaded };
+});
+</script>
+</body>
+</html>

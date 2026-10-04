@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A screen reader finds nothing in a 3D canvas unless it is given a name</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script src="../harness.js"></script>
+<style>body { margin: 0; font: 15px sans-serif; } </style>
+</head>
+<body>
+<div id="plain"><canvas width="300" height="200"></canvas></div>
+<div id="named"><canvas width="300" height="200" role="img" aria-label="A red box, turning slowly"></canvas></div>
+<script type="module">
+// Colour of one pixel of what was just drawn, as [red, green, blue, alpha]. x and y count from the bottom left.
+function pixel(renderer, x, y) {
+  const gl = renderer.getContext(), p = new Uint8Array(4);
+  gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p);
+  return [...p];
+}
+const frames = (n) => new Promise((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+
+import * as THREE from 'three';
+run(async () => {
+  for (const id of ['#plain', '#named']) {
+    const renderer = new THREE.WebGLRenderer({ canvas: $(id + ' canvas') });
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 10); camera.position.z = 3;
+    scene.add(new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ color: 0xff0000 })));
+    renderer.render(scene, camera);
+  }
+  const plain = (await real('aria', '#plain')).trim(), named = (await real('aria', '#named')).trim();
+  return { pass: !/box|red|img/i.test(plain) && /img "A red box, turning slowly"/.test(named),
+           detail: 'what a screen reader is given for a bare canvas: ' + JSON.stringify(plain) + '. With role="img" and aria-label: ' + JSON.stringify(named) };
+});
+</script>
+</body>
+</html>
