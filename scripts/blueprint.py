@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.10.3"
+SKILL_VERSION = "0.10.4"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -2693,7 +2693,7 @@ def cmd_doctor(args):
     print(f"                  {guides} style guide(s) of your own, {own_notes} tool note(s) of your own, {reports} report(s) about the skill")
     for e in load_entries():
         if pip_names(e) and venv_py.exists():
-            have = subprocess.run([str(venv_py), "-m", "pip", "show", "--quiet"] + [re.sub(r"\[.*\]", "", n) for n in pip_names(e)], capture_output=True).returncode == 0
+            have = subprocess.run([str(venv_py), "-m", "pip", "show", "--quiet"] + [re.sub(r"\[.*\]|[<>=!~].*$", "", n) for n in pip_names(e)], capture_output=True).returncode == 0
             print(f"Tests for {e['slug']:<8} " + ("ready" if have else f"not set up; they need {' '.join(pip_names(e))}. To set up: blueprint.py doctor --setup --for {e['slug']}"))
         elif pip_names(e):
             print(f"Tests for {e['slug']:<8} not set up. To set up: blueprint.py doctor --setup --for {e['slug']}")

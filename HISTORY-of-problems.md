@@ -522,3 +522,15 @@ The Meridian ant colony was built from its blueprint into a working Django site:
 3. A mockup's stand-in for the server was looser than the rules in four places, all invisible in the mockup because its pages never asked. The gap checklist now asks what the server does "when asked for something no page offers", and build-and-deploy says to move a stand-in's rules over one at a time with a test for each.
 4. The Django notes gained three drafts from the build: one row that everything locks first, the Content-Security-Policy that comes with Django 6, and traps met while testing accounts.
 
+## Version 0.10.4: the first start on Windows (2026-10-05)
+- Status: fixed for the skill; the Windows start itself still to be confirmed
+- Kind: library
+
+The Meridian game, moved to Windows, did not start: "libwinpthread-1.dll was not found". Version 0.6.0 of `pixeltable-pgserver`, which 0.10.2 had switched the Django tests to, ships a Windows build of PostgreSQL 18 whose `postgres.exe` needs that file and does not include it. Nothing on Linux shows this.
+
+1. The Django tests now ask for a version below 0.6 (0.5.1, carrying PostgreSQL 16.11), whose Windows build needs nothing Windows lacks. All 18 pass on it.
+2. `doctor` said an entry's tests were "not set up" when a needed package carried a version limit, because it asked pip about the name with the limit attached: it now asks about the bare name.
+3. The Django page's draft note on a Postgres that comes with the project says what happens on Windows with 0.6.0, the two ways round it, and how to read which files a Windows program needs without running it.
+
+Lesson for the skill's owner: "has a build for Windows" was read off the package index and taken as "works on Windows". A build existing is not the same as it having been run.
+
