@@ -1,6 +1,6 @@
-/* blueprint-viewer v2
+/* blueprint-viewer v3
    Shows the build context for this mockup (from the .blueprint.js file beside it):
-   notes pinned to elements, open questions people can answer, and live checks.
+   notes pinned to elements, notes on any words of the page, open questions people can answer, and live checks.
    Review tooling only. It is not part of the design; do not port it to the real build. */
 (function () {
   'use strict';
@@ -200,12 +200,15 @@ var __bpMeasure = (function () {
   var questions = (BP && BP.questions) || [];
   var ids = Object.keys(elements);
 
-  var state = { open: false, mini: false, tab: 'overview', side: 'right', selected: null, flash: null, flashUntil: 0 };
-  var feedback = { answers: {}, comments: {} };
+  var state = { open: false, mini: false, tab: 'overview', side: 'right', selected: null, flash: null, flashUntil: 0, word: null, picking: false, said: '' };
+  var feedback = { answers: {}, comments: {}, words: [] };
   try {
     var saved = JSON.parse(localStorage.getItem(STORE) || '{}');
     feedback.answers = saved.answers || {};
     feedback.comments = saved.comments || {};
+    feedback.words = (Array.isArray(saved.words) ? saved.words : []).filter(function (w) { return w && typeof w.quote === 'string' && w.quote; }).map(function (w) {
+      return { id: String(w.id || ''), quote: w.quote, before: String(w.before || ''), after: String(w.after || ''), bp: w.bp ? String(w.bp) : null, note: String(w.note || ''), replace: String(w.replace || '') };
+    });
     state.open = !!saved.open;
     state.side = saved.side === 'left' ? 'left' : 'right';
     state.mini = !!saved.mini;
@@ -215,7 +218,8 @@ var __bpMeasure = (function () {
   function persist() {
     try {
       localStorage.setItem(STORE, JSON.stringify({
-        answers: feedback.answers, comments: feedback.comments, open: state.open, side: state.side, mini: state.mini
+        answers: feedback.answers, comments: feedback.comments, open: state.open, side: state.side, mini: state.mini,
+        words: feedback.words.map(function (w) { return { id: w.id, quote: w.quote, before: w.before, after: w.after, bp: w.bp, note: w.note, replace: w.replace }; })
       }));
     } catch (e) { /* ignore */ }
   }
@@ -363,6 +367,17 @@ var __bpMeasure = (function () {
       'background:#fff;color:#111827;font:13px/1.4 system-ui,sans-serif;resize:vertical}',
     '.swatch{display:inline-block;width:12px;height:12px;border:1px solid #9ca3af;border-radius:2px;vertical-align:-1px;margin-right:4px}',
     '.error{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px}',
+    '.wmark{position:absolute;background:rgba(250,204,21,.38);border-bottom:2px solid #b45309;border-radius:2px}',
+    '.wmark.sel{background:rgba(249,115,22,.45)}',
+    '.wbtn{position:fixed;z-index:2147483002;min-height:44px;border:0;border-radius:6px;padding:0 14px;background:#b45309;color:#fff;' +
+      'font:600 13px/1 system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}',
+    '.hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:2147483002;display:flex;gap:10px;align-items:center;' +
+      'max-width:94vw;padding:6px 6px 6px 14px;border-radius:999px;background:#111827;color:#fff;font:600 13px/1.3 system-ui,sans-serif;' +
+      'box-shadow:0 4px 14px rgba(0,0,0,.3)}',
+    '.hint button{min-height:36px;border:0;border-radius:999px;padding:0 12px;background:#374151;color:#fff;font:inherit;cursor:pointer}',
+    '.lbl{display:block;margin-top:10px;font-size:12px;font-weight:700;color:#374151}',
+    '.lbl textarea{margin-top:4px}',
+    '.old{margin:0 0 6px;padding:6px 8px;border-left:3px solid #b45309;background:#fffbeb;overflow-wrap:anywhere}',
     '@media print{:host{display:none}}'
   ].join('\n');
   root.appendChild(css);
@@ -386,7 +401,14 @@ var __bpMeasure = (function () {
       h('button', { class: 'icon', type: 'button', 'aria-label': 'Close blueprint panel', text: '✕',
         onclick: function () { setOpen(false); } })),
     tabs, body, foot);
-  add(root, [layer, fab, mini, panel]);
+  // offered beside words the reviewer has selected on the page
+  var wbtn = h('button', { class: 'wbtn', type: 'button', text: 'Note on these words', onclick: function () { noteOnWords(); } });
+  wbtn.style.display = 'none';
+  wbtn.addEventListener('mousedown', function (e) { e.preventDefault(); });   // pressing it must not drop the selection
+  var hint = h('div', { class: 'hint', role: 'status' }, h('span', { text: 'Tap the words you want to leave a note on' }),
+    h('button', { type: 'button', text: 'Cancel', onclick: function () { state.picking = false; state.mini = false; render(); } }));
+  hint.style.display = 'none';
+  add(root, [layer, fab, mini, panel, wbtn, hint]);
 
   // ---------------------------------------------------------------- markers on the page
 
@@ -435,6 +457,7 @@ var __bpMeasure = (function () {
       }
     }
     for (var j = n; j < pool.length; j++) pool[j].style.display = 'none';
+    syncWords();
     for (var k = 0; k < n; k++) if (pool[k].className.indexOf('flash') < 0) pool[k].firstChild.style.display = '';
   }
   // Keep the Blueprint button and the shrunk bar clear of anything the mockup itself pins to the
@@ -477,6 +500,203 @@ var __bpMeasure = (function () {
     var el = findAnchor(id);
     if (scrollPage && el && shown(el)) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
     queueSync();
+  }
+
+  // ---------------------------------------------------------------- notes on words
+
+  // A reviewer can select any words on the page and leave a note on them, or give the exact words to put in
+  // their place. Nothing in the page is changed. A note remembers the words, a little of what stands before
+  // and after them, and which marked part of the page they are in, and finds them again from that.
+
+  var INLINE = /^(A|ABBR|B|BDI|BDO|BIG|CITE|CODE|DATA|DFN|EM|FONT|I|KBD|MARK|Q|S|SAMP|SMALL|SPAN|STRONG|SUB|SUP|TIME|TT|U|VAR|WBR)$/;
+  var MOST = 1200;   // more characters than this in one note is a section, not a phrase
+  function blockOf(el) {
+    while (el && el !== document.body && INLINE.test(el.tagName)) el = el.parentElement;
+    return el;
+  }
+  // The page's words as one string with every run of white space made one space, and where each character came from.
+  var pageText = null;
+  function readPage() {
+    if (pageText) return pageText;
+    var text = '', at = [], lastBlock = null, node;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    while ((node = walker.nextNode())) {
+      var parent = node.parentElement;
+      if (!parent || parent.closest('script, style, noscript, template, textarea')) continue;
+      var block = blockOf(parent);
+      if (block !== lastBlock && text && text.charAt(text.length - 1) !== ' ') { text += ' '; at.push([node, 0]); }
+      lastBlock = block;
+      for (var i = 0; i < node.data.length; i++) {
+        var ch = node.data.charAt(i);
+        if (/\s/.test(ch)) { if (text && text.charAt(text.length - 1) !== ' ') { text += ' '; at.push([node, i]); } }
+        else { text += ch; at.push([node, i]); }
+      }
+    }
+    return (pageText = { text: text, at: at });
+  }
+  // Where a selection lies in that string.
+  function spanOf(range) {
+    var page = readPage(), from = -1, to = -1, last = null, inside = false, s = 0, e = 0;
+    for (var i = 0; i < page.at.length; i++) {
+      var node = page.at[i][0], off = page.at[i][1];
+      if (node !== last) {
+        last = node;
+        inside = range.intersectsNode(node);
+        s = node === range.startContainer ? range.startOffset : 0;
+        e = node === range.endContainer ? range.endOffset : node.length;
+      }
+      if (!inside || off < s || off >= e) continue;
+      if (from < 0) from = i;
+      to = i + 1;
+    }
+    while (from >= 0 && from < to && page.text.charAt(from) === ' ') from++;
+    while (to > from && page.text.charAt(to - 1) === ' ') to--;
+    return from >= 0 && to > from ? { from: from, to: to } : null;
+  }
+  function alike(a, b, fromEnd) {
+    var n = 0;
+    while (n < a.length && n < b.length && (fromEnd ? a.charAt(a.length - 1 - n) === b.charAt(b.length - 1 - n) : a.charAt(n) === b.charAt(n))) n++;
+    return n;
+  }
+  // Find a note's words on the page as it is now. Where they occur more than once, the place whose surroundings fit best.
+  function locate(w) {
+    var page = readPage();
+    if (w._page === page) return w._range;
+    var scope = w.bp ? findAnchor(w.bp) : null, best = -1, bestScore = -1, bestFit = 0, places = 0, pos = -1;
+    while ((pos = page.text.indexOf(w.quote, pos + 1)) >= 0) {
+      var fit = alike(page.text.slice(Math.max(0, pos - w.before.length), pos), w.before, true) +
+        alike(page.text.slice(pos + w.quote.length, pos + w.quote.length + w.after.length), w.after, false);
+      var score = fit + (scope && scope.contains(page.at[pos][0]) ? 1000 : 0);
+      places++;
+      if (score > bestScore) { bestScore = score; best = pos; bestFit = fit; }
+    }
+    // A place counts only if what stands round the words is still much as it was when the note was made, or if the
+    // words are long enough to be known by themselves and stand in one place only. A short phrase whose sentence has
+    // been rewritten is gone, even when the same phrase is somewhere else on the page: better to say so than to
+    // settle on a different sentence.
+    var known = bestFit >= Math.min(6, w.before.length + w.after.length) || (places === 1 && w.quote.length >= 40);
+    if (!known) best = -1;
+    var range = null;
+    if (best >= 0) {
+      var a = page.at[best], b = page.at[best + w.quote.length - 1];
+      range = document.createRange();
+      range.setStart(a[0], a[1]);
+      range.setEnd(b[0], Math.min(b[0].length, b[1] + 1));
+    }
+    w._page = page;
+    return (w._range = range);
+  }
+  function pickedRange() {
+    var sel = window.getSelection && window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount || !String(sel).trim()) return null;
+    var range = sel.getRangeAt(0);
+    return document.body.contains(range.commonAncestorContainer) ? range : null;   // not the viewer's own words
+  }
+  function offerNote() {
+    var range = state.open && !state.picking ? pickedRange() : null;
+    var rects = range ? range.getClientRects() : [], last = rects[rects.length - 1];
+    if (!last) { wbtn.style.display = 'none'; return; }
+    wbtn.style.display = '';
+    wbtn.style.left = Math.max(8, Math.min(innerWidth - 190, last.right - 90)) + 'px';
+    wbtn.style.top = Math.max(8, Math.min(innerHeight - 52, last.bottom + 8)) + 'px';
+  }
+  var offering = null;
+  document.addEventListener('selectionchange', function () { clearTimeout(offering); offering = setTimeout(offerNote, 150); });
+
+  // Start a note on the selected words, or on the range given.
+  function noteOnWords(given) {
+    var range = given || pickedRange(), span = range ? spanOf(range) : null, page = readPage();
+    wbtn.style.display = 'none';
+    state.mini = false;
+    state.tab = 'words';
+    if (!span) state.said = 'Those words could not be picked up. Choose words that are shown as text on the page.';
+    else if (span.to - span.from > MOST) state.said = 'That is a great many words for one note. Choose a sentence or a paragraph at a time.';
+    else {
+      var common = range.commonAncestorContainer, el = common.nodeType === 1 ? common : common.parentElement;
+      var tagged = el && el.closest('[data-bp]');
+      var w = { id: 'w' + Date.now().toString(36) + feedback.words.length, quote: page.text.slice(span.from, span.to),
+        before: page.text.slice(Math.max(0, span.from - 32), span.from), after: page.text.slice(span.to, span.to + 32),
+        bp: tagged ? tagged.getAttribute('data-bp') : null, note: '', replace: '' };
+      feedback.words.push(w);
+      state.word = w.id;
+      persist();
+      if (window.getSelection) window.getSelection().removeAllRanges();
+    }
+    render();
+    var card = state.word && root.getElementById('word-' + state.word);
+    if (span && card) { card.scrollIntoView({ block: 'nearest' }); var box = card.querySelector('textarea'); if (box) box.focus(); }
+    return span ? feedback.words[feedback.words.length - 1] : null;
+  }
+  // Picking by one tap, for a phone and for words that cannot be selected (the label of a button, a link).
+  document.addEventListener('click', function (event) {
+    if (!state.picking || event.target === host) return;
+    event.preventDefault();
+    event.stopPropagation();
+    state.picking = false;
+    var el = blockOf(event.target.nodeType === 1 ? event.target : event.target.parentElement);
+    var range = document.createRange();
+    if (el && el !== document.body && el !== document.documentElement) range.selectNodeContents(el);
+    noteOnWords(range);
+  }, true);
+
+  var wordPool = [];
+  function syncWords() {
+    var n = 0;
+    hint.style.display = state.open && state.picking ? '' : 'none';
+    if (state.open) feedback.words.forEach(function (w) {
+      var range = locate(w), rects = range ? range.getClientRects() : [];
+      for (var i = 0; i < rects.length && n < 400; i++) {
+        var r = rects[i];
+        if (!r.width || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
+        var box = wordPool[n] || (wordPool[n] = layer.appendChild(h('div', { class: 'wmark' })));
+        n++;
+        box.className = 'wmark' + (w.id === state.word ? ' sel' : '');
+        box.style.display = '';
+        box.style.left = r.left + 'px'; box.style.top = r.top + 'px'; box.style.width = r.width + 'px'; box.style.height = r.height + 'px';
+      }
+    });
+    for (var j = n; j < wordPool.length; j++) wordPool[j].style.display = 'none';
+    if (wbtn.style.display !== 'none') offerNote();
+  }
+  function wordsSaid(w) { return !!(w.note.trim() || w.replace.trim()); }
+  function wordBox(w, field, placeholder, label) {
+    var t = h('textarea', { placeholder: placeholder, 'aria-label': label });
+    t.value = w[field];
+    t.addEventListener('input', function () { w[field] = t.value; persist(); renderFoot(); });
+    t.addEventListener('focus', function () { if (state.word !== w.id) { state.word = w.id; queueSync(); } });
+    return t;
+  }
+  function wordCard(w) {
+    var range = locate(w), name = w.bp ? ((elements[w.bp] && elements[w.bp].name) || w.bp) : null;
+    var card = h('div', { class: 'card' + (w.id === state.word ? ' sel' : ''), id: 'word-' + w.id },
+      h('div', { class: 'top' },
+        h('h3', { text: name ? 'In ' + name : 'On the page' }),
+        range ? h('button', { class: 'link', type: 'button', text: 'Show', onclick: function () {
+          state.word = w.id;
+          var at = range.startContainer.parentElement;
+          if (at) at.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          render();
+        } }) : null,
+        h('button', { class: 'icon', type: 'button', 'aria-label': 'Remove this note', text: '✕', onclick: function () {
+          feedback.words = feedback.words.filter(function (x) { return x !== w; });
+          persist(); render();
+        } })));
+    card.style.setProperty('--c', '#b45309');
+    add(card, h('p', { class: 'old', text: w.quote }));
+    if (!range) add(card, h('p', { class: 'muted', text: 'These words are not on the page as it is now. They may have been changed since, or belong to a state that is not showing.' }));
+    add(card, h('label', { class: 'lbl' }, 'Your note', wordBox(w, 'note', 'What is wrong with these words, or what do you want here?', 'Note on these words')));
+    add(card, h('label', { class: 'lbl' }, 'New words, if you know them', wordBox(w, 'replace', 'The exact words to put in their place', 'New words')));
+    return card;
+  }
+  function wordsTab() {
+    var out = [h('p', { class: 'muted', text: 'Select any words on the page and press "Note on these words". Say what is wrong, or give the exact words to put in their place. The page itself is not changed: your notes go out with the Copy button below.' }),
+      h('p', {}, h('button', { class: 'link', type: 'button', text: 'Or pick a whole paragraph, heading or label with one tap', onclick: function () {
+        state.picking = true; state.mini = true; state.said = ''; persist(); render();
+      } }))];
+    if (state.said) { out.push(h('div', { class: 'q', role: 'status', text: state.said })); state.said = ''; }
+    if (!feedback.words.length) out.push(h('p', { class: 'muted', text: 'No notes on words yet.' }));
+    feedback.words.forEach(function (w) { out.push(wordCard(w)); });
+    return out;
   }
 
   // ---------------------------------------------------------------- panel tabs
@@ -666,6 +886,15 @@ var __bpMeasure = (function () {
     Object.keys(feedback.comments).forEach(function (id) {
       lines.push('NOTE on ' + id + ' (' + ((elements[id] && elements[id].name) || 'unknown') + ')', '   | ' + typed(feedback.comments[id]), '');
     });
+    feedback.words.forEach(function (w) {
+      if (!wordsSaid(w)) return;
+      lines.push('WORDS ' + (w.bp ? 'in ' + w.bp + ' (' + ((elements[w.bp] && elements[w.bp].name) || 'unknown') + ')' : 'on the page, outside any marked part'),
+        'Old: ' + typed(w.quote), 'Between: ' + typed(w.before) + ' [...] ' + typed(w.after));
+      if (w.note.trim()) lines.push('Note: ' + typed(w.note));
+      if (w.replace.trim()) lines.push('New: ' + typed(w.replace));
+      if (!locate(w)) lines.push('Where: not found on the page as it was when this was copied');
+      lines.push('');
+    });
     return lines.join('\n');
   }
   // Answers typed here for questions the context has since recorded an answer to are already merged: leave them out.
@@ -674,7 +903,7 @@ var __bpMeasure = (function () {
     return questions.filter(function (q) { return feedback.answers[q.id] && empty(q.answer) && empty(q.closed) && String(feedback.answers[q.id]).trim() !== String(q.heard || '').trim(); });
   }
   function feedbackCount() {
-    return pendingAnswers().length + Object.keys(feedback.comments).length;
+    return pendingAnswers().length + Object.keys(feedback.comments).length + feedback.words.filter(wordsSaid).length;
   }
   function copyFeedback() {
     var text = feedbackText();
@@ -706,7 +935,7 @@ var __bpMeasure = (function () {
 
   // ---------------------------------------------------------------- render
 
-  var TABS = [['overview', 'Overview'], ['elements', 'Elements'], ['questions', 'Questions'], ['checks', 'Checks']];
+  var TABS = [['overview', 'Overview'], ['elements', 'Elements'], ['questions', 'Questions'], ['words', 'Words'], ['checks', 'Checks']];
   function render() {
     var pending = openQuestions().length;
     fab.textContent = 'Blueprint';
@@ -724,7 +953,7 @@ var __bpMeasure = (function () {
     if (!full) { sync(); return; }
     tabs.textContent = '';
     TABS.forEach(function (t) {
-      var label = t[1] + (t[0] === 'questions' && pending ? ' (' + pending + ')' : '');
+      var label = t[1] + (t[0] === 'questions' && pending ? ' (' + pending + ')' : t[0] === 'words' && feedback.words.length ? ' (' + feedback.words.length + ')' : '');
       tabs.appendChild(h('button', { type: 'button', role: 'tab', 'aria-selected': String(state.tab === t[0]), text: label,
         onclick: function () { state.tab = t[0]; render(); } }));
     });
@@ -736,27 +965,31 @@ var __bpMeasure = (function () {
       if (state.tab !== 'checks') { add(body, checksTab()); renderFoot(); sync(); return; }
     }
     add(body, state.tab === 'elements' ? elementsTab() : state.tab === 'questions' ? questionsTab()
-      : state.tab === 'checks' ? checksTab() : overview());
+      : state.tab === 'words' ? wordsTab() : state.tab === 'checks' ? checksTab() : overview());
     renderFoot();
     sync();
   }
   function setOpen(open) {
     state.open = open;
     if (open) state.mini = false;
+    else state.picking = false;
     persist();
     render();
   }
 
   // What only a browser can see, for tools that drive the page headlessly.
   window.__blueprint = {
-    version: 2,
+    version: 3,
     open: function () { setOpen(true); },
     close: function () { setOpen(false); },
+    feedback: function () { return feedbackText(); },   // what the Copy button would copy
     report: function () { return __bpMeasure.report(); }
   };
 
   function start() {
     document.documentElement.appendChild(host);
+    // the page's words are read once and read again only when the page changes
+    if (window.MutationObserver) new MutationObserver(function () { pageText = null; }).observe(document.body, { subtree: true, childList: true, characterData: true });
     render();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

@@ -30,7 +30,7 @@ The first time, Claude will check what is set up on your computer. Some of the c
 
 Claude asks questions as it goes. Short answers are fine, and "I don't know, ask the client" is a real answer: it gets written down as an open question for that person.
 
-Open any mockup it makes in your browser and press the "Blueprint" button to see the notes and the open questions. Anyone you send the folder to can type answers there and send them back to you.
+Open any mockup it makes in your browser and press the "Blueprint" button to see the notes and the open questions. Anyone you send the folder to can type answers there and send them back to you. To change wording, select any words on the page and press "Note on these words": say what is wrong, or type the exact words you want instead.
 
 ## Your own folder
 

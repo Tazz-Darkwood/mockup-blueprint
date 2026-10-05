@@ -29,7 +29,7 @@ A blueprint is these files, kept in the same folder:
 |---|---|
 | `shop.html` | The mockup. It gains `data-bp` name tags on elements and two `<script>` lines at the bottom. Nothing visible changes. |
 | `shop.blueprint.js` | All the context, as one JSON object after `window.__BLUEPRINT__ =`. It is a `.js` file so the viewer can load it when the mockup is opened by double-click (browsers block reading `.json` from disk). Its exact shape is in `references/context-format.md`; read that before writing or editing one. |
-| `blueprint-viewer.js` | Adds a "Blueprint" button to the mockup in a browser: notes pinned to elements, questions people can answer, live checks. Same file for every mockup; `init` copies it in and keeps it up to date. |
+| `blueprint-viewer.js` | Adds a "Blueprint" button to the mockup in a browser: notes pinned to elements, notes on any words of the page (select them, or tap them), questions people can answer, live checks. Same file for every mockup; `init` copies it in and keeps it up to date. |
 | `carry-storage.js` | Only for mockups of several pages that share something (a basket, who is signed in). Lets those pages share the browser's storage when opened from a folder. Copied from this skill's `assets/`. |
 | `htmx-mock.js` | Only for mockups that use HTMX. A pretend server written in the page. Copied from this skill's `assets/`. |
 

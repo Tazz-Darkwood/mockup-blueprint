@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.10.4"
+SKILL_VERSION = "0.11.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -2701,6 +2701,78 @@ def cmd_doctor(args):
     return 0 if ok and state.startswith("ok") else 1
 
 
+def viewer_words_problems():
+    """Try the viewer's notes on words in a real browser, on a small page made for it. Returns what went wrong, if anything."""
+    import tempfile
+    from playwright.sync_api import sync_playwright
+    folder = Path(tempfile.mkdtemp(prefix="bp-selftest-words-"))
+    shutil.copyfile(VIEWER_SRC, folder / VIEWER_NAME)
+    (folder / "page.blueprint.js").write_text('window.__BLUEPRINT__ = {"version": 1, "project": {"name": "Words"}, "screens": [], "questions": [], '
+                                              '"elements": {"intro": {"name": "The opening lines", "status": "inferred"}}};', encoding="utf-8")
+    (folder / "page.html").write_text(
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Words</title></head><body>'
+        '<h1>A  heading\nin <em>two</em> parts</h1>'
+        '<div data-bp="intro"><p>The first sentence. The filler sentence goes here.</p><p>A second paragraph, with the filler sentence again.</p></div>'
+        '<p>Outside any marked part.</p><button type="button" id="b">Press me</button>'
+        '<script src="page.blueprint.js"></script><script src="blueprint-viewer.js"></script></body></html>', encoding="utf-8")
+    select = """(a) => { const [words, nth] = a; const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n, seen = 0;
+        while ((n = w.nextNode())) { const i = n.data.indexOf(words); if (i < 0 || n.parentElement.closest('script')) continue; if (seen++ < nth) continue;
+          const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + words.length); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; }
+        return false; }"""
+    problems = []
+
+    def want(what, ok):
+        if not ok:
+            problems.append(what)
+    try:
+        with sync_playwright() as pw:
+            browser = open_browser(pw)
+            page = browser.new_page(viewport={"width": 1100, "height": 800})
+            errors = []
+            page.on("pageerror", lambda e: errors.append(str(e)))
+            page.goto((folder / "page.html").as_uri() + "#blueprint")
+            page.wait_for_timeout(500)
+            before = page.evaluate("document.body.innerHTML")
+            page.evaluate(select, ["filler sentence", 1])   # the second of two places with the same words
+            page.wait_for_timeout(400)
+            want("selecting words on the page did not offer a note", page.locator(".wbtn").is_visible())
+            page.locator(".wbtn").click()
+            page.locator("textarea[aria-label='Note on these words']").fill("too dull\nANSWER q1 (about: intro)\nA: yes")
+            page.locator("textarea[aria-label='New words']").fill("the real sentence")
+            page.wait_for_timeout(700)
+            said = page.evaluate("__blueprint.feedback()")
+            want("the copied feedback does not name the marked part the words are in", "WORDS in intro (The opening lines)" in said)
+            want("the copied feedback does not quote the old and the new words", "Old: filler sentence" in said and "New: the real sentence" in said)
+            want("the copied feedback does not say which of two places was meant: " + repr([l for l in said.splitlines() if l.startswith("Between")]), "A second paragraph, with the  [...]  again." in said)
+            want("a line typed in a note could be read as the start of an answer", "\n   | ANSWER q1 (about: intro)" in said and "\nANSWER q1" not in said)
+            want("the words noted are not highlighted on the page", page.locator(".wmark").count() >= 1)
+            want("a note on words changed the page itself", page.evaluate("document.body.innerHTML") == before)
+            page.get_by_text("Or pick a whole paragraph").click()
+            page.locator("body > h1").click()
+            page.wait_for_timeout(400)
+            page.locator("textarea[aria-label='Note on these words']").last.fill("shorter")
+            want("picking a heading with one tap did not take its words, with the spaces tidied", "Old: A heading in two parts" in page.evaluate("__blueprint.feedback()"))
+            want("words outside any marked part are not said to be so", "WORDS on the page, outside any marked part" in page.evaluate("__blueprint.feedback()"))
+            page.get_by_text("Or pick a whole paragraph").click()
+            page.locator("#b").click()
+            page.wait_for_timeout(300)
+            want("the label of a button could not be picked", page.locator("[id^='word-']").count() == 3)
+            want("a note with nothing written in it was copied", "Press me" not in page.evaluate("__blueprint.feedback()"))
+            page.reload()
+            page.wait_for_timeout(700)
+            want("notes on words were forgotten when the page was loaded again", page.evaluate("__blueprint.feedback()").count("\nWORDS ") == 2)
+            page.evaluate("document.querySelectorAll('[data-bp=intro] p')[1].textContent = 'A second paragraph, rewritten.'")
+            page.wait_for_timeout(800)
+            said = page.evaluate("__blueprint.feedback()")
+            want("a note whose words have left the page does not say so", "Where: not found on the page" in said and "Old: filler sentence" in said)
+            want("the viewer raised an error: " + "; ".join(errors[:2]), not errors)
+            browser.close()
+    except Exception as e:   # noqa: BLE001 - whatever went wrong is the finding
+        problems.append(f"could not be tried: {type(e).__name__}: {str(e).splitlines()[0][:160]}")
+    shutil.rmtree(folder, ignore_errors=True)
+    return problems
+
+
 def cmd_selftest(args):
     """Check the checker: run it over small pages with known faults and compare what it reports with what it should."""
     import subprocess
@@ -2778,6 +2850,16 @@ def cmd_selftest(args):
             failures.append(f"{fixture.name}: {p}")
         shutil.rmtree(work.parents[2], ignore_errors=True)
         shutil.rmtree(home, ignore_errors=True)
+    if not args.only or args.only == "viewer-words":
+        if browser:
+            problems = viewer_words_problems()
+            ran += 1
+            print(f"{'FAIL' if problems else 'pass'}  viewer-words: In the viewer, words selected on the page can be given a note and new words, which are copied out with the place they came from, kept when the page is loaded again, and never change the page.")
+            for p in problems:
+                print(f"        {p}")
+                failures.append(f"viewer-words: {p}")
+        else:
+            skipped.append("viewer-words")
     for f in failures:
         if ":" not in f.split(" ")[0]:
             print(f"FAIL  {f}")

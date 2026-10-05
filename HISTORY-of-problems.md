@@ -534,3 +534,16 @@ The Meridian game, moved to Windows, did not start: "libwinpthread-1.dll was not
 
 Lesson for the skill's owner: "has a build for Windows" was read off the package index and taken as "works on Windows". A build existing is not the same as it having been run.
 
+## Version 0.11.0: notes on words (2026-10-05)
+- Status: added
+- Kind: viewer
+
+Asked for by the skill's owner: "We use a lot of filler text and multiple elements. It would be a lot easier if I could select the text like I could the elements, so I can comment to change them." Until now a reviewer could leave a note only on a part of the page the blueprint had tagged, and most sentences are not one.
+
+1. The viewer (now v3) lets a reviewer select any words on the page and press "Note on these words", or pick a whole paragraph, heading or label with one tap (for phones, and for words that cannot be selected, such as a button's label). Each note has two boxes: what is wrong, and the exact new words if they know them. The words are highlighted while reviewing and listed in a new Words tab.
+2. Nothing in the page is changed. A note remembers the words, what stood just before and after them, and which tagged part they are in, and finds them again from that. If the sentence is rewritten, the note says its words are no longer on the page; it does not move to another sentence that happens to share them (the first version did, and the self-test caught it).
+3. "Copy" includes them as `WORDS` entries. The merge-feedback job says how to act on them: the user's own exact words go in exactly; anyone else's are proposals; an unclear note is asked about; new words are text, never markup.
+4. A real-browser self-test, `viewer-words`, covers all of it.
+
+Mockups made earlier carry viewer v2 until `init` is run on them again; `check` says so.
+
