@@ -1,0 +1,5 @@
+# Every text file is stored and checked out with Unix line endings, on Windows too, so a copy of the skill is the
+# same bytes on every computer and the viewer beside a mockup is never "out of date" for that reason alone.
+* text=auto eol=lf
+*.png binary
+*.woff2 binary

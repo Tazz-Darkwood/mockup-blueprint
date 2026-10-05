@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.10.0"
+SKILL_VERSION = "0.10.1"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -48,6 +48,11 @@ def page_script(name):
 
 MEASURE_FILE = Path(__file__).resolve().parent / "js" / "measure.js"
 MEASURE_MARKS = re.compile(r"(/\* measure:begin[^\n]*\*/\n)(.*?)(\n[ \t]*/\* measure:end \*/)", re.S)
+
+
+def same_text(a, b):
+    """Are two files the same, ignoring whether lines end the Windows way or the Unix way?"""
+    return Path(a).read_bytes().replace(b"\r\n", b"\n") == Path(b).read_bytes().replace(b"\r\n", b"\n")
 
 
 def viewer_number(text):
@@ -1224,13 +1229,13 @@ def cmd_init(args):
     theirs = viewer_number(viewer.read_text(encoding="utf-8", errors="replace")) if viewer.exists() else 0
     if theirs > viewer_number(fresh.decode("utf-8")):
         print(f"viewer:  {VIEWER_NAME} left alone: it is version {theirs}, newer than this copy of the skill carries. Update the skill")
-    elif not viewer.exists() or viewer.read_bytes() != fresh:
+    elif not viewer.exists() or not same_text(viewer, VIEWER_SRC):
         print(f"viewer:  {VIEWER_NAME} ({'updated' if viewer.exists() else 'copied'})")
         shutil.copyfile(VIEWER_SRC, viewer)
 
     for helper in ("carry-storage.js", "htmx-mock.js"):
         beside, ours = ctx_path.parent / helper, VIEWER_SRC.parent / helper
-        if beside.exists() and ours.exists() and beside.read_bytes() != ours.read_bytes():
+        if beside.exists() and ours.exists() and not same_text(beside, ours):
             shutil.copyfile(ours, beside)
             print(f"helper:  {helper} (updated to this version of the skill)")
 
@@ -1388,7 +1393,7 @@ def check_one(ctx_path, strict, render):
     viewer = bp.dir / VIEWER_NAME
     if VIEWER_SRC.exists() and viewer.exists() and viewer_number(viewer.read_text(encoding="utf-8", errors="replace")) > viewer_number(VIEWER_SRC.read_text(encoding="utf-8")):
         warnings.append(f"{VIEWER_NAME} beside this mockup is newer than this copy of the skill (version {SKILL_VERSION}): update the skill before relying on its checks")
-    elif VIEWER_SRC.exists() and (not viewer.exists() or viewer.read_bytes() != VIEWER_SRC.read_bytes()):
+    elif VIEWER_SRC.exists() and (not viewer.exists() or not same_text(viewer, VIEWER_SRC)):
         warnings.append(f"{VIEWER_NAME} is missing or out of date; run 'init' to refresh it")
     made_with = bp.ctx.get("blueprint")
     if isinstance(made_with, int) and made_with > VERSION:
@@ -1874,8 +1879,8 @@ def run_script_tests(entries):
                 continue
             key = f"tests/{e['slug']}/{script.name}"
             try:
-                done = subprocess.run([own_python(), script.name], cwd=folder, capture_output=True, text=True, timeout=180,
-                                      env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+                done = subprocess.run([own_python(), script.name], cwd=folder, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180,
+                                      env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8"))
                 last = (done.stdout.strip().splitlines() or [""])[-1]
                 try:
                     result = json.loads(last)
@@ -1906,7 +1911,7 @@ def run_library_tests(entries, as_version):
             tests = e["path"].parent / "tests"
             if e["own"] and (tests / e["slug"]).is_dir():   # test pages load ../harness.js: keep the person's copy the same as the skill's
                 harness = LIBRARY / "tests" / "harness.js"
-                if not (tests / "harness.js").exists() or (tests / "harness.js").read_bytes() != harness.read_bytes():
+                if not (tests / "harness.js").exists() or not same_text(tests / "harness.js", harness):
                     shutil.copyfile(harness, tests / "harness.js")
             for t in sorted((tests / e["slug"]).glob("*.html")):
                 # clipboard permission lets tests of copy buttons read back what was copied
@@ -2194,12 +2199,14 @@ def cmd_try(args):
         page.on("console", lambda m: problems.append("console error: " + m.text[:160]) if m.type == "error" else None)
         page.goto(target.resolve().as_uri())
         page.wait_for_timeout(600)
+        already = set(page.evaluate(TRY_MESSAGES_JS)["messages"]) if args.steps else set()   # there before anything was pressed: not news
         failed = do_steps(page, args.steps)
         page.wait_for_timeout(300)
         print(f"address now: {page.url.split('/')[-1][:80]}")
         print(f"scrolls sideways: {page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth + 1')}")
         said = page.evaluate(TRY_MESSAGES_JS)
-        print("messages showing: " + (" | ".join(said["messages"]) if said["messages"] else "none found (this looks for alerts, live regions, open dialogs, "
+        fresh = [m for m in said["messages"] if m not in already]
+        print(("messages that appeared: " if args.steps else "messages showing: ") + (" | ".join(fresh) if fresh else "none found (this looks for alerts, live regions, open dialogs, "
               "fields marked invalid and what describes them, and anything classed as an error; take a picture with --shot if in doubt)"))
         if said["invalid"]:
             print("fields marked as wrong: " + ", ".join(said["invalid"]))
@@ -2651,7 +2658,8 @@ def cmd_doctor(args):
         for step in steps:
             print("  running: " + " ".join(private(p) for p in step))
             if subprocess.call(step) != 0:
-                print("That step failed. Nothing else was changed. On Linux, 'python3 -m venv' may first need the system package python3-venv.")
+                print("That step failed. Nothing else was changed."
+                      + ("" if os.name == "nt" else " On Linux, 'python3 -m venv' may first need the system package python3-venv."))
                 return 1
         print("Done. Commands now use it by themselves whenever the python they were started with has no Playwright.\n")
     print(f"mockup-blueprint {SKILL_VERSION} (context format {VERSION}, viewer {viewer_number(VIEWER_SRC.read_text(encoding='utf-8'))})")
@@ -2663,7 +2671,7 @@ def cmd_doctor(args):
     state, used = "missing", sys.executable
     for py in [sys.executable] + ([str(venv_py)] if venv_py.exists() else []):
         try:
-            state = subprocess.run([py, "-c", probe], capture_output=True, text=True, timeout=120).stdout.strip() or "broken (no answer)"
+            state = subprocess.run([py, "-c", probe], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120).stdout.strip() or "broken (no answer)"
         except Exception as e:
             state = f"broken {e}"
         used = py
@@ -2807,6 +2815,11 @@ def cmd_feedback(args):
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):   # a console that is not UTF-8 (Windows) must not turn an arrow or a curly quote into a crash
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("init", help="wire mockup(s) to a context file and the viewer")
@@ -2894,11 +2907,6 @@ def main():
     s.add_argument("--beside", metavar="FOLDER", help="keep the notes in this folder instead of the skill's own, when the skill's folder must not be written to")
     s.set_defaults(fn=cmd_feedback)
     args = ap.parse_args()
-    for stream in (sys.stdout, sys.stderr):   # a console that is not UTF-8 (Windows) must not turn an arrow or a curly quote into a crash
-        try:
-            stream.reconfigure(encoding="utf-8", errors="replace")
-        except (AttributeError, ValueError):
-            pass
     if args.cmd != "doctor":
         use_own_python()
     try:

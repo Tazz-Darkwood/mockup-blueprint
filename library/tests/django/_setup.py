@@ -24,7 +24,10 @@ def setup(database="sqlite", urls=None, **extra):
         folder = tempfile.mkdtemp(prefix="bp-pg-")
         server = pgserver.get_server(folder, cleanup_mode="delete")
         atexit.register(server.cleanup)
-        db = {"ENGINE": "django.db.backends.postgresql", "NAME": "postgres", "USER": "postgres", "HOST": folder}
+        from psycopg.conninfo import conninfo_to_dict
+        where = conninfo_to_dict(server.get_uri())   # a socket folder on Linux and macOS; an address and a port on Windows
+        db = {"ENGINE": "django.db.backends.postgresql", "NAME": where.get("dbname", "postgres"), "USER": where.get("user", "postgres"),
+              "PASSWORD": where.get("password") or "", "HOST": where.get("host", folder), "PORT": str(where.get("port") or "")}
     else:
         db = {"ENGINE": "django.db.backends.sqlite3", "NAME": tempfile.mkdtemp(prefix="bp-sqlite-") + "/db.sqlite3"}
     conf = dict(

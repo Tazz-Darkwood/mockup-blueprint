@@ -1,5 +1,5 @@
 {
-  "about": "The try command finds a message that is tied to a field rather than announced, takes its options anywhere, and says when a control is switched off.",
+  "about": "The try command finds a message that is tied to a field rather than announced, does not count a live region that was there all along, takes its options anywhere, and says when a control is switched off.",
   "steps": [
     {
       "run": [
@@ -10,11 +10,14 @@
       ],
       "browser": true,
       "must": [
-        "Enter your name.",
+        "messages that appeared: Enter your name.",
         "fields marked as wrong: input#name",
         "focus is on: input#name"
       ],
-      "exit": 0
+      "exit": 0,
+      "must_not": [
+        "a panel that is always on the page"
+      ]
     },
     {
       "run": [

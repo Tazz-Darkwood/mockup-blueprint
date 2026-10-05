@@ -488,3 +488,17 @@ A fresh session made a booking page with Alpine.js and Tailwind, tools the libra
 12. "Take the default" and "do not answer blocking questions yourself" pulled apart: the core now says a default is worked to, the question stays open, and the verdict stays NOT READY.
 13. Tailwind was not named as a tool without notes because its address has no file ending: any outside script or stylesheet now counts.
 
+## Version 0.10.1: Windows, found by reading the code before the first Windows user's notes arrived (2026-10-04)
+- Status: fixed
+- Kind: script
+
+The skill had only ever run on Linux. Reading the script for things that differ on Windows found these, all fixed without a Windows machine to try them on, so each still needs confirming there:
+
+1. The Django tests reached their throwaway Postgres through a socket folder, which Windows does not have: they now connect the way the server itself says (an address and a port on Windows).
+2. Output from the test scripts and from the set-up probe was read in the console's own encoding: now always UTF-8.
+3. The console was made UTF-8-safe only after the command line was read, so help text could still fail: now first thing.
+4. A copy of the skill checked out with Windows line endings made every mockup's viewer look out of date: files are now compared ignoring line endings, and `.gitattributes` keeps the skill's files the same bytes everywhere.
+5. The set-up failure message gave Linux advice on Windows.
+
+Also in 0.10.1: `try` no longer reports a live region that was on the page before anything was pressed as a message (reported while working on a tutoring site, 2026-10-04).
+
