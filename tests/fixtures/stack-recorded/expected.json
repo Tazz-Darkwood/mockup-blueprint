@@ -1,0 +1,17 @@
+{
+  "about": "With several guides stacked, check names the order, says the first feel guide sets the colour, the top and the material, and asks for the site guide's record of how they were combined.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "stacks 3 guides in this order: warm, artistic, sales",
+        "\"warm\" is the first feel guide, so it sets the page's colour",
+        "[style/stack-unrecorded]"
+      ]
+    }
+  ]
+}

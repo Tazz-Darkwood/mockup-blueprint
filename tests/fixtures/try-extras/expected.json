@@ -1,5 +1,5 @@
 {
-  "about": "try picks from a drop-down by value or by its words, lists the order Tab moves in, and takes a picture of one part or of the whole page in strips; the phone check names a drawing that sticks out by what holds it. A whole-page picture wider than the window says why.",
+  "about": "try picks from a drop-down by value or by its words, lists the order Tab moves in, and takes a picture of one part or of the whole page in strips; the phone check names a drawing that sticks out by what holds it. A whole-page picture wider than the window says why. A page can be opened with ?something after its name.",
   "steps": [
     {
       "run": [
@@ -91,6 +91,17 @@
         "scrolls sideways: False",
         "something reaches past the edge and is cut off"
       ]
+    },
+    {
+      "run": [
+        "try",
+        "index.html?colour=blue"
+      ],
+      "browser": true,
+      "must": [
+        "address now: index.html?colour=blue"
+      ],
+      "exit": 0
     }
   ]
 }

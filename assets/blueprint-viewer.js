@@ -28,6 +28,15 @@ var __bpMeasure = (function () {
     if (el.checkVisibility && !el.checkVisibility()) return false;
     return getComputedStyle(el).visibility !== 'hidden';
   }
+  // Words kept for screen readers only (the usual 1-pixel clipped box): nobody sees them, so their colour is no one's problem.
+  function forReadersOnly(el) {
+    for (var n = el; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) {
+      var r = n.getBoundingClientRect(), cs = getComputedStyle(n);
+      if ((r.width <= 1 || r.height <= 1) && (cs.overflow === 'hidden' || cs.clip !== 'auto' || cs.clipPath !== 'none')) return true;
+      if (/^rect\(0(px)?,? 0(px)?,? 0(px)?,? 0(px)?\)$/.test(cs.clip) || cs.clipPath === 'inset(50%)') return true;
+    }
+    return false;
+  }
   function labelOf(el) {
     var t = (el.getAttribute('aria-label') || el.textContent || el.getAttribute('placeholder') ||
       el.getAttribute('value') || el.getAttribute('name') || el.id || '').replace(/\s+/g, ' ').trim();
@@ -154,7 +163,7 @@ var __bpMeasure = (function () {
       var p = node.parentElement;
       if (!text || !p || seen.indexOf(p) >= 0 || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(p.tagName)) continue;
       seen.push(p); count++;
-      if (!shown(p) || p.closest('[disabled], [aria-disabled="true"]')) continue;
+      if (!shown(p) || p.closest('[disabled], [aria-disabled="true"]') || forReadersOnly(p)) continue;
       var cs = getComputedStyle(p);
       var fg = rgba(cs.color), bg = backgroundOf(p);
       if (fg && !bg && fg[3] > 0) unmeasuredEls.push({ el: p, color: fg, sample: text.slice(0, 40),

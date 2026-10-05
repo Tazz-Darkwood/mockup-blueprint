@@ -101,6 +101,15 @@ Every part of a page gets one of three levels:
 - Source: judgement. Several studied sites set text over busy photographs or in novelty faces where it was hard to read; that is not copied.
 - Rule: fields, labels, buttons, error messages and long text are plain, straight and in the reading face. Decoration is hidden from screen readers and nothing a person needs is only in a drawing. Movement, if any, stops under the reduced-motion setting. The phone guide's sizes hold.
 
+## When this guide is not the lead
+
+Another feel guide leads, so the page's colour, what fills its top and its main material are that guide's (see "When guides are stacked" in `style-guide.md`). Warm flavours it, in the lead's terms:
+
+- **Keep:** the people. Their names, their voice in the first person, a slogan someone would say out loud, and one of their own things somewhere on the page (a member's drawing, a hand-lettered sign, a photograph of them at work). Who made each thing, said where it is shown.
+- **Keep:** one bold colour of warm's kind, somewhere it is seen: a band, a banner, the colour of the repeated item's tag. Darkened to sit in the lead's palette if the lead is dark, but still a colour, not a shade of grey.
+- **Give up:** the bright page, the photograph at the top and "two or three marks, then stop": the lead decides those.
+- Judgement, from one pair of mockups: on a dark shop led by a dark, painterly feel guide, warm's part was the five named makers, their voice, and stock counts written in words; the owner chose that page as the better of the two. Not yet tried under artistic or professional.
+
 ## What this guide does not give you
 
 - It is built from organisations, not from one person's business. A single maker's site also needs the maker's own voice and name; see "Who is behind the site sets how polished it is" in the general guide. On the one maker's site made so far, a soap maker's shop, what worked was tape, pen lines, a little handwriting and the maker speaking in the first person.

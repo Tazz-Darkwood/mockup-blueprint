@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.12.0"
+SKILL_VERSION = "0.13.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -1066,6 +1066,9 @@ def do_steps(page, steps):
             page.wait_for_timeout(250)
         except Exception as e:
             why = str(e).splitlines()[0][:90]
+            covered = re.search(r"(<[^>]{1,120}>) (?:from <[^>]+> subtree )?intercepts pointer events", str(e))
+            if covered:   # what the visitor would press is under something else
+                why = f"something lies on top of it and takes the press: {covered.group(1)}. Click that instead, or the label it belongs to"
             try:
                 if verb in ("click", "fill", "choose") and page.locator(rest.partition("=")[0].strip() if verb != "click" else rest).first.is_disabled(timeout=300):
                     why = "that control is switched off (disabled) in this state of the page"
@@ -1075,7 +1078,7 @@ def do_steps(page, steps):
     return failed
 
 
-PICTURE_LIMIT = 80   # pieces of text over pictures measured on one page; more than this is reported as not measured
+PICTURE_LIMIT = 200   # pieces of text over pictures measured on one page; more than this is reported as not measured
 
 
 def measure_over_pictures(browser, page, report):
@@ -1163,6 +1166,8 @@ def measure_over_pictures(browser, page, report):
                           for p, u in zip(pairs, todo)])
     reader.close()
     left, passed = todo[marked:], 0
+    if left:
+        report["pictureError"] = f"more than {PICTURE_LIMIT} on one page; the first {PICTURE_LIMIT} were measured"
     for u, w in zip(todo[:marked], found):
         if not w or not w.get("ratio"):
             left.append(u)
@@ -1855,11 +1860,17 @@ def check_one(ctx_path, strict, render):
             for e in found:
                 if e["unfinished"]:
                     warnings.append(f"the style guide \"{g}\" still has {e['unfinished']} part(s) marked TODO: finish it before relying on it ({e['path']})  [style/guide-unfinished]")
-        for shelf in SHELVES:
-            same = [g for g in named if f"style-{shelf}-{g}" in on_shelf]
-            if len(same) > 1:
-                notes.append(f"stacks {len(same)} {shelf} guides ({', '.join(same)}): \"{same[0]}\" is named first, so it leads where they disagree; "
-                             "the site's own guide should say which parts of the site each one governs")
+        known = [g for g in named if any(f"style-{shelf}-{g}" in on_shelf for shelf in SHELVES)]
+        if len(known) > 1:
+            feel = [g for g in known if f"style-feel-{g}" in on_shelf]
+            notes.append(f"stacks {len(known)} guides in this order: {', '.join(known)}. "
+                         + (f"\"{feel[0]}\" is the first feel guide, so it sets the page's colour, what fills the top and the main material; the others flavour it in its terms "
+                            "(\"When guides are stacked\" in library/style-guide.md, and each guide's \"When this guide is not the lead\")" if feel else "Where they disagree, the earlier wins"))
+            site_guide = stack.get("site_guide")
+            sg = (bp.dir / str(site_guide)) if site_guide else None
+            if sg and inside(sg, bp.dir) and sg.is_file() and not re.search(r"^#+ How the .*guides were combined", sg.read_text(encoding="utf-8", errors="replace"), re.M | re.I):
+                warnings.append(f"{site_guide} has no section \"How the guides were combined\": with {len(known)} guides stacked, a builder reading only the blueprint "
+                                "cannot tell how they were settled (references/site-guide.md)  [style/stack-unrecorded]")
         if not any(f"style-feel-{g}" in on_shelf for g in named):
             warnings.append("project.style stacks no feel guide, so nothing says where the detail goes and the page will come out plain: "
                             "ask the user whether to make one or use the nearest (see references/jobs/style-guide.md in the skill folder)  [style/no-feel-guide]")
@@ -2383,9 +2394,12 @@ def cmd_try(args):
         else:
             steps.append(word)
     args.steps = steps
-    target = Path(args.page)
+    m = re.match(r"^([^?#]*)(.*)$", args.page)
+    page_name, extra = m.group(1), m.group(2)   # "product.html?id=3" is the file product.html opened with ?id=3
+    target = Path(page_name)
     if not target.exists():
-        die(f"{args.page} does not exist")
+        die(f"{page_name} does not exist")
+    address = target.resolve().as_uri() + extra
     with sync_playwright() as pw:
         browser = open_browser(pw)
         ctx = browser.new_context(**({"viewport": PHONE_SIZE, "is_mobile": True, "has_touch": True} if args.phone else {"viewport": {"width": 1280, "height": 900}}))
@@ -2394,7 +2408,7 @@ def cmd_try(args):
         problems = []
         page.on("pageerror", lambda e: problems.append("script error: " + str(e).splitlines()[0][:160]))
         page.on("console", lambda m: problems.append("console error: " + m.text[:160]) if m.type == "error" else None)
-        page.goto(target.resolve().as_uri())
+        page.goto(address)
         page.wait_for_timeout(600)
         already = set(page.evaluate(TRY_MESSAGES_JS)["messages"]) if args.steps else set()   # there before anything was pressed: not news
         failed = do_steps(page, args.steps)
@@ -2602,6 +2616,10 @@ TODO: one note for each rule, five to ten in all, each in this form. Every rule 
 - In a mockup: TODO, on the note about the signature piece only: what stands in when the real thing (a photograph, a product, a person) does not exist yet. Delete this line from other notes.
 - Careful: TODO, only where it applies: where the rule asks for something on the general guide's list of template tells (a pale ground with one colour, say), what keeps the page from reading as a template all the same. Otherwise delete this line.
 
+## When this guide is not the lead
+
+TODO, for a feel guide only (delete this section for a purpose or field guide): when another feel guide leads, it sets the page's colour, what fills the top and the main material. Say what this guide keeps (its few rules that still make sense in another guide's colours and materials) and what it gives up, and how it flavours the page in the lead's terms. See "When guides are stacked" in the general style guide.
+
 ## What this guide does not give you
 
 TODO: the kinds of site it should not be used for, and what it was not built from.
@@ -2696,6 +2714,9 @@ def cmd_style(args):
                     issues.append(f"note \"{title}\" has no {' or '.join(missing)} line")
                 elif not re.search(r"\d+ of \d+|\bstudy\b|taste|judgement|said", block.split("- Rule:")[0], re.I):
                     issues.append(f"note \"{title}\": the Source does not say how many of the sites or pictures showed it ('5 of 7 sites', '4 of 6 pictures'), or that it is the owner's taste or your judgement")
+            if re.search(r"^kind:\s*feel\b", text, re.M) and "## When this guide is not the lead" not in text:
+                issues.append("no section \"When this guide is not the lead\": a feel guide stacked second needs to say what it keeps and what it gives up "
+                              "(see \"When guides are stacked\" in the general style guide)")
             for heading in ("## The detail map", "## Use it properly", "## Not covered yet", "## Sources"):
                 if heading not in text:
                     issues.append(f"no section headed '{heading[3:]}'")
@@ -2717,7 +2738,8 @@ def cmd_style(args):
         print()
     for f, why in SET_ASIDE:
         print(f"NOT LOADED: {f} ({why})")
-    print("A site may stack any of these together, more than one of a kind included. The first one named leads where two disagree.")
+    print("A site may stack any of these together, more than one of a kind included. The first feel guide named sets the page's colour, its top and its material;\n"
+          "the others flavour it in that guide's terms. See \"When guides are stacked\" in library/style-guide.md.")
     print(f"Guides you make are kept in {home}\n(outside the skill, so updating the skill leaves them alone). Start one with: style new \"Name\" --kind feel")
     return 0
 

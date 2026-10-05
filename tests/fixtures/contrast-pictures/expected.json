@@ -1,5 +1,5 @@
 {
-  "about": "Text over a gradient, or over a plain colour with a texture laid on it, is measured from a picture of the page instead of being skipped in silence, also further down a page that asks for smooth scrolling. Words are not measured against a badge inside them, or against an outline in their own ink.",
+  "about": "Text over a gradient, or over a plain colour with a texture laid on it, is measured from a picture of the page instead of being skipped in silence, also further down a page that asks for smooth scrolling. Words are not measured against a badge inside them, or against an outline in their own ink. Text kept for screen readers only is not judged.",
   "steps": [
     {
       "run": [
@@ -17,7 +17,8 @@
         "Dark words on a pale gradient.\"; measured",
         "could not be measured",
         "(\"Basket",
-        "(\"FULL"
+        "(\"FULL",
+        "Only for screen readers"
       ]
     }
   ]

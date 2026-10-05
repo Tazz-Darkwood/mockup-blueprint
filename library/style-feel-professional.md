@@ -89,6 +89,14 @@ Levels are the three from the general guide: signature, styled, quiet.
 - Source: judgement, from the Greenfire Herbs critique and the general guide's rule on who is behind a site.
 - Rule: match the polish to the size of the business. One practitioner writes as "I", shows their own face, and does not borrow the look of a large company: no "our team", no implied scale, no chat widget.
 
+## When this guide is not the lead
+
+Another feel guide leads, so the page's colour, what fills its top and its main material are that guide's (see "When guides are stacked" in `style-guide.md`). Professional flavours it, in the lead's terms:
+
+- **Keep:** the proof (a few checkable facts, named reviews), a short plainly named menu, contact that cannot be missed, and identical repeated items.
+- **Give up:** the white ground and the restraint in decoration: the lead decides those. Proof and contact stay plain and easy to find inside whatever the lead makes of the page.
+- Judgement: not yet tried as a second guide.
+
 ## Applied so far
 
 - **AP Biology tutor site, 2026-10-03** (a restyle of an existing mockup; the owner agreed the result the same day: "way better, cleaner for sure". One site so far; a second is needed before any note here is approved). The existing mockup already had nearly everything this guide asks for in content: a portrait, three facts, rates, named reviews, several ways to get in touch. What the guide changed was emphasis: the facts and qualifications went from small type and labels to large type near the top, and twenty rounded boxes became ruled rows, so that the evidence is what stands out. Lesson so far: on a professional site the guide's main work is deciding what is loud and what is quiet, not adding things.

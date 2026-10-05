@@ -92,6 +92,14 @@ Every part of a page gets one of three levels:
 - Source: judgement; applied on Seventeen.
 - Rule: artwork that carries no information is marked so screen readers skip it, and nothing a person needs is only in the artwork.
 
+## When this guide is not the lead
+
+Another feel guide leads, so the page's colour, what fills its top and its main material are that guide's (see "When guides are stacked" in `style-guide.md`). Artistic flavours it, in the lead's terms:
+
+- **Keep:** the work itself shown large and framed as work, one family of type with character, and a layout that leaves the centred column somewhere.
+- **Give up:** the neutral base and the signature at the top: the lead decides those.
+- Judgement: not yet tried as a second guide.
+
 ## What this guide does not give you
 
 Artistic is not the same as handmade. The sites this guide was built from are museums and design studios: expressive, and also polished. Turning this guide up makes a site bolder and more gallery-like. It does not make it warmer or more personal. When the business is one person's craft, the site also needs the maker's own hand and voice, and that is a different quality (see "Who is behind the site sets how polished it is" in the general guide). On Greenfire Herbs it was added as tape, pen lines, handwriting and a first-person voice, recorded in that site's own guide. If a second site needs the same, it should become a feel guide of its own, built from a study of small makers' sites.

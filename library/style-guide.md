@@ -12,10 +12,10 @@ source: sources are listed at the end of the file
 The general layer of the style stack. A site's look is decided by up to four layers, read in this order:
 
 1. **This guide**, and `style-mobile.md` beside it, which says how any page must work on a phone. True of any site.
-2. **Stacked guides**, chosen in the design brief. Three shelves: what the site is *for* (`style-purpose-...`, such as sales), how it should *feel* (`style-feel-...`: artistic, professional or warm), and what *field* it is in (`style-field-...`, such as education). Guides are made to be mixed. A site may take any number, from any shelf, two of the same kind included: warm with artistic, sales with a booking guide. That is how two sites for the same trade end up looking nothing alike. Not every site needs all three shelves. The brief names the guides, puts the lead first, and says which parts of the site each one governs; in the blueprint, `project.style.guides` lists them in that order. The shelves hold the guides that come with the skill and the ones the user has made, which are kept in their own folder outside the skill; `blueprint.py style` lists both. Where a field guide and a feel guide disagree, the field guide wins, because it knows what that trade's visitors expect.
+2. **Stacked guides**, chosen in the design brief. Three shelves: what the site is *for* (`style-purpose-...`, such as sales), how it should *feel* (`style-feel-...`: artistic, professional or warm), and what *field* it is in (`style-field-...`, such as education). Guides are made to be mixed. A site may take any number, from any shelf, two of the same kind included: warm with artistic, sales with a booking guide. That is how two sites for the same trade end up looking nothing alike. Not every site needs all three shelves. The brief names the guides, puts the lead first, and says which parts of the site each one governs; in the blueprint, `project.style.guides` lists them in that order. How they combine is under "When guides are stacked" below. The shelves hold the guides that come with the skill and the ones the user has made, which are kept in their own folder outside the skill; `blueprint.py style` lists both. Where a field guide and a feel guide disagree, the field guide wins, because it knows what that trade's visitors expect.
 3. **The site's own guide**, kept in the site's folder beside its blueprint (`<name>.style.md`). It holds the brief, the tokens, and every decision that only makes sense for that site.
 
-When they disagree, the more specific wins: the site's guide over the stacked guides, the stacked guides over this one. If two stacked guides disagree, the one the brief names as lead wins, except that a field guide still wins over a feel guide. Mixing is for the look only. The tools a site is built with are not mixed this way: they are a build decision recorded in the blueprint, and the library's notes on a tool apply whenever that tool is used. The one exception: the accessibility minimums in this guide (text contrast, minimum text size, tap target size) are never overridden.
+When they disagree, the more specific wins: the site's guide over the stacked guides, the stacked guides over this one. Between stacked guides, see "When guides are stacked". Mixing is for the look only. The tools a site is built with are not mixed this way: they are a build decision recorded in the blueprint, and the library's notes on a tool apply whenever that tool is used. The one exception: the accessibility minimums in this guide (text contrast, minimum text size, tap target size) are never overridden.
 
 Criticism of a mockup goes to the lowest layer where it is still true. "The poems are too big" belongs to that site. "Artistic sites need a designed frame around each item" belongs to the artistic guide. "The brief must say how dense the page is" belongs here. Ask which it is before writing a rule, and when unsure put it in the site's guide: a rule can be promoted later, but a rule wrongly made general gets applied to every site.
 
@@ -27,6 +27,17 @@ Two kinds of rule are mixed here, and each note says which it is:
 - **Judgement.** No source was read for it; it is this guide's own position. These are the ones most likely to be rewritten after critique.
 
 Every rule starts as `draft`. A rule becomes `approved` when it has been applied on two different kinds of site and the skill's owner has agreed with the result on both, recorded on an `Approved by` line. One site cannot show whether a rule is general or only suits that site. Rules that critique shows to be wrong are rewritten, moved to a more specific layer, or removed.
+
+## When guides are stacked
+
+Learned from two mockups of the same shop made with the same three guides in two orders (2026-10-05). With warm leading, the page still came out dark and full like the one with a dark, painterly guide leading, only weaker. The owner: "B just kinda looks like a worse version of A ... nothing really feels warm about B". The order had been followed on small things and lost on the ones that set the feel. So:
+
+1. **The lead sets the feel.** Three things come from the lead guide whatever the others say: the colour of the page (its ground, and how dark or bright it is), what fills the top of the first page, and the main material. If warm leads, it is a warm site with a hint of the others; if a dark, painterly guide leads, a dark, painterly site with a hint of the others.
+2. **The others flavour it, in the lead's terms.** A guide later in the order keeps its rules, but carries them out with the lead's colour, material and voice. The owner's own example: a dark guide that fills every gap, placed after warm, still fills it, "but with warm things" (cut paper, bunting, the members' own drawings) on warm's bold colour; its one light becomes a lantern in a bright scene. Warm after a dark guide keeps the dark, full room, and brings into it the people, their names and voice, and the group's own things. Each feel guide has a section, "When this guide is not the lead", saying what it keeps and how it flavours; read it for every guide that is not first.
+3. **Each guide governs the parts its detail map gives it.** Where two claim the same part, the earlier in the order wins, all the way down the list, not only the lead.
+4. **A purpose guide decides where things go on its own steps**: the layout of a product, a basket, a booking form, what must be shown and in what order, and that nothing covers a product picture. The feel guides decide what those things are made of. A field guide wins over a feel guide on what that trade's visitors expect. Both hold whatever the order.
+5. **Write it down.** The site's own guide has a table, "How the guides were combined": one row for each part where two guides met, what each asked for, what was done, and which of the rules above settled it. A builder reading only the blueprint would otherwise apply the order alone.
+6. **Test it.** Picture the first screen with the order swapped. If someone could not tell which guide led, the lead is not leading: go back to rule 1.
 
 ## Use it properly
 
@@ -64,11 +75,12 @@ Before drawing anything, write the design brief (first note) and set the tokens.
 ## Before showing a mockup
 
 1. Squint at it, or blur a screenshot. The most important thing should still stand out, and groups should still read as groups.
-2. Count: typefaces (two at most), text sizes in view (about three), accent colours (one), primary buttons in view (one).
+2. Count: typefaces (two at most), text sizes in view (about three), accent colours (one, unless a stacked guide asks for more), primary buttons in view (one).
 3. Measure the longest line of reading text. Over 75 characters is too long.
 4. Look at it at phone width and at a very wide window, and run the list in `style-mobile.md`.
-5. Put it next to the last mockup made. If they could swap skins without anyone noticing, the brief was not followed.
+5. Put it next to the last mockup made. If they could swap skins without anyone noticing, the brief was not followed. If the two share a lead guide, they will share its feel; what must differ is what the site is about (its subject, its people, its signature), and the site's guide says what does.
 6. Run the template test (see "It must not look like a template" below): count the tells on the page, and name three things on it that were made for this site alone. Write the three in the site's own guide. If there are not three, it is not ready to show.
+7. With more than one feel guide stacked, run the test under "When guides are stacked": could someone tell which one leads?
 
 ## Notes
 

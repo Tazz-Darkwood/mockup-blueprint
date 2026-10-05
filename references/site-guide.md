@@ -14,6 +14,9 @@ The eight lines the general guide asks for, and who agreed them and when.
 If nobody has agreed them yet, say so: the brief is then a proposal, with a question in the blueprint asking whether it is right.
 Then the answers to the questions the feel guide asks before drawing (for the warm guide: what would this organisation pin to a wall, and what is it made of).
 
+## How the guides were combined
+Only when two or more guides are stacked. First, which guide set the three things the lead decides: the page's colour, what fills the top, the main material. Then a table: one row for each part of the page where two guides met, what each asked for, what was done, and which rule settled it (the lead sets the feel, a later guide flavours it in the lead's terms, the earlier guide wins a part both claim, a purpose guide arranges its own steps). The rules are under "When guides are stacked" in the general style guide.
+
 ## Where the detail goes
 A table: each part of the page, its level (signature, styled or quiet), and what it is on this site.
 One signature piece. Name it in a sentence.

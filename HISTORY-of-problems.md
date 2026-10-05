@@ -563,3 +563,17 @@ A fresh Claude was given one sentence from the skill's owner, the skill and one 
 
 Not done: a command that compares a built site with its blueprint. Nothing in this run asked for it.
 
+## Version 0.13.0: stacking guides, tested by making one shop twice (2026-10-05)
+- Status: fixed, except where said
+- Kind: library, instructions, check, script
+
+Stacking had never been tested where it is hardest: two feel guides on one site, pulling against each other. Two fresh Claudes were given the same request (a shop for a Renaissance faire group selling hand-made props) and the same three guides: a dark, painterly feel guide of the owner's, the warm guide and the sales guide, in two orders. Neither saw the other. The owner's verdict: the page led by the dark guide was "the best of the two"; the one led by warm "just kinda looks like a worse version of A with not that much different ... nothing really feels warm about B". The order had been followed on small things and lost on the ones that set the feel, and the two Claudes had invented two different rules for combining guides, because the skill gave none.
+
+1. The general style guide has a section, "When guides are stacked". The lead sets the feel: the page's colour, what fills the top and the main material. The others flavour it in the lead's terms; the owner's example was "fills everything but with warm things". The earlier guide wins a part both claim, all the way down the order. A purpose guide decides how its own steps are arranged, and a field guide wins on what its trade expects, whatever the order. How the guides met is written in the site's own guide, and a swap test asks whether anyone could tell which guide led.
+2. Every feel guide has a section, "When this guide is not the lead": what it keeps and what it gives up. `style new` starts one and `style check` asks for it.
+3. The sales guide no longer contradicts itself about which parts it governs, and a product picture is never covered (the second shop's price tags cut into its pictures).
+4. The site guide has a section "How the guides were combined"; `check` names the whole order, says what the first feel guide sets, and warns when the record is missing.
+5. Smaller: the Create job's step number, reading table and where a stacked guide keeps its checks; what the context holds before the look is shown; `try` opens `page.html?id=...` and says what lies over a control it could not press; the contrast check skips text kept for screen readers only, and measures up to 200 pieces over pictures a page.
+
+Left open: helpers for drawing a scene in code, which took most of each run's time. A project of its own.
+

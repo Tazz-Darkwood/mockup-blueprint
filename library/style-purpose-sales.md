@@ -23,17 +23,19 @@ This was learned the hard way. On the first Greenfire Herbs mockup, "quiet and c
 
 Levels are the three from the general guide: signature, styled, quiet.
 
+The table is in two parts, because of the rule above. The first five rows are the buying steps: sales decides how they are arranged and what they must show, whatever the order of the stack, and a feel guide decides what they are made of. The rows after them are what the studied shops did elsewhere on the site. They are what a shop's other pages must contain, not how they look: when a feel guide is stacked, it decides the look of those parts, and these rows only say what must be there.
+
 | Part of the site | Level | What it must contain | Seen on |
 |---|---|---|---|
-| Top of the home page | Signature | The product itself, photographed in a scene, with a short line of text and one "shop" button | 7 of 7 (button on 6) |
-| Product tile | Styled, and identical for every product | A picture on a plain, consistent background; the name; the price | 6 of 7; price on the tile on 5 |
-| First row under the top | Styled | Actual products or categories, reachable in one click | 6 of 7 |
-| Navigation | Quiet and conventional | Product categories, search, and the basket at the top right | 7 of 7 |
+| Product tile | Styled, and identical for every product | A picture on a plain, consistent background, with nothing laid over it; the name; the price | 6 of 7; price on the tile on 5 |
 | Product page | Quiet and conventional | Two columns: pictures on one side; name, price, options, quantity and one add button on the other | 5 of 5 |
 | Facts a shopper checks | Quiet, but present and near the add button | Ingredients, delivery, returns | Delivery 5 of 5, ingredients 4 of 5 |
+| Basket and checkout | Quiet and conventional | Not studied; from the research below | |
+| Navigation | Quiet and conventional | Product categories, search, and the basket at the top right. A buying step: the basket and the categories are where shoppers look for them | 7 of 7 |
+| Top of the home page | Signature | The product itself, photographed in a scene, with a short line of text and one "shop" button | 7 of 7 (button on 6) |
+| First row under the top | Styled | Actual products or categories, reachable in one click | 6 of 7 |
 | Reviews | Quiet | A rating near the name | 3 of 5 |
 | Announcement strip | Quiet | One line above the header, usually the free-delivery threshold | 5 of 7 |
-| Basket and checkout | Quiet and conventional | Not studied; from the research below | |
 
 ## Use it properly
 
@@ -43,6 +45,11 @@ Levels are the three from the general guide: signature, styled, quiet.
 4. Before showing the mockup, walk the buying path as a stranger: from the first screen to a product, to the basket, to paying. Count the clicks and note every point where a fact was missing.
 
 ## Notes
+
+### Nothing covers a product picture
+- Status: draft
+- Source: the owner's critique of a faire shop mockup, 2026-10-05: the price tags "cut into the image above it". Judgement on the general point.
+- Rule: a product's picture is shown whole. Tags, prices, badges, stamps and ribbons sit beside or below it, never over it, however the feel guide styles them. A stamp such as "sold out" may cross the picture only when the product cannot be bought, since then the picture is no longer the point.
 
 ### The first screen shows the product and one way in
 - Status: draft
