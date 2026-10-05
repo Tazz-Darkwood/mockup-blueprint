@@ -511,3 +511,14 @@ The Meridian ant colony was the first blueprint built into a real Django site. I
 1. The `pgserver` package has no build for Python 3.13 on Windows, so `doctor --setup --for django` would have failed there. The tests now use `pixeltable-pgserver`, which has one. All 18 Django tests pass on it (PostgreSQL 18.4 in place of 16.2).
 2. That Postgres will not start from a folder whose path has a space in it. The tests never met this because they use temporary folders; a project folder met it at once. Written up as a draft note in the Django page, with where to keep the data instead.
 
+## Version 0.10.3: what the first full build from a blueprint taught (2026-10-04)
+- Status: fixed, except the first
+- Kind: instructions
+
+The Meridian ant colony was built from its blueprint into a working Django site: 108 tests and 88 checks in a real browser. Where the skill fell short:
+
+1. Open. `audit` cannot look at a site running on this computer, and pages saved from one lose their stylesheet, so its rendered checks reported 7 errors the real pages do not have. The workaround is now written down in build-and-deploy; a proper answer (auditing a local address when the person says so) touches the guard against private addresses and is waiting for the owner's say.
+2. `build-and-deploy` knew only GitHub Pages and Render. It now has a section for a site that runs on its owner's own computer: starting and stopping, where data lives, a database that comes along, stopping with pages open, which security checks still apply over plain http.
+3. A mockup's stand-in for the server was looser than the rules in four places, all invisible in the mockup because its pages never asked. The gap checklist now asks what the server does "when asked for something no page offers", and build-and-deploy says to move a stand-in's rules over one at a time with a test for each.
+4. The Django notes gained three drafts from the build: one row that everything locks first, the Content-Security-Policy that comes with Django 6, and traps met while testing accounts.
+

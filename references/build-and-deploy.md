@@ -19,6 +19,7 @@ Read this when the job is to turn a blueprint into a working, deployed site.
 - **Sample data is not real data.** Values the blueprint calls sample or placeholder become seed data for development at most.
 - **When the blueprint is silent or wrong**, stop and ask. Then update the context file with the answer so the blueprint stays true. A blueprint that has drifted from the build is worse than none, because the next person will trust it.
 - **Use the acceptance criteria as the test list.** The spec ends with a checklist; turn each line into an automated test where practical and a manual check where not.
+- **A mockup's stand-in for the server is a reference, not a specification.** When the mockup carries code that fakes the server (a simulation, a pretend account), move its rules over one at a time and write a test for each rule in `project.background`, quoting the rule in the test. Expect the stand-in to be looser than the rules: it trusted its own pages, so it never checked what a page would never ask for. On the first build made this way (an ant colony, 2026-10-04), four such gaps turned up, none visible in the mockup. Then break each rule on purpose and see that a test notices.
 
 ## Keeping the live site out of reach while building
 
@@ -40,10 +41,26 @@ Say in `project.deployment` which environments exist, and in `project.security` 
 |---|---|
 | Only pages, styles, scripts and data that can be public | GitHub Pages |
 | Login, saved data, secrets, sending email, payments, anything private | Render (alone, or as the backend behind a Pages frontend) |
+| To be used only inside one home or office, on the owner's own computer, by decision | That computer. See "A site that runs on its owner's own computer" below |
 
 Confirm with the user which accounts and repository to use. Publishing a site and creating services are outward-facing actions: ask before each.
 
 The details for each host live in the library: read `library/github-pages.md` or `library/render.md` (in the skill folder) for the one being used. Their notes are drafts until a real deployment has confirmed them.
+
+## A site that runs on its owner's own computer
+
+Some sites are never meant for the internet: a game for one household, a tool for one office. The blueprint says so in `project.deployment`, and it is the owner's decision, not a shortcut. Learned on one build (an ant colony run on a home network, 2026-10-04), so treat it as a draft:
+
+- **Starting and stopping is part of the product.** One action each, a plain message saying whether it is running, and the addresses to give other people. On Windows that means something to double-click. The owner should never need a terminal.
+- **Keep the data apart from the code.** The database, the secret key and the log go in the usual place for a program's own data (`%LOCALAPPDATA%` on Windows, `~/.local/share` on Linux), not in the project folder. The folder can then be moved or replaced without losing anything, and a database that cannot start from a path with a space in it (see `library/django.md`) is not caught out by where the owner put the folder.
+- **Bring the database along.** A Postgres installed by `pip` and started by the site itself needs no installer and no administrator rights. Say which versions of Python it has builds for.
+- **The secret key is made on that computer**, the first time, and kept with the data. It is never in the code.
+- **Listen on the network, not only on the computer itself**, and tell the owner that the firewall will ask once. Say in plain words that the port must not be opened on the router.
+- **Stopping must not wait for open pages.** A page that asks the server something every second keeps its connection open. Let the stop finish the work in hand, close the database properly, and end, whoever is still connected. Try stopping with a page open.
+- **Whatever would be decided in a host's dashboard is decided on the computer itself**: who the administrator is, for one. A file or a command that only someone at that computer can use is the equivalent of "typed by a person into the host's settings".
+- **Plain http is a decision, not an oversight.** Write it in `project.security`. The checks below that need https (redirects, `Secure` cookies, `Strict-Transport-Security`) then do not apply; every other one does, and a Content-Security-Policy is still worth having.
+- **The two worlds are still two.** The checks run against a throwaway database in a temporary folder, never the owner's own data.
+- **`audit` wants a folder of pages**, and refuses an address on this computer on purpose. For a site that builds its pages on a server, save each page as a signed-in person sees it, copy the site's static files beside them and point the pages' links at that copy. Without their stylesheet the rendered checks measure unstyled pages and report errors the real pages do not have.
 
 ## Verifying before calling it done
 

@@ -165,6 +165,30 @@ For the build:
 - What would confirm it: the same build started on Windows.
 - Not for a public site: on a host such as Render, use the host's own Postgres.
 
+### One row that everything locks first
+- Status: draft
+- Test: none here; the build's own tests cover it. Seen on one build (the Meridian ant colony, 2026-10-04, Django 6.1.1 on PostgreSQL 18.4).
+- What happens: a shared world was kept as one row holding a JSON document. Every change, whether the clock moving the world on once a second or a person claiming something in it, ran inside `transaction.atomic()`, took the row with `select_for_update()`, changed it and saved. Two people claiming the same thing at the same moment were tried five times running: each time exactly one got it and the other was told it had gone. A change that raised an error halfway left the row as it was.
+- What to do: for a small shared world, one lock is simpler to get right than a lock for each thing in it. Keep the rules as plain code with no database in it, so each can be tested alone, and give the database a rule of its own as the backstop (here a unique column: no two accounts can hold the same ant). Take locks in one order everywhere (the world first, then an account).
+- Keep anything held in memory for speed (here, what browsers are sent) one step behind the database: update it only after the transaction has been saved.
+- For the blueprint: say in `project.background` what moves by itself and how often, and in `project.security` which rule the database itself enforces.
+
+### A Content-Security-Policy comes with Django 6
+- Status: draft
+- Test: none here. Seen on the same build.
+- What happens: adding `django.middleware.csp.ContentSecurityPolicyMiddleware`, a `SECURE_CSP` setting and the `csp` context processor sent a policy with every page. With `script-src` set to `CSP.SELF` and `CSP.NONCE`, the page's own script files ran, a script block written into the page ran only when it carried `nonce="{{ csp_nonce }}"` (an import map needed it), and data written with `json_script` needed nothing, because it is never run.
+- The trap when testing: with that policy, Playwright's `wait_for_function("some expression")` was refused by the page (`unsafe-eval`). Written as a function, `"() => some expression"`, it worked. `evaluate` was not affected.
+- What to do: turn the policy on early, while there are few pages. Styles written on elements (`style="..."`) need `'unsafe-inline'` in `style-src` or moving to the stylesheet.
+
+### Traps met while testing accounts
+- Status: draft
+- Test: none here. Seen on the same build.
+- Django's password hashing is slow on purpose: 60 tests that each made accounts took 98 seconds, and 4 seconds with `PASSWORD_HASHERS` overridden to a quick one for the tests. Leave one test on the real setting, to see how a password is stored.
+- A test client signed in with `force_login` holds a session cookie without the `HttpOnly` mark. To check the mark, look at the cookie on the reply to a real sign-in.
+- When anyone but the keeper changes their password (an administrator setting a new one), every browser that keeper was signed in on is signed out, because the session is tied to the password. That is what a reset should do; write it in the blueprint so nobody reports it as a fault. `update_session_auth_hash` keeps the browser that made the change signed in.
+- Driving a browser with Playwright from the same Python process as Django needs `DJANGO_ALLOW_ASYNC_UNSAFE=true`, or Django refuses to touch the database from that thread.
+- A custom user model (`AUTH_USER_MODEL`) has to be there before the first migration. Decide it on the first day, even if it adds nothing yet.
+
 ## What the skill cannot check
 
 - Anything about a real Django project. The skill's `check` and `audit` look at mockups and at built pages, not at Python code.
