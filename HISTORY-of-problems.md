@@ -502,3 +502,12 @@ The skill had only ever run on Linux. Reading the script for things that differ 
 
 Also in 0.10.1: `try` no longer reports a live region that was on the page before anything was pressed as a message (reported while working on a tutoring site, 2026-10-04).
 
+## Version 0.10.2: found while building the first real site from a blueprint (2026-10-04)
+- Status: fixed
+- Kind: library
+
+The Meridian ant colony was the first blueprint built into a real Django site. Its first stage found two things about the Postgres the Django tests use:
+
+1. The `pgserver` package has no build for Python 3.13 on Windows, so `doctor --setup --for django` would have failed there. The tests now use `pixeltable-pgserver`, which has one. All 18 Django tests pass on it (PostgreSQL 18.4 in place of 16.2).
+2. That Postgres will not start from a folder whose path has a space in it. The tests never met this because they use temporary folders; a project folder met it at once. Written up as a draft note in the Django page, with where to keep the data instead.
+

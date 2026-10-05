@@ -3,9 +3,9 @@ name: Django with Postgres
 summary: Server framework that makes HTML pages, handles forms and sign-in, and keeps data in a database. Read when a blueprint names Django or Postgres, above all when the site holds anything of value (coins, items, bookings, places) that two requests could fight over. What the server must do that a mockup cannot show, and the traps in forms, sign-in, settings and money moves.
 detect: ["\\bdjango\\b", "csrfmiddlewaretoken", "csrf_token", "\\bpostgres", "X-CSRFToken"]
 version: 6.1.1
-needs: django psycopg[binary] pgserver
+needs: django psycopg[binary] pixeltable-pgserver
 checked: 2026-10-03
-source: https://docs.djangoproject.com/en/6.1/ and the tests named in each note, run against Django 6.1.1 and PostgreSQL 16.2
+source: https://docs.djangoproject.com/en/6.1/ and the tests named in each note, run against Django 6.1.1 and PostgreSQL 18.4
 ---
 
 # Django with Postgres
@@ -62,13 +62,13 @@ For the build:
 
 ### Without a transaction, a failure halfway through a payment leaves the money gone
 - Status: approved
-- Test: `tests/django/atomic-rolls-back.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/atomic-rolls-back.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: a payment took 30 coins from one wallet and failed before paying the other. Run plainly, the 30 coins were gone. Run inside `transaction.atomic()`, the first wallet was back at 100.
 - What to do: every move of value, with all its parts (take, give, write the ledger line, mark the item's new owner), goes inside one `with transaction.atomic():` block. Django does not do this for a view unless told to.
 
 ### Two requests at the same moment lose one change, unless the row is locked
 - Status: approved
-- Test: `tests/django/lost-update-without-lock.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/lost-update-without-lock.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: two purchases of 10 coins arrived together. Each read the balance as 100, each saved 90. The result was 90: one purchase was free. With `select_for_update()` on the read, the second waited for the first and the result was 80.
 - What to do: when a request reads something, decides, and writes it back, read it with `select_for_update()` inside the transaction. This is how items and coins get duplicated on pet sites: not by clever attacks, by pressing a button twice quickly.
 - In someone else's code: `obj = Model.objects.get(...)`, some checks, `obj.save()`, with no lock, on anything of value.
@@ -82,26 +82,26 @@ For the build:
 
 ### Asking for a lock outside a transaction is an error
 - Status: approved
-- Test: `tests/django/select-for-update-needs-atomic.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/select-for-update-needs-atomic.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: on Postgres, `select_for_update()` with no transaction raised `TransactionManagementError: select_for_update cannot be used outside of a transaction`. Inside `transaction.atomic()` it read the row.
 - What to do: nothing more than the note above asks. Worth knowing because it is the one mistake here that announces itself.
 
 ### A change written with F() needs no lock, and a database rule refuses a balance below zero
 - Status: approved
-- Test: `tests/django/f-expression-and-check.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/f-expression-and-check.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: two purchases at the same moment, each written as `update(coins=F("coins") - 10)`, left 80 of 100. With a `CheckConstraint` saying coins are zero or more, spending 500 raised `IntegrityError` naming the constraint and the balance stayed at 80.
 - What to do: for a plain add or subtract, use `F()`: the database does the sum, so there is nothing to lose. Put every rule that must always hold into the database as a constraint as well as into the code; the constraint is the one that cannot be forgotten by a new view.
 
 ### A unique key on each action makes a repeated request count once
 - Status: approved
-- Test: `tests/django/idempotency-key.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/idempotency-key.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: the same payment notice was delivered three times at the same moment. Each attempt first created a row with the notice's id in a column marked unique, inside the transaction that granted the coins. One attempt granted 50 coins; the other two hit `IntegrityError` and granted nothing.
 - What to do: give every action that must happen once an id of its own (made in the browser for a button press, taken from the payment service for a payment) and record it in a unique column in the same transaction as the action. Payment services deliver notices more than once and out of order as a matter of course.
 - For the blueprint: for each such action say what the key is and where it comes from.
 
 ### Two trades locking the same rows in opposite orders deadlock
 - Status: approved
-- Test: `tests/django/deadlock-opposite-order.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/deadlock-opposite-order.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: Ada paid Bo while Bo paid Ada, each transaction locking the payer's wallet first. One finished and the other was stopped by Postgres with a deadlock error. When each locked both wallets in one query ordered by id, both finished.
 - What to do: whenever one transaction locks more than one row, lock them all at the start, in one agreed order (by id). And treat a deadlock error as "try again", not as a failure to show the player.
 
@@ -137,7 +137,7 @@ For the build:
 
 ### A JSON column holds structured data and can be searched by what is in it
 - Status: approved
-- Test: `tests/django/jsonfield-query.py` (passed 2026-10-03, Django 6.1.1 on PostgreSQL 16.2)
+- Test: `tests/django/jsonfield-query.py` (passed 2026-10-04, Django 6.1.1 on PostgreSQL 18.4)
 - What happens: a pet's genome was stored in a `JSONField` as a dictionary with a version number. `filter(genome__glow=True)` and `filter(genome__body__contains="A1")` each found the right pet, and the genome read back as a dictionary.
 - What to do: use a JSON column for data whose shape belongs to the game's rules and will change (a genome, a dungeon layout), with a version number inside it. Keep anything of value, and anything used to decide who owns what, in ordinary columns with constraints.
 
@@ -153,7 +153,17 @@ For the build:
 - Test: none. Needs a real deployment.
 - What happens: Django's development server serves CSS, scripts and images by itself. With `DEBUG` off it does not, by design.
 - What would confirm it: a deployed site whose styles load. The usual answer is the WhiteNoise package plus `collectstatic` in the build step.
+- Seen once, at home and not on a host: the Meridian build (2026-10-04) ran with `DEBUG` off behind the waitress server, with WhiteNoise's middleware and `collectstatic` run at each start; its styles, scripts and fonts loaded.
 - Until then: plan for it in `project.deployment`; a deployed Django site with no styling has this wrong.
+
+### A Postgres that comes with the project, for a site run at home
+- Status: draft
+- Test: none. Seen on one build (the Meridian ant colony, 2026-10-04, Django 6.1.1, `pixeltable-pgserver` 0.6.0 carrying PostgreSQL 18.4, on Linux).
+- What happens: the `pixeltable-pgserver` package installs a whole Postgres with `pip` and starts it from Python (`get_server(folder, cleanup_mode="stop")`), so a site that runs on somebody's own computer needs no database installed and no administrator rights. It is the package these tests use. The older `pgserver` package it grew out of has no build for Python 3.13 on Windows.
+- The trap: it would not start when the folder for its data had a space anywhere in its path (`postgres: invalid argument`), because the path is handed to Postgres unquoted. Project folders often have spaces; a temporary folder does not, which is why a test suite never meets this.
+- What to do: keep the database's folder in the usual place for a program's own data (`%LOCALAPPDATA%` on Windows, `~/.local/share` on Linux), not beside the code, and stop with a plain message if that path has a space. This also means moving or replacing the code folder does not lose the data.
+- What would confirm it: the same build started on Windows.
+- Not for a public site: on a host such as Render, use the host's own Postgres.
 
 ## What the skill cannot check
 

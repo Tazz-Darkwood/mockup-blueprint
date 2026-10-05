@@ -20,8 +20,8 @@ def setup(database="sqlite", urls=None, **extra):
     import django
     from django.conf import settings
     if database == "postgres":
-        import pgserver
-        folder = tempfile.mkdtemp(prefix="bp-pg-")
+        import pixeltable_pgserver as pgserver   # a Postgres installed by pip; has builds for Python 3.13 on Windows, which plain pgserver lacks
+        folder = tempfile.mkdtemp(prefix="bp-pg-")   # a temporary folder: its path has no space, which this Postgres cannot start from
         server = pgserver.get_server(folder, cleanup_mode="delete")
         atexit.register(server.cleanup)
         from psycopg.conninfo import conninfo_to_dict
