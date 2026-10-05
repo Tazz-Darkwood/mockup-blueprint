@@ -1,0 +1,8 @@
+{
+  "about": "audit refuses an address on this computer unless asked by name with --this-computer, and never opens a public site.",
+  "steps": [
+    {"run": ["audit", "http://127.0.0.1:9/"], "must": ["is an address on this computer", "--this-computer"], "exit": 2},
+    {"run": ["audit", "https://example.com/"], "must": ["use 'study'"], "exit": 2},
+    {"run": ["audit", "--this-computer", "http://127.0.0.1:9/"], "must": ["could not open http://127.0.0.1:9/", "Is the site running?"], "exit": 2}
+  ]
+}

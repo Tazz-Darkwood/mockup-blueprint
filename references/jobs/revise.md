@@ -1,0 +1,16 @@
+# Revise a mockup after the owner's critique
+
+Read `SKILL.md` first.
+
+The owner has looked at a mockup and said what is wrong with it. This happens on almost every mockup, often several times, and usually about how it looks. It is a smaller job than Restyle: the page keeps its words, its order and what it does, and changes where the critique points.
+
+1. **Write down what they said, in their words,** before changing anything: in the site's own guide, under the owner's critique, with the date. Words like "too plain" or "not enough paper texture" are the evidence for every rule that comes from them, and a paraphrase loses what they meant.
+2. **Say what you will change, if it is not plain.** "Make the logo bigger" needs no plan. "It feels cold" does: say in a few lines what you take it to mean and what you would change, and let them correct you before you draw. Do not ask about everything; most criticism is plain enough to act on.
+3. **Keep a picture of the version they saw.** Move the pictures they were shown into a folder `before-<what was criticised>` beside the new ones, so before and after can be compared. Keep the old page itself only if the change is large enough that they might want it back (a different layout, a new colour scheme); then copy the folder first, as Restyle does.
+4. **Change only what the critique touches.** Keep every anchor, every word and every behaviour the critique did not mention. Where answering it means changing words or the order of things, ask about each, as Restyle says.
+5. **Put the point in the right layer of the style stack,** as SKILL.md describes: the site's own guide if it is about this site, a stacked guide if it is about every site of that kind, the general guide only if it would hold for any site at all. Most criticism belongs to the site. Say which layer you chose and why.
+   - When it goes into a guide, read the rest of that guide for notes it now contradicts, and put them right in the same sitting: reword the older note, or say in it where the new one takes over. A guide that says two opposite things leaves the next reader to guess. If the guide is the user's own, tell them what you changed; if it was shared with them by someone else, propose the change instead.
+6. **Run the "Before showing a mockup" lists again,** every guide's, and `audit`. A fix to one thing often breaks another: a lighter ground can drop the contrast of text that passed before.
+7. **Show it again,** with the old and new pictures side by side and a line on what changed and what did not.
+8. **Record their verdict.** Praise ("this looks really good") confirms nothing by itself: it is not an answer to a question about what the page does. Write it in the site guide's record of what the owner said. When the critique was about one thing and they say it is now right, that thing is settled; if a question was waiting on it, answer that question with their words.
+   - While they have not yet seen the fix, the fix is a proposal. If the context has a question that holds up the build for this (whether the look is right), it stays open until they have looked. Do not add one just for a change they asked for in plain words; their asking was the decision.

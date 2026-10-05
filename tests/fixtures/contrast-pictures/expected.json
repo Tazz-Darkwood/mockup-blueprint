@@ -1,0 +1,24 @@
+{
+  "about": "Text over a gradient, or over a plain colour with a texture laid on it, is measured from a picture of the page instead of being skipped in silence, also further down a page that asks for smooth scrolling. Words are not measured against a badge inside them, or against an outline in their own ink.",
+  "steps": [
+    {
+      "run": [
+        "audit",
+        "index.html"
+      ],
+      "browser": true,
+      "must": [
+        "text over a picture or gradient is",
+        "\"Grey words on a grey gradient.\"; measured from a picture of the page",
+        "\"Words on a sheet that a stain darkens.\"; measured from a picture of the page",
+        "piece(s) of text over a picture or gradient were measured from a picture of the page and pass"
+      ],
+      "must_not": [
+        "Dark words on a pale gradient.\"; measured",
+        "could not be measured",
+        "(\"Basket",
+        "(\"FULL"
+      ]
+    }
+  ]
+}

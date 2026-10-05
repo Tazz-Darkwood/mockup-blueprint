@@ -1,0 +1,6 @@
+{
+  "about": "The audit reports the longest line of reading text in characters, as the general style guide asks, and only when it is too long.",
+  "steps": [
+    {"run": ["audit", "index.html"], "browser": true, "must": ["style/line-length: lines of reading text run to about", "\"This paragraph runs the whole width"]}
+  ]
+}

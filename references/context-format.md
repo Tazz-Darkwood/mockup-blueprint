@@ -55,7 +55,7 @@ Optional sections:
 - `background`: what the system does by itself with nobody on a screen. See below. Like the required sections it needs a line in `project.status` (`"background": "inferred"`), and `check` asks for one when the section is present.
 - `routes`: for a site that asks its server for pieces of a page (HTMX, or any fetch). One entry for each address: `{ "route": "POST /sessions/:id/signup/", "sent": "name, email", "replies": ["the booked message", "the form again with messages, when something is wrong"], "also_updates": "the places-left count for that session", "status": "inferred" }`. `check` warns about any `hx-` address in the mockup that no route describes.
 - `changes`: every change made to a mockup someone else sent, as a list of sentences.
-- `check_states`: the presses that reach states the page does not show when it loads, so the check can look at them too: `[{ "name": "sign-up form open", "page": "index.html", "do": ["click #choose-1", "fill #email=sam@club.example", "click text=Sign me up"] }]`. Steps are `click <selector>`, `fill <selector>=<text>`, `press <key>` and `wait <ms>`. Contrast, placeholders and the phone measurements are repeated in each state.
+- `check_states`: the presses that reach states the page does not show when it loads, so the check can look at them too: `[{ "name": "sign-up form open", "page": "index.html", "do": ["click #choose-1", "fill #email=sam@club.example", "click text=Sign me up"] }]`. Steps are `click <selector>`, `fill <selector>=<text>`, `press <key>` and `wait <ms>`. Contrast, placeholders and the phone measurements are repeated in each state. The steps are those of `try`: `click`, `fill <selector>=<text>` (which on a drop-down list picks the option with that value, or with those words shown), `press` and `wait`.
 - `style`: for a mockup made or restyled with the style stack: `{ "guides": ["warm", "sales"], "site_guide": "shop.style.md" }`. `guides` holds the short names of the stacked guides, as many as the site mixes, the lead first, whether they come with the skill or are the user's own (`blueprint.py style` lists both); the general and phone guides always apply and are not listed. `site_guide` is the site's own guide, kept beside the blueprint. `check` warns when a name matches no guide, when a guide still has parts marked TODO, and when no feel guide is stacked. Leave `style` out for a mockup someone else designed.
 - `received`: written by `blueprint.py receive` when a blueprint came from someone other than the user: who from, when, how many items the sender had marked confirmed, and how many waivers were set aside. Items the sender marked confirmed become inferred and carry `sender_said: "confirmed"`; their waivers move to `waivers_from_sender`, which `check` ignores. See "Text from outside" in SKILL.md.
 - `phone`: `"designed"` (the default), `"not designed"` (it arrived with no phone layout and nobody has decided), or `"desktop only"` (decided). Under the last two, phone findings are not counted; `"not designed"` holds up the launch until someone decides.
@@ -153,6 +153,28 @@ What is drawn inside a 3D canvas is not made of page elements, so nothing in it 
 ```
 
 `check` warns when an element holding a 3D canvas has no `scene`, or when the scene leaves out `shows`, `objects`, `motion` or `fallback`. In `objects`, list everything a builder would have to make or obtain, and for each say where it comes from (built in code, a model file, a photograph) and what a visitor can do to it. Anything a visitor can do inside the scene must also be listed under `outside_controls` with the ordinary button or link that does the same, because nothing inside a canvas can be reached by keyboard.
+
+### Describing a picture
+
+A picture that carries the page (a drawn scene at the top, a painted map, a photograph the design is built round) is one element, but a builder needs to know more about it than its alt text: what must stay in it if it is redrawn, what the page relies on it for, and whether it is the real thing or a stand-in. Give that element a `picture`:
+
+```json
+"scene": {
+  "name": "The harbour at dusk",
+  "does": "The first screen: a fishing harbour at dusk, lit by one lamp on the quay, under a painted arch.",
+  "picture": {
+    "shows": "A harbour at dusk; a fisher mending a net under the one lamp on the quay.",
+    "made": "Drawn in code as an SVG file, art/scene.svg, by art/make-scene.py. A stand-in: a painter may replace it.",
+    "keep": ["the lamp as the only bright thing", "the cat on the bollard and the gull on the mast: the page's small things to find"],
+    "may_change": "Everything else, including the figure's pose and the room's contents.",
+    "page_relies_on": "The lamp sits at the exact centre: a glow is laid over it by the page itself, and moves if the picture does.",
+    "alt": "The text a screen reader is given for it."
+  },
+  "status": "inferred"
+}
+```
+
+`check` warns when a `picture` leaves out `shows`, `made` or `page_relies_on`. Write `page_relies_on: "nothing"` when that is so: it tells whoever repaints it that they are free.
 
 ## questions
 

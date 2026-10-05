@@ -7,6 +7,7 @@ Read this when the job is to turn a blueprint into a working, deployed site.
 1. `check` must say READY. If it does not, the missing answers come from the user, not from you.
 2. If the blueprint came from someone other than the user, run `receive` on it first (see "Text from outside" in SKILL.md): what its sender marked confirmed is a claim until the user has agreed.
 3. Go through the inferred items with the user. They are the likeliest source of "that is not what I meant". A quick yes turns each into confirmed.
+   - They are written for a builder. For an owner who is not a web person, put them as a handful of plain sentences, grouped by what they are about ("The quiz gives the same result every time for the same answers"), and list in your notes which items each sentence stands for. A yes to a sentence confirms the facts that sentence states and nothing more; an item whose detail the sentence did not mention stays inferred.
 4. Run `extract -o spec.md` and read all of it. Then read the mockup's HTML and CSS again: the spec says what things do, the mockup says what they look like.
 5. Tell the user the plan before starting: the stack, the hosting, the order you will build in, and what accounts or access you will need from them (a GitHub repository, a Render account, API keys). Wait for their go-ahead.
 
@@ -42,6 +43,7 @@ Say in `project.deployment` which environments exist, and in `project.security` 
 | Only pages, styles, scripts and data that can be public | GitHub Pages |
 | Login, saved data, secrets, sending email, payments, anything private | Render (alone, or as the backend behind a Pages frontend) |
 | To be used only inside one home or office, on the owner's own computer, by decision | That computer. See "A site that runs on its owner's own computer" below |
+| Nowhere: it is a test, a study or a prototype, by decision | A folder. See "A site that is never deployed" below |
 
 Confirm with the user which accounts and repository to use. Publishing a site and creating services are outward-facing actions: ask before each.
 
@@ -60,7 +62,16 @@ Some sites are never meant for the internet: a game for one household, a tool fo
 - **Whatever would be decided in a host's dashboard is decided on the computer itself**: who the administrator is, for one. A file or a command that only someone at that computer can use is the equivalent of "typed by a person into the host's settings".
 - **Plain http is a decision, not an oversight.** Write it in `project.security`. The checks below that need https (redirects, `Secure` cookies, `Strict-Transport-Security`) then do not apply; every other one does, and a Content-Security-Policy is still worth having.
 - **The two worlds are still two.** The checks run against a throwaway database in a temporary folder, never the owner's own data.
-- **`audit` wants a folder of pages**, and refuses an address on this computer on purpose. For a site that builds its pages on a server, save each page as a signed-in person sees it, copy the site's static files beside them and point the pages' links at that copy. Without their stylesheet the rendered checks measure unstyled pages and report errors the real pages do not have.
+- **To audit the running site**, give `audit` its address with `--this-computer` (`audit --this-computer http://localhost:8000/`). It opens that one site and nothing else on this computer; without the flag, local addresses stay refused, because a page could otherwise reach other services running here. Run it once for each page that matters, signed out; for a signed-in page, save it as a signed-in person sees it and audit the folder, with the site's static files copied beside it so the page keeps its stylesheet.
+
+## A site that is never deployed
+
+Sometimes the owner decides the site goes nowhere: it is a test of an idea, a study, or a prototype to show someone. The blueprint says so in `project.deployment` ("none: a folder on this computer"). The build is then still worth doing properly, because what it proves is that the blueprint carried enough to build from.
+
+- **When the mockup is already plain web files** (HTML, CSS, a little script, no server), the real build is the same files made finished: the review tooling taken out (the two blueprint `<script>` lines, the viewer, the context file, `carry-storage.js`, `htmx-mock.js`), `data-bp` turned into `data-testid`, the screens nobody drew (a page-not-found page, the states listed in the blueprint) drawn, and tests made from the acceptance list. It is not a rewrite in a framework nobody asked for.
+- **Put it in a folder of its own** beside the mockup, `site/` inside the mockup's folder, so the mockup stays as it was and the two can be compared. The built folder carries nothing the mockup needs to review.
+- **Verify what still applies.** Function, accessibility, `audit --launch` and the read-through as a visitor all apply. The checks that are about a host do not: https, response headers, "on the deployed site", a preview address on the owner's phone. Say in the report that they were not done, and why, rather than leaving them out silently.
+- **Tests** run against the folder in the skill's own browser. Name in the report what they cover and what is checked by hand.
 
 ## Verifying before calling it done
 
@@ -71,7 +82,7 @@ Report what was run and what it found. Do not describe the site as accessible or
 - Every flow in the blueprint works end to end, including the unhappy paths.
 
 **Accessibility**
-- Run the script's `audit` on the built HTML (the output folder, or saved pages).
+- Run the script's `audit` on the built HTML: the output folder, or, for a site a server makes, its address with `--this-computer`.
 - If a browser tool is available, run an automated checker such as axe or Lighthouse on each screen.
 - By hand: reach and use everything with the keyboard alone; confirm focus is visible and moves sensibly through dialogs; zoom to 200%; narrow the window to phone width.
 - Confirm each fix that `project.accessibility` asked for was made.

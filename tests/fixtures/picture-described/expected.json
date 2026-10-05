@@ -1,0 +1,18 @@
+{
+  "about": "A picture the page is built round is described: check asks for what it shows, how it was made and what the page relies on it for.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "element 'scene': its `picture` description is missing made, page_relies_on"
+      ],
+      "must_not": [
+        "element 'map': its `picture`"
+      ]
+    }
+  ]
+}

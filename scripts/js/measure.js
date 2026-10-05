@@ -87,9 +87,11 @@ var __bpMeasure = (function () {
       var ps = getComputedStyle(el, which);
       if (!ps || ps.content === 'none' || ps.display === 'none' || ps.position !== 'absolute') return;
       var z = parseInt(ps.zIndex, 10), see = parseFloat(ps.opacity);
-      if (!(z < 0) || see === 0) return;
-      if ([ps.top, ps.right, ps.bottom, ps.left].some(function (side) { return !(parseFloat(side) <= 0.5); })) return;
-      if (ps.backgroundImage !== 'none') { found.push({ z: z, c: null }); return; }
+      if (see === 0 || [ps.top, ps.right, ps.bottom, ps.left].some(function (side) { return !(parseFloat(side) <= 0.5); })) return;
+      // A texture laid over the whole box (grain, stains, a darkened edge) changes what the words sit on whether it is
+      // drawn below them or blended over them: the colour cannot be known from the styles.
+      if (ps.backgroundImage !== 'none') { found.push({ z: -1, c: null }); return; }
+      if (!(z < 0)) return;
       var c = rgba(ps.backgroundColor);
       if (!c || c[3] === 0) return;
       if (see < 1) c = [c[0], c[1], c[2], c[3] * see];
@@ -104,6 +106,9 @@ var __bpMeasure = (function () {
     }
     return out;
   }
+  function hasTexture(n) {
+    return ['::before', '::after'].some(function (which) { var ps = getComputedStyle(n, which); return ps && ps.content !== 'none' && ps.backgroundImage !== 'none'; });
+  }
   // Solid background behind an element, or null when it cannot be known (images, gradients, opacity).
   function backgroundOf(el) {
     var layers = [];
@@ -113,7 +118,7 @@ var __bpMeasure = (function () {
       var c = rgba(cs.backgroundColor);
       if (!c) return null;
       // A shape drawn behind the words by ::before or ::after (cut paper, a tilted block) is their background.
-      if (c[3] === 0 || cs.isolation === 'isolate' || cs.zIndex !== 'auto') {
+      if (c[3] === 0 || cs.isolation === 'isolate' || cs.zIndex !== 'auto' || hasTexture(n)) {
         var behind = paintedBehind(n, el);
         if (behind === null) return null;
         if (behind.length) { layers = layers.concat(behind); if (behind[behind.length - 1][3] === 1) break; }
@@ -124,8 +129,12 @@ var __bpMeasure = (function () {
     for (var i = layers.length - 1; i >= 0; i--) out = blend(layers[i], out);
     return out;
   }
+  // Text whose background is a picture, a gradient or see-through: its colours cannot be read from the styles.
+  // blueprint.py measures these from a picture of the page; the viewer can only count them.
+  var unmeasuredEls = [];
   function contrastIssues() {
     var groups = {}, seen = [], count = 0;
+    unmeasuredEls = [];
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     var node;
     while ((node = walker.nextNode()) && count < 3000) {
@@ -136,6 +145,8 @@ var __bpMeasure = (function () {
       if (!shown(p) || p.closest('[disabled], [aria-disabled="true"]')) continue;
       var cs = getComputedStyle(p);
       var fg = rgba(cs.color), bg = backgroundOf(p);
+      if (fg && !bg && fg[3] > 0) unmeasuredEls.push({ el: p, color: fg, sample: text.slice(0, 40),
+        required: parseFloat(cs.fontSize) >= 24 || (parseFloat(cs.fontSize) >= 18.66 && parseInt(cs.fontWeight, 10) >= 700) ? 3 : 4.5 });
       if (!fg || !bg) continue;
       if (fg[3] < 1) fg = blend(fg, bg);
       var l1 = luminance(fg), l2 = luminance(bg);
@@ -156,7 +167,7 @@ var __bpMeasure = (function () {
 
   return {
     version: 2, shown: shown, labelOf: labelOf, interactiveEls: interactiveEls, uncovered: uncovered,
-    neverLoaded: neverLoaded, contrastIssues: contrastIssues,
+    neverLoaded: neverLoaded, contrastIssues: contrastIssues, unmeasured: function () { return unmeasuredEls; },
     report: function () {
       var described = (window.__BLUEPRINT__ && window.__BLUEPRINT__.elements) || {}, found = {};
       document.querySelectorAll('[data-bp]').forEach(function (el) { found[el.getAttribute('data-bp')] = true; });
@@ -168,6 +179,7 @@ var __bpMeasure = (function () {
         contrast: contrastIssues().map(function (c) {
           return { color: c.color, background: c.background, ratio: c.ratio, required: c.required, count: c.count, sample: c.sample };
         }),
+        unmeasured: unmeasuredEls.map(function (u) { return { color: hex(u.color), sample: u.sample, required: u.required }; }),
         anchorsOnPage: Object.keys(found),
         anchorsNotDescribed: Object.keys(found).filter(function (id) { return !described[id]; })
       };

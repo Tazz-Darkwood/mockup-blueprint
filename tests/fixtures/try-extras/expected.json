@@ -1,0 +1,96 @@
+{
+  "about": "try picks from a drop-down by value or by its words, lists the order Tab moves in, and takes a picture of one part or of the whole page in strips; the phone check names a drawing that sticks out by what holds it. A whole-page picture wider than the window says why.",
+  "steps": [
+    {
+      "run": [
+        "try",
+        "index.html",
+        "fill #trade=other",
+        "click #go"
+      ],
+      "browser": true,
+      "must": [
+        "messages that appeared: You chose other."
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "try",
+        "index.html",
+        "choose #trade=Something else",
+        "click #go"
+      ],
+      "browser": true,
+      "must": [
+        "You chose other."
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "try",
+        "index.html",
+        "--tabs"
+      ],
+      "browser": true,
+      "must": [
+        "Tab moves through: 1. select#trade \"I wrote code",
+        "2. button#go \"Go\""
+      ]
+    },
+    {
+      "run": [
+        "try",
+        "index.html",
+        "--shot",
+        "part.png",
+        "--of",
+        "#trade"
+      ],
+      "browser": true,
+      "must": [
+        "picture of #trade saved to part.png"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "try",
+        "index.html",
+        "--shot",
+        "page.png",
+        "--strips"
+      ],
+      "browser": true,
+      "must": [
+        "2 strip(s) saved: page-1.png, page-2.png"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "audit",
+        "index.html"
+      ],
+      "browser": true,
+      "must": [
+        "sticking out: <svg> inside <div.sigils>"
+      ]
+    },
+    {
+      "run": [
+        "try",
+        "clipped.html",
+        "--shot",
+        "whole.png",
+        "--full"
+      ],
+      "browser": true,
+      "must": [
+        "scrolls sideways: False",
+        "something reaches past the edge and is cut off"
+      ]
+    }
+  ]
+}

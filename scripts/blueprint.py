@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.11.0"
+SKILL_VERSION = "0.12.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -97,8 +97,17 @@ def open_browser(pw):
         return pw.chromium.launch()
 
 
+ALLOWED_HERE = set()   # the one site on this computer that 'audit --this-computer' was asked to open, as scheme://host:port
+LIVE_URLS = {}         # for that audit: the name of each page, and the address it is opened at instead of a file
+
+
+def origin(url):
+    m = re.match(r"^([a-z]+://[^/?#]+)", url, re.I)
+    return m.group(1).lower() if m else ""
+
+
 def guard(ctx):
-    ctx.route(PRIVATE_URL, lambda route: route.abort())
+    ctx.route(PRIVATE_URL, lambda route: route.continue_() if origin(route.request.url) in ALLOWED_HERE else route.abort())
     return ctx
 
 
@@ -744,6 +753,8 @@ class Blueprint:
 PHONE_SIZE = {"width": 390, "height": 844}
 NARROW_WIDTH = 320   # WCAG 1.4.10: no sideways scrolling at 320 CSS pixels
 PHONE_JS = page_script("phone")
+LINE_JS = page_script("line-length")
+LINE_LIMIT = 75   # library/style-guide.md: "Over 75 characters is too long."
 
 
 # Canvases: what is drawn in one is invisible to the page, so these are found by trying things in a browser.
@@ -944,7 +955,7 @@ def page_findings(scan, report):
         for miss in st.get("failed") or []:
             out.append(("mockup/state-not-reached", "warning", 0, f"could not carry out a step of project.check_states \"{st['name']}\": {miss}"))
         seen = {m for _, _, _, m in out}
-        for rule, severity, line, message in contrast_findings({"contrast": st.get("contrast", []), "phone": st.get("phone")}, ("a11y/canvas-alt",)):
+        for rule, severity, line, message in contrast_findings({"contrast": st.get("contrast", []), "unmeasured": st.get("unmeasured", []), "phone": st.get("phone")}, ("a11y/canvas-alt",)):
             if message not in seen:
                 out.append((rule, severity, line, message + tag))
     return out
@@ -1027,7 +1038,8 @@ def phone_findings(phone):
     return out
 
 def do_steps(page, steps):
-    """Carry out simple steps on a page: 'click <selector>', 'fill <selector>=<text>', 'press <key>', 'wait <ms>'.
+    """Carry out simple steps on a page: 'click <selector>', 'fill <selector>=<text>' (on a drop-down list, the option's
+    value or the words it shows; 'choose' is the same), 'press <key>', 'wait <ms>'.
     Returns a list of steps that could not be done."""
     failed = []
     for step in steps or []:
@@ -1035,9 +1047,16 @@ def do_steps(page, steps):
         try:
             if verb == "click":
                 page.click(rest, timeout=4000)
-            elif verb == "fill":
+            elif verb in ("fill", "choose"):
                 selector, _, text = rest.partition("=")
-                page.fill(selector.strip(), text, timeout=4000)
+                selector = selector.strip()
+                if page.locator(selector).first.evaluate("e => e.tagName", timeout=4000) == "SELECT":   # a drop-down list: pick the option
+                    try:
+                        page.select_option(selector, value=text, timeout=1500)
+                    except Exception:
+                        page.select_option(selector, label=text, timeout=1500)   # by the words shown, when no option has that value
+                else:
+                    page.fill(selector, text, timeout=4000)
             elif verb == "press":
                 page.keyboard.press(rest)
             elif verb == "wait":
@@ -1048,12 +1067,111 @@ def do_steps(page, steps):
         except Exception as e:
             why = str(e).splitlines()[0][:90]
             try:
-                if verb in ("click", "fill") and page.locator(rest.partition("=")[0].strip() if verb == "fill" else rest).first.is_disabled(timeout=300):
+                if verb in ("click", "fill", "choose") and page.locator(rest.partition("=")[0].strip() if verb != "click" else rest).first.is_disabled(timeout=300):
                     why = "that control is switched off (disabled) in this state of the page"
             except Exception:
                 pass
             failed.append(f"{step}: {why}")
     return failed
+
+
+PICTURE_LIMIT = 80   # pieces of text over pictures measured on one page; more than this is reported as not measured
+
+
+def measure_over_pictures(browser, page, report):
+    """Text over a picture or a gradient: its contrast cannot be read from the styles. So each piece of text is
+    photographed twice, as it is and with every word made invisible, and both colours are read from the pictures:
+    the words are the pixels that changed most between the two, the ground is what is left when they are gone. The
+    colour the styles give is not used, because a component that draws its own label (a web component's button)
+    reports one colour and shows another. The worst 5% of the ground decides, so a speck does not fail a sentence
+    and a dark stain under half of it does.
+    Moves what fails into report["contrast"], counts what passes in report["pictureMeasured"], and leaves in
+    report["unmeasured"] only what could not be measured (hidden, off the page, words that would not hide, too many)."""
+    todo = report.get("unmeasured") or []
+    if not todo:
+        return
+    marked = page.evaluate("(() => {\n" + MEASURE_JS + """
+        __bpMeasure.contrastIssues();
+        var list = __bpMeasure.unmeasured().slice(0, %d);
+        list.forEach(function (u, i) { u.el.setAttribute('data-bp-picture', String(i)); });
+        return list.length; })()""" % PICTURE_LIMIT)
+    # -webkit-text-fill-color is inherited into a component's own insides, where a page's styles cannot otherwise reach
+    hiding = ("*, *::before, *::after { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; "
+              "-webkit-text-stroke: 0 !important; text-decoration-color: transparent !important; caret-color: transparent !important; } "
+              "*, *::before, *::after { transition: none !important; animation-play-state: paused !important; }")
+    still = page.add_style_tag(content="*, *::before, *::after { transition: none !important; animation-play-state: paused !important; caret-color: transparent !important; }")
+    pairs = []
+    for i in range(marked):
+        try:
+            box = page.evaluate("""(i) => { const el = document.querySelector('[data-bp-picture="' + i + '"]'); if (!el) return null;
+                el.scrollIntoView({ block: 'center', behavior: 'instant' });   // instant: a page may ask for smooth scrolling, which would not have arrived yet
+                // the element's own words only: a badge or an icon inside it is not what they sit on
+                let l = Infinity, t = Infinity, rr = -Infinity, bb = -Infinity;
+                el.childNodes.forEach(n => { if (n.nodeType !== 3 || !n.data.trim()) return; const r = document.createRange(); r.selectNodeContents(n);
+                    for (const q of r.getClientRects()) { l = Math.min(l, q.left); t = Math.min(t, q.top); rr = Math.max(rr, q.right); bb = Math.max(bb, q.bottom); } });
+                if (l === Infinity) return null;
+                const x = Math.max(0, l), y = Math.max(0, t), w = Math.min(innerWidth, rr) - x, h = Math.min(innerHeight, bb) - y;
+                return w >= 2 && h >= 2 ? { x, y, width: w, height: h } : null; }""", i)
+            if not box:
+                pairs.append(None)
+                continue
+            shown = page.screenshot(clip=box)
+            hide = page.add_style_tag(content=hiding)
+            gone = page.screenshot(clip=box)
+            hide.evaluate("el => el.remove()")
+            pairs.append((shown, gone))
+        except Exception:
+            pairs.append(None)
+    still.evaluate("el => el.remove()")
+    page.evaluate("document.querySelectorAll('[data-bp-picture]').forEach(el => el.removeAttribute('data-bp-picture'))")
+    import base64
+    reader = browser.new_page()
+    found = reader.evaluate("""async (pairs) => {
+        const lum = (r, g, b) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); })
+            .reduce((s, v, k) => s + v * [0.2126, 0.7152, 0.0722][k], 0);
+        const pixels = async (png) => { const img = new Image(); img.src = 'data:image/png;base64,' + png; await img.decode();
+            const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+            const g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, c.width, c.height).data; };
+        const hex = (d, i) => '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('');
+        const out = [];
+        for (const p of pairs) {
+            if (!p) { out.push(null); continue; }
+            const a = await pixels(p[0]), b = await pixels(p[1]);
+            if (a.length !== b.length) { out.push(null); continue; }
+            // the words: the pixels that changed most when they were hidden; the core of a letter, not its soft edge
+            const changed = [];
+            for (let i = 0; i < a.length; i += 4) changed.push([Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]), i]);
+            changed.sort((x, y) => y[0] - x[0]);
+            if (!changed.length || changed[0][0] < 40) { out.push({ hidden: false }); continue; }   // the words did not go: cannot tell them from the ground
+            const core = changed.slice(0, Math.max(1, Math.floor(changed.length * 0.02)));
+            let fg = [0, 1, 2].map(k => Math.round(core.reduce((s, c) => s + a[c[1] + k], 0) / core.length));
+            // Thin small letters never reach their full colour on screen, so where the page's stated colour is what is shown,
+            // more or less, that is the one judged, as the contrast rule intends. Only a stated colour that is plainly not the
+            // one on screen (a component that draws its own label) is set aside for what the picture shows.
+            if (Math.abs(fg[0] - p[2][0]) + Math.abs(fg[1] - p[2][1]) + Math.abs(fg[2] - p[2][2]) < 90) fg = p[2];
+            const lf = lum(...fg), ratios = [];
+            for (let i = 0; i < b.length; i += 4) {
+                // a pixel in the words' own ink (an outline round a stamp, a rule) is drawn with them, not something they sit on
+                if (Math.abs(b[i] - fg[0]) + Math.abs(b[i + 1] - fg[1]) + Math.abs(b[i + 2] - fg[2]) < 30) continue;
+                const l = lum(b[i], b[i + 1], b[i + 2]); ratios.push([(Math.max(l, lf) + 0.05) / (Math.min(l, lf) + 0.05), i]); }
+            if (!ratios.length) { out.push(null); continue; }
+            ratios.sort((x, y) => x[0] - y[0]);
+            const [ratio, at] = ratios[Math.floor(ratios.length * 0.05)];
+            out.push({ ratio, color: '#' + fg.map(v => v.toString(16).padStart(2, '0')).join(''), background: hex(b, at) });
+        }
+        return out; }""", [None if p is None else [base64.b64encode(p[0]).decode(), base64.b64encode(p[1]).decode(), [int(u["color"][k:k + 2], 16) for k in (1, 3, 5)]]
+                          for p, u in zip(pairs, todo)])
+    reader.close()
+    left, passed = todo[marked:], 0
+    for u, w in zip(todo[:marked], found):
+        if not w or not w.get("ratio"):
+            left.append(u)
+        elif w["ratio"] >= u["required"]:
+            passed += 1
+        else:
+            report.setdefault("contrast", []).append({"color": w["color"], "background": w["background"], "ratio": int(w["ratio"] * 100) / 100,
+                                                      "required": u["required"], "count": 1, "sample": u["sample"], "picture": True})
+    report["unmeasured"], report["pictureMeasured"] = left, passed
 
 
 def state_reports(browser, url, states):
@@ -1063,11 +1181,17 @@ def state_reports(browser, url, states):
         if not isinstance(state, dict) or not state.get("do"):
             continue
         entry = {"name": state.get("name") or "unnamed state"}
+        BROWSER["states"] = BROWSER.get("states", 0) + 1
         page = new_page(browser, viewport={"width": 1280, "height": 900})
         page.goto(url)
         page.wait_for_timeout(500)
         entry["failed"] = do_steps(page, state["do"])
-        entry["contrast"] = measure(page).get("contrast", [])
+        seen = measure(page)
+        try:
+            measure_over_pictures(browser, page, seen)
+        except Exception as e:   # noqa: BLE001 - a picture that cannot be taken leaves the text listed as not measured
+            seen["pictureError"] = str(e).splitlines()[0][:120]
+        entry["contrast"], entry["unmeasured"] = seen.get("contrast", []), seen.get("unmeasured", [])
         entry["text"] = page.evaluate("document.body.innerText")
         page.close()
         ctx = browser.new_context(viewport=PHONE_SIZE, is_mobile=True, has_touch=True)
@@ -1089,7 +1213,7 @@ def rendered_reports(files, states=None):
     controls a script makes, and what a phone user would meet. Returns ({file: report}, note).
     One page that cannot be opened does not stop the others, and BROWSER records what happened so the
     verdict can say whether these checks ran."""
-    BROWSER.update(state="ran", why="", pages=0, failed={})
+    BROWSER.update(state="ran", why="", pages=0, failed={}, states=0)
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -1102,7 +1226,7 @@ def rendered_reports(files, states=None):
             browser = open_browser(pw)
             for name, fp in files.items():
                 try:
-                    url = Path(fp).resolve().as_uri()
+                    url = LIVE_URLS.get(name) or Path(fp).resolve().as_uri()
                     page = new_page(browser, viewport={"width": 1280, "height": 900})
                     page.add_init_script(TAG_CONTEXTS_JS)
                     page.goto(url)
@@ -1111,6 +1235,14 @@ def rendered_reports(files, states=None):
                     if report.get("neverLoaded"):   # a library's script may only have been slow to arrive: wait once and look again
                         page.wait_for_timeout(3000)
                         report = measure(page)
+                    try:
+                        measure_over_pictures(browser, page, report)
+                    except Exception as e:   # noqa: BLE001 - a picture that cannot be taken leaves the text listed as not measured
+                        report["pictureError"] = str(e).splitlines()[0][:120]
+                    try:
+                        report["lineLength"] = page.evaluate(LINE_JS)
+                    except Exception:   # noqa: BLE001 - a measure that cannot be taken is left out, not guessed
+                        report["lineLength"] = None
                     canvases = page.evaluate(CANVAS_JS)
                     report["liveText"] = page.evaluate("document.body.innerText")
                     page.close()
@@ -1155,7 +1287,8 @@ def browser_line():
     """One line for a verdict: did the browser checks run?"""
     extra = "".join(f"\n           {n}" for n in BROWSER["notes"])
     if BROWSER["state"] == "ran":
-        return f"ran on {BROWSER['pages']} page(s)" + extra
+        more = f" and {BROWSER['states']} further state(s) from project.check_states" if BROWSER.get("states") else ""
+        return f"ran on {BROWSER['pages']} page(s){more}" + extra
     if BROWSER["state"] == "not asked":
         return "NOT RUN (switched off with --no-render): contrast, phone layout and controls made by scripts are unchecked" + extra
     if BROWSER["state"] == "skipped":
@@ -1171,9 +1304,28 @@ def contrast_findings(report, static_rules=()):
         out.append(("html/never-loaded", "error", 0,
                     f"<{tag}> never loaded in the browser: a misspelled tag, the script that defines it is missing, or it could not be fetched (run the check again to rule out a slow connection)"))
     for c in report.get("contrast", []):
+        if c.get("picture"):
+            out.append(("a11y/contrast", "warning", 0,
+                        f"text over a picture or gradient is {c['ratio']}:1 ({c['color']} against the worst of what lies under it, {c['background']}), "
+                        f"needs {c['required']}:1 (\"{c['sample']}\"; measured from a picture of the page)"))
+            continue
         out.append(("a11y/contrast", "warning", 0,
                     f"text {c['color']} on {c['background']} is {c['ratio']}:1, needs {c['required']}:1 "
                     f"({c['count']} place(s), e.g. \"{c['sample']}\")"))
+    line = report.get("lineLength")
+    if line and line.get("chars", 0) > LINE_LIMIT:
+        out.append(("style/line-length", "warning", 0,
+                    f"lines of reading text run to about {line['chars']} characters at 1280 pixels wide (\"{line['sample']}\"); over {LINE_LIMIT} is too long to read "
+                    "comfortably. Give the text a maximum width (see \"Lines of reading text\" in library/style-guide.md)"))
+    if report.get("pictureMeasured"):
+        out.append(("a11y/contrast-pictures", "note", 0,
+                    f"{report['pictureMeasured']} piece(s) of text over a picture or gradient were measured from a picture of the page and pass"))
+    if report.get("unmeasured"):
+        u = report["unmeasured"]
+        why = f" ({report['pictureError']})" if report.get("pictureError") else ""
+        out.append(("a11y/contrast-unmeasured", "warning", 0,
+                    f"{len(u)} piece(s) of text sit over a picture or gradient and could not be measured{why}, e.g. \"{u[0]['sample']}\": "
+                    f"check them by eye, or with the viewer's Checks tab"))
     return out + canvas_findings(report, static_rules) + phone_findings(report.get("phone"))
 
 
@@ -1301,8 +1453,40 @@ def print_findings(findings, limit=25):
         shown += 1
 
 
+def live_page(address):
+    """'audit --this-computer': a site that runs on this computer (a built Django or Node site, say) cannot be given as a
+    folder. Its page is fetched once, for the checks that read the HTML, and opened at its address for the ones that need
+    a browser. Only that one site: every other address on this computer stays blocked, as for any page."""
+    import tempfile
+    import urllib.request
+    try:
+        with urllib.request.urlopen(urllib.request.Request(address, headers={"User-Agent": "mockup-blueprint audit"}), timeout=15) as reply:
+            html = reply.read(3_000_000).decode(reply.headers.get_content_charset() or "utf-8", errors="replace")
+            final = reply.geturl()
+    except Exception as e:   # noqa: BLE001
+        die(f"could not open {address}: {str(e).splitlines()[0][:160]}. Is the site running?")
+    if origin(final) != origin(address):
+        die(f"{address} sent the request on to {final}, which is a different site; give that address instead if it is the one meant")
+    folder = Path(tempfile.mkdtemp(prefix="bp-audit-here-"))
+    page = folder / "page.html"
+    page.write_text(html, encoding="utf-8")
+    ALLOWED_HERE.add(origin(address))
+    LIVE_URLS[address] = address
+    return {address: page}
+
+
 def cmd_audit(args):
-    files = {str(p): p for p in html_targets(args.path)}
+    if re.match(r"^[a-z]+://", args.path, re.I):
+        if not PRIVATE_URL.match(args.path):
+            die("audit looks at pages in a folder, or at a site on this computer when asked to by name. To look at a public site, use 'study'")
+        if not args.this_computer:
+            die(f"{args.path} is an address on this computer. The checks never open one unless asked, because a page could otherwise reach "
+                "other services running here. If this is the site you are building, run the audit again with --this-computer")
+        files = live_page(args.path)
+        print(f"note: opened {args.path} for this audit and nothing else on this computer. Script files on disk were not read, so keys in them were not looked for; "
+              "audit the folder the site is built from for that")
+    else:
+        files = {str(p): p for p in html_targets(args.path)}
     if not files:
         die(f"no HTML files found at {args.path}")
     states, siblings = None, 0
@@ -1579,6 +1763,13 @@ def check_one(ctx_path, strict, render):
         warnings.append("the mockup takes card details but neither security nor integrations names a payment provider; "
                         "card numbers should go straight to a provider's hosted fields, never through your own server")
 
+    # a picture the page is built round: whoever redraws it needs to know what must stay and what the page leans on
+    for eid, e in bp.elements.items():
+        pic = e.get("picture") if isinstance(e, dict) else None
+        if isinstance(pic, dict):
+            missing = [k for k in ("shows", "made", "page_relies_on") if is_empty(pic.get(k))]
+            if missing:
+                warnings.append(f"element '{eid}': its `picture` description is missing {', '.join(missing)} (see \"Describing a picture\" in references/context-format.md)")
     # 3D scenes: nothing inside a canvas can carry an anchor, so the element that holds it has to describe the scene
     described = set()
     for name in bp.scans:
@@ -2183,6 +2374,12 @@ def cmd_try(args):
             args.full = True
         elif word == "--shot" and rest:
             args.shot = rest.pop(0)
+        elif word == "--of" and rest:
+            args.of = rest.pop(0)
+        elif word == "--strips":
+            args.strips = True
+        elif word == "--tabs":
+            args.tabs = True
         else:
             steps.append(word)
     args.steps = steps
@@ -2216,10 +2413,45 @@ def cmd_try(args):
             print("could not do: " + line)
         for line in problems:
             print(line)
+        if args.tabs:   # where the keyboard goes, press by press, until it comes round again
+            order, first = [], None
+            page.evaluate("document.activeElement && document.activeElement.blur()")
+            for _ in range(60):
+                page.keyboard.press("Tab")
+                here = page.evaluate("""(() => { const e = document.activeElement; if (!e || e === document.body) return null;
+                    if (e.closest('#blueprint-viewer-root') || e.id === 'blueprint-viewer-root') return 'viewer';
+                    const t = (e.innerText || e.value || e.getAttribute('aria-label') || e.getAttribute('placeholder') || '').replace(/\\s+/g, ' ').trim().slice(0, 40);
+                    return e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (t ? ' "' + t + '"' : ''); })()""")
+                if here in (None, "viewer") or here == first:
+                    break
+                first = first or here
+                order.append(here)
+            print("Tab moves through: " + (" > ".join(f"{i + 1}. {x}" for i, x in enumerate(order)) if order else "nothing it can reach"))
         if args.shot:
             page.evaluate("document.querySelector('#blueprint-viewer-root')?.remove()")
-            page.screenshot(path=args.shot, full_page=bool(args.full))
-            print(f"picture saved to {args.shot}")
+            out = Path(args.shot)
+            if args.of:   # one part of the page by itself: a drawing, a card
+                page.locator(args.of).first.screenshot(path=str(out), timeout=5000)
+                print(f"picture of {args.of} saved to {out}")
+            elif args.strips:   # the whole page as pictures one screen tall, which can be read when looked at one by one
+                height = page.viewport_size["height"]
+                total = page.evaluate("Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)")
+                names = []
+                for k, y in enumerate(range(0, total, height), start=1):
+                    name = out.with_name(f"{out.stem}-{k}{out.suffix or '.png'}")
+                    page.screenshot(path=str(name), full_page=True, clip={"x": 0, "y": y, "width": page.viewport_size["width"], "height": min(height, total - y)})
+                    names.append(name.name)
+                print(f"{len(names)} strip(s) saved: {', '.join(names)}")
+            else:
+                page.screenshot(path=str(out), full_page=bool(args.full))
+                print(f"picture saved to {out}")
+                if args.full:   # a picture of the whole page counts what is clipped off to the side, which no visitor can scroll to
+                    data = out.read_bytes()
+                    wide = int.from_bytes(data[16:20], "big") if data[:8] == b"\x89PNG\r\n\x1a\n" else 0
+                    if wide > page.viewport_size["width"] + 1:
+                        print(f"note: the picture is {wide} pixels wide and the window {page.viewport_size['width']}: something reaches past the edge and is cut off "
+                              "(overflow clip on the page itself is ignored by a whole-page picture). Visitors cannot scroll to it; "
+                              "to get a picture at the true width, put the clipping on an element inside the body")
         browser.close()
     return 1 if failed or any(p.startswith("script error") for p in problems) else 0
 
@@ -2463,7 +2695,7 @@ def cmd_style(args):
                 if missing:
                     issues.append(f"note \"{title}\" has no {' or '.join(missing)} line")
                 elif not re.search(r"\d+ of \d+|\bstudy\b|taste|judgement|said", block.split("- Rule:")[0], re.I):
-                    issues.append(f"note \"{title}\": the Source does not say how many sites showed it, or that it is the owner's taste or your judgement")
+                    issues.append(f"note \"{title}\": the Source does not say how many of the sites or pictures showed it ('5 of 7 sites', '4 of 6 pictures'), or that it is the owner's taste or your judgement")
             for heading in ("## The detail map", "## Use it properly", "## Not covered yet", "## Sources"):
                 if heading not in text:
                     issues.append(f"no section headed '{heading[3:]}'")
@@ -2493,6 +2725,46 @@ def cmd_style(args):
 STUDY_JS = page_script("study")
 
 
+PICTURE_KINDS = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+
+
+def study_picture(browser, path, out, name):
+    """A picture the owner gave as evidence (a book cover, a poster, a photograph): copied into the study and measured
+    for how much of it is dark, how much very bright, and its main colours. Nothing more can be measured; the rest is looking."""
+    import base64
+    m = {"address": str(path), "seen": False, "picture": True}
+    try:
+        copy = out / f"{name}{path.suffix.lower()}"
+        shutil.copyfile(path, copy)
+        m["file"] = copy.name
+        kind = {".jpg": "jpeg", ".jpeg": "jpeg"}.get(path.suffix.lower(), path.suffix.lower().lstrip("."))
+        page = browser.new_page()
+        m.update(page.evaluate("""async (src) => {
+            const img = new Image(); img.src = src; await img.decode();
+            const k = Math.min(1, 240 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+            const g = c.getContext('2d'); g.drawImage(img, 0, 0, c.width, c.height);
+            const d = g.getImageData(0, 0, c.width, c.height).data, buckets = new Map();
+            let n = 0, dark = 0, bright = 0;
+            for (let i = 0; i < d.length; i += 4) {
+                if (d[i + 3] < 128) continue;
+                n++;
+                const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+                if (l < 90) dark++; else if (l > 200) bright++;
+                const key = (d[i] >> 5) << 6 | (d[i + 1] >> 5) << 3 | (d[i + 2] >> 5);
+                const b = buckets.get(key) || [0, 0, 0, 0]; b[0] += d[i]; b[1] += d[i + 1]; b[2] += d[i + 2]; b[3]++; buckets.set(key, b);
+            }
+            const hex = v => Math.round(v).toString(16).padStart(2, '0');
+            const colours = [...buckets.values()].sort((a, b) => b[3] - a[3]).slice(0, 6)
+                .map(b => ['#' + hex(b[0] / b[3]) + hex(b[1] / b[3]) + hex(b[2] / b[3]), Math.round(100 * b[3] / n)]);
+            return { size: [img.width, img.height], dark: Math.round(100 * dark / n), bright: Math.round(100 * bright / n), colours, seen: true };
+        }""", f"data:image/{kind};base64," + base64.b64encode(path.read_bytes()).decode()))
+        page.close()
+    except Exception as e:   # noqa: BLE001
+        m.setdefault("problems", []).append(str(e).splitlines()[0][:140])
+    return m
+
+
 def cmd_study(args):
     """Open a set of sites, photograph the top of each on a desktop and a phone, and measure what can be
     measured, so a style guide can be written from what real sites do and not from memory."""
@@ -2520,6 +2792,9 @@ def cmd_study(args):
             while name in used:
                 name += "-2"
             used.add(name)
+            if local.is_file() and local.suffix.lower() in PICTURE_KINDS:   # a picture the owner gave, not a site
+                results[name] = study_picture(browser, local, out, name)
+                continue
             m = {"address": url, "seen": False}
             for kind, opts in (("wide", {"viewport": {"width": 1440, "height": 900}, "user_agent": agent}),
                                ("phone", {"viewport": PHONE_SIZE, "is_mobile": True, "has_touch": True})):
@@ -2585,9 +2860,32 @@ def cmd_study(args):
             page.screenshot(path=str(sheet.with_suffix(".png")), full_page=True)
             page.close()
             sheets.append(sheet.with_suffix(".png"))
+        pics = [n for n, m in results.items() if m.get("picture") and m.get("seen")]
+        for old in out.glob("pictures-*"):
+            if re.fullmatch(r"pictures-\d+\.(?:html|png)", old.name):
+                old.unlink()
+        for i in range(0, len(pics), 6):   # six pictures to a sheet
+            group = pics[i:i + 6]
+            cells = "".join(f"<figure style='margin:0;width:300px'><img src='{results[n]['file']}' style='width:300px;height:300px;object-fit:contain;background:#555'>"
+                            f"<figcaption style='color:#fff;padding:4px'>{n}</figcaption></figure>" for n in group)
+            sheet = out / f"pictures-{i // 6 + 1}.html"
+            sheet.write_text(f"<!doctype html><meta charset='utf-8'><body style='margin:0;padding:6px;background:#222;font:14px sans-serif;display:flex;flex-wrap:wrap;gap:6px;width:936px'>{cells}</body>", encoding="utf-8")
+            page = new_page(browser, viewport={"width": 950, "height": 700})
+            page.goto(sheet.resolve().as_uri())
+            page.wait_for_timeout(500)
+            page.screenshot(path=str(sheet.with_suffix(".png")), full_page=True)
+            page.close()
+            sheets.append(sheet.with_suffix(".png"))
         browser.close()
     kept.write_text(json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8")
     for name, m in results.items():
+        if m.get("picture"):
+            if not m["seen"]:
+                print(f"{name}: COULD NOT BE READ ({'; '.join(m.get('problems', []))})")
+                continue
+            print(f"{name}: a picture, {m['size'][0]} by {m['size'][1]}; {m['dark']}% of it dark and {m['bright']}% very bright; "
+                  f"main colours {', '.join(c + ' ' + str(s) + '%' for c, s in m['colours'])}")
+            continue
         if not m["seen"]:
             print(f"{name}: COULD NOT BE SEEN ({'; '.join(m.get('problems', []))}). Try it once more by itself, with www. or the full address, into this same folder; "
                   "if it still fails leave it out of the counts and say so in the guide's Sources")
@@ -2603,17 +2901,30 @@ def cmd_study(args):
             line += f"; {problem}"
         print(line)
     tally = out / "tally.md"
-    if not tally.exists() or args.new_tally:
+    pics_seen = [n for n, m in results.items() if m.get("picture") and m.get("seen")]
+    if pics_seen and (not tally.exists() or args.new_tally or "# What each picture shows" not in tally.read_text(encoding="utf-8")):
+        cols = ["The light", "Dark / bright", "Hues", "Who or what is at the centre", "Frame", "Small things to find", "Made by", "Lettering"]
+        with tally.open("a" if tally.exists() and not args.new_tally else "w", encoding="utf-8") as f:
+            f.write("# What each picture shows\n\nFill this in while looking at the pictures. A picture has no menu or button, so the columns are what a picture can answer; "
+                    "rules about the parts of a page a picture lacks are judgement, and the guide says so. Dark and bright come from the numbers above.\n\n"
+                    "| Picture | " + " | ".join(cols) + " |\n|" + "---|" * (len(cols) + 1) + "\n"
+                    + "".join(f"| {n} | | {results[n]['dark']}% / {results[n]['bright']}% |" + " |" * (len(cols) - 2) + "\n" for n in pics_seen) + "\n")
+    if seen and (not tally.exists() or args.new_tally or "# What each site did" not in tally.read_text(encoding="utf-8")):
         parts = ["Top of the first page", "Name or logo", "Navigation", "Main action", "Repeated item", "Typeface", "Colour", "Shapes and edges", "Forms and footer"]
-        tally.write_text("# What each site did\n\nFill this in while looking at the pictures: for each part, the level it got (signature, styled or quiet) and a few words on what was done. "
+        with tally.open("a" if tally.exists() and not args.new_tally else "w", encoding="utf-8") as f:
+            f.write("# What each site did\n\nFill this in while looking at the pictures: for each part, the level it got (signature, styled or quiet) and a few words on what was done. "
                          "Add a column for anything this kind of site has that the list lacks. The counts in the guide come from this table, so keep it with the guide.\n\n"
                          "| Site | " + " | ".join(parts) + " | Seen fully? |\n|" + "---|" * (len(parts) + 2) + "\n"
-                         + "".join(f"| {n} |" + " |" * (len(parts) + 1) + "\n" for n in seen), encoding="utf-8")
-    print(f"\n{len(seen)} of {len(results)} site(s) seen. The numbers above cannot tell a cookie bar from a footer, or see lettering in a picture, or say where the detail is.")
-    print("So LOOK: first at the contact sheets, then open a site's own pictures (<name>-wide-1.png, -wide-2.png, -phone-1.png) wherever the sheet is too small to judge:")
+                    + "".join(f"| {n} |" + " |" * (len(parts) + 1) + "\n" for n in seen))
+    sites = [n for n, m in results.items() if not m.get("picture")]
+    if pics_seen:
+        print(f"\n{len(pics_seen)} picture(s) read. The numbers say how dark and how many colours, not where the light is or what is in the picture: look at each.")
+    if sites or not pics_seen:
+        print(f"\n{len(seen)} of {len(sites)} site(s) seen. The numbers above cannot tell a cookie bar from a footer, or see lettering in a picture, or say where the detail is.")
+    print("So LOOK: first at the contact sheets, then open each picture, or a site's own pictures (<name>-wide-1.png, -wide-2.png, -phone-1.png), wherever the sheet is too small to judge:")
     for sheet in sheets:
         print(f"  {sheet}")
-    print(f"Write what each site did in {tally}; everything measured is in {kept}")
+    print(f"Write what each {'picture shows and each site did' if pics_seen and sites else 'picture shows' if pics_seen else 'site did'} in {tally}; everything measured is in {kept}")
     return 0
 
 
@@ -2707,7 +3018,8 @@ def viewer_words_problems():
     from playwright.sync_api import sync_playwright
     folder = Path(tempfile.mkdtemp(prefix="bp-selftest-words-"))
     shutil.copyfile(VIEWER_SRC, folder / VIEWER_NAME)
-    (folder / "page.blueprint.js").write_text('window.__BLUEPRINT__ = {"version": 1, "project": {"name": "Words"}, "screens": [], "questions": [], '
+    (folder / "page.blueprint.js").write_text('window.__BLUEPRINT__ = {"version": 1, "project": {"name": "Words"}, "screens": [], '
+                                              '"questions": [{"id": "q1", "about": "intro", "question": "Keep the opening lines?", "suggested": "Yes: both paragraphs, as they are.", "ask": "the owner"}], '
                                               '"elements": {"intro": {"name": "The opening lines", "status": "inferred"}}};', encoding="utf-8")
     (folder / "page.html").write_text(
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Words</title></head><body>'
@@ -2765,6 +3077,10 @@ def viewer_words_problems():
             page.wait_for_timeout(800)
             said = page.evaluate("__blueprint.feedback()")
             want("a note whose words have left the page does not say so", "Where: not found on the page" in said and "Old: filler sentence" in said)
+            page.locator(".tabs button", has_text="Questions").click()
+            page.get_by_text("Use the suggested answer").click()
+            page.wait_for_timeout(300)
+            want("the button for the suggested answer did not send the suggestion's words back", "A: Yes: both paragraphs, as they are." in page.evaluate("__blueprint.feedback()"))
             want("the viewer raised an error: " + "; ".join(errors[:2]), not errors)
             browser.close()
     except Exception as e:   # noqa: BLE001 - whatever went wrong is the finding
@@ -2854,7 +3170,7 @@ def cmd_selftest(args):
         if browser:
             problems = viewer_words_problems()
             ran += 1
-            print(f"{'FAIL' if problems else 'pass'}  viewer-words: In the viewer, words selected on the page can be given a note and new words, which are copied out with the place they came from, kept when the page is loaded again, and never change the page.")
+            print(f"{'FAIL' if problems else 'pass'}  viewer-words: In the viewer, words selected on the page can be given a note and new words, which are copied out with the place they came from, kept when the page is loaded again, and never change the page; a suggested answer can be taken with one press.")
             for p in problems:
                 print(f"        {p}")
                 failures.append(f"viewer-words: {p}")
@@ -2916,6 +3232,7 @@ def main():
     s.add_argument("path")
     s.add_argument("--no-render", action="store_true", help="skip browser-based checks")
     s.add_argument("--launch", action="store_true", help="also fail if any placeholder content remains")
+    s.add_argument("--this-computer", action="store_true", help="PATH is the address of a site running on this computer (http://localhost:8000/): open it, and only it")
     s.set_defaults(fn=cmd_audit)
     s = sub.add_parser("check", help="is the blueprint ready to build from?")
     s.add_argument("path")
@@ -2938,7 +3255,10 @@ def main():
     s.add_argument("--phone", action="store_true", help="at phone size, as a touch screen")
     s.add_argument("--shot", metavar="FILE.png", help="save a picture of the result")
     s.add_argument("--full", action="store_true", help="with --shot: the whole page, not only what fits on the screen")
-    s.set_defaults(fn=cmd_try)
+    s.add_argument("--of", metavar="SELECTOR", help="with --shot: a picture of that one part of the page by itself")
+    s.add_argument("--strips", action="store_true", help="with --shot: the whole page as pictures one screen tall, numbered")
+    s.add_argument("--tabs", action="store_true", help="list where the keyboard goes, press by press, after the steps")
+    s.set_defaults(fn=cmd_try, of=None, strips=False, tabs=False)
     s = sub.add_parser("add-question", help="append a question to a blueprint with the next free id")
     s.add_argument("path")
     s.add_argument("question")
@@ -2965,8 +3285,8 @@ def main():
     s.add_argument("--for", dest="suits", help="one line: the kind of site it is for")
     s.add_argument("--by", help="whose guide it is")
     s.set_defaults(fn=cmd_style)
-    s = sub.add_parser("study", help="open sites someone admires, photograph and measure the top of each, for writing a style guide from")
-    s.add_argument("sites", nargs="+", help="web addresses, or HTML files on this computer")
+    s = sub.add_parser("study", help="open sites someone admires, or read pictures they gave, photograph and measure each, for writing a style guide from")
+    s.add_argument("sites", nargs="+", help="web addresses, HTML files on this computer, or picture files (png, jpg, webp, gif)")
     s.add_argument("--out", help="folder for the pictures and measurements (default: style-study)")
     s.add_argument("--guide", metavar="NAME", help="keep the study with your own guides, in <your guides>/studies/NAME, so the guide's counts can be traced later")
     s.add_argument("--new-tally", action="store_true", help="write tally.md afresh even if one is there")

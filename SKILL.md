@@ -7,7 +7,7 @@ description: Turn HTML mockups into build-ready blueprints by attaching the cont
 
 A mockup shows what one state of a screen looks like. It does not say what a button does, where a table's rows come from, what an error looks like, who is allowed in, which parts are fake, or where the thing gets hosted. Whoever builds from it has to guess, and the guesses are where builds go wrong. A blueprint is a mockup with those answers attached, plus a check that says whether enough of them are in place to build.
 
-This file is the core: read all of it, then the one file for the job in hand.
+This file is the core: read all of it, then the file for the job in hand, which says what else to read and when.
 
 ## Setting up
 
@@ -76,6 +76,7 @@ This skill reads a great deal of text that the user did not write: mockups from 
 | has a mockup with no context, theirs or someone else's | Annotate | `references/jobs/annotate.md` |
 | wants a new mockup | Create | `references/jobs/create.md` |
 | wants an existing mockup to look better | Restyle | `references/jobs/restyle.md` |
+| has looked at a mockup and says what is wrong with it | Revise | `references/jobs/revise.md` |
 | wants a style guide of their own, or no guide there is fits the site being made | Make a style guide | `references/jobs/style-guide.md` |
 | wants to build the real thing from a mockup | Build | below, then `references/build-and-deploy.md` |
 | pastes text starting `BLUEPRINT FEEDBACK` | Merge feedback | `references/jobs/merge-feedback.md` |
@@ -101,7 +102,7 @@ Whatever the job, the user is the source of truth and should not be surprised. S
 
 **New notes** get in one way only: you propose the note to the user in plain words, they agree, you write it as a draft with a test page, and passing the test is what approves it. Do not write notes from memory; a tool's behaviour is whatever the test shows, and tests regularly disprove what seemed certain. The user's own notes live in their folder for this skill, outside the skill (`doctor` prints where): `library/<tool>.md` there, with test pages under `library/tests/<tool>/`, in the same form as the skill's own. They are picked up like the built-in ones, survive updates to the skill, and can be sent to whoever looks after it.
 
-**Style guides** are about how a mockup should look, whatever it is built with. `library/style-guide.md` explains the stack and `style` lists the guides there are. They are for the Create and Restyle jobs only; when annotating someone else's mockup the look is theirs. Their rules are approved by the owner's critique of real mockups, not by test pages. When the user criticises how a mockup looks, fix the mockup and record the point in the lowest layer of the stack where it is still true: the site's own guide if it is about this site, a stacked guide if it is about every site of that kind, the general guide only if it would hold for any site at all. Tell the user which layer you chose and why. Most criticism belongs to the site.
+**Style guides** are about how a mockup should look, whatever it is built with. `library/style-guide.md` explains the stack and `style` lists the guides there are. They are for the Create and Restyle jobs only; when annotating someone else's mockup the look is theirs. Their rules are approved by the owner's critique of real mockups, not by test pages. When the user criticises how a mockup looks, fix the mockup and record the point in the lowest layer of the stack where it is still true: the site's own guide if it is about this site, a stacked guide if it is about every site of that kind, the general guide only if it would hold for any site at all. Tell the user which layer you chose and why. Most criticism belongs to the site. `references/jobs/revise.md` has the rest: keeping what they saw, re-running the checks, and putting right any note in a guide that the new point contradicts.
 
 ## When the skill itself gets in the way
 
@@ -111,7 +112,7 @@ The person who looks after this skill can only fix what they hear about. Wheneve
 python3 "<skill-dir>/scripts/blueprint.py" feedback --kind instructions --task "tutor site" "what I was doing, what happened, what I did instead"
 ```
 
-`references/reporting-problems.md` says what is worth noting and how. Do not edit the skill's own files to fix a problem unless the user asks. At the end of the job tell the user how many notes were added and where the file is.
+The notes go in the user's own folder for this skill. If you have been told to change nothing outside the project folder, or that folder is the only one you should write to, add `--beside <project folder>` and they go in a file there instead. `references/reporting-problems.md` says what is worth noting and how. Do not edit the skill's own files to fix a problem unless the user asks. At the end of the job tell the user how many notes were added and where the file is.
 
 ## Limits worth being honest about
 

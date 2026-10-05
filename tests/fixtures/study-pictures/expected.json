@@ -1,0 +1,10 @@
+{
+  "about": "study reads picture files as evidence for a style guide: how much is dark, how much very bright, the main colours, a contact sheet and a table to fill in.",
+  "steps": [
+    {"run": ["study", "night.png", "day.png", "--out", "study"], "browser": true,
+     "must": ["night: a picture, 40 by 40; 97% of it dark and 3% very bright; main colours #281432 97%, #fadc78 3%", "day: a picture, 40 by 40; 0% of it dark and 50% very bright",
+              "2 picture(s) read", "pictures-1.png"],
+     "must_not": ["site(s) seen", "COULD NOT"]},
+    {"run": ["feedback", "--list"], "must": ["no problems noted yet"]}
+  ]
+}

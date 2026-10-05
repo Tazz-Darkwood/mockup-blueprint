@@ -9,9 +9,15 @@
     const r = rect(e); if (r.width < 2 || r.height < 2) return false;
     const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity !== 0; };
   const ownText = e => [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.nodeValue).join(' ').replace(/\s+/g, ' ').trim();
+  // getAttribute, not className: on a drawing (svg) className is not a string, and those were being named with no class at all
+  const tagOf = e => { const c = (e.getAttribute('class') || '').trim();
+    return '<' + e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (c ? '.' + c.split(/\s+/)[0] : '') + '>'; };
   const say = e => { const t = (e.innerText || e.value || e.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim().slice(0, 28);
-    const c = typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/)[0] : '';
-    return '<' + e.tagName.toLowerCase() + c + '>' + (t ? ' "' + t + '"' : ''); };
+    return tagOf(e) + (t ? ' "' + t + '"' : ''); };
+  // a part of a drawing with no name of its own is named by the nearest thing round it that has one
+  const sayWhere = e => { if (e.id || (e.getAttribute('class') || '').trim()) return say(e);
+    const named = e.parentElement && e.parentElement.closest('[id], [class]');
+    return say(e) + (named && named !== document.body ? ' inside ' + tagOf(named) : ''); };
   const all = [...document.querySelectorAll('body *')];
 
   // sideways scrolling, and what sticks out
@@ -19,7 +25,7 @@
   let culprits = [];
   if (sideways) {
     const over = all.filter(e => shown(e) && rect(e).right > W + 1 && rect(e).left < W);
-    culprits = over.filter(e => !over.some(o => o !== e && e.contains(o))).slice(0, 3).map(say);
+    culprits = [...new Set(over.filter(e => !over.some(o => o !== e && e.contains(o))).map(sayWhere))].slice(0, 3);
   }
 
   // text sizes

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try extras</title>
+<style>
+  body { margin: 0; font: 18px/1.5 sans-serif; }
+  .field { position: relative; height: 60px; }
+  .field svg { position: absolute; left: 200px; top: 0; }
+  .tall { height: 1500px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Choose a trade</h1>
+<label for="trade">What you did</label>
+<select id="trade"><option value="dev">I wrote code</option><option value="other">Something else</option></select>
+<button type="button" id="go" onclick="document.getElementById('out').textContent = 'You chose ' + document.getElementById('trade').value + '.'">Go</button>
+<p id="out" role="status"></p>
+<div class="sigils"><svg width="600" height="40" aria-hidden="true"><use href="#star"/></svg></div>
+<svg width="0" height="0"><symbol id="star"><circle cx="20" cy="20" r="18"/></symbol></svg>
+<div class="tall"></div>
+</main>
+</body>
+</html>
