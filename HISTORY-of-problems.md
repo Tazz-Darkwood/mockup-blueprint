@@ -587,3 +587,12 @@ The skill's owner asked for a style guide with the feel of a famous online game,
 2. It has another, "When the look belongs to someone else": capture the feel, sort what belongs to the genre from what belongs to the owner and write the sorting down, name the guide after the feel, warn plainly when asked for the property itself, and never copy art, logos or font files into a site. The owner's words: "replicate the feels and looks without breaching the IP or trademark, and warn the user if they try to make it breach". SKILL.md and the Create job point to it.
 3. `study --pictures` photographs the large pictures inside a page, however far down; it was done by hand the first time, for screenshots of a game's interface inside a published guide.
 
+## Version 0.14.1: try a new guide alone first (2026-10-05)
+- Status: added
+- Kind: instructions, check
+
+A new game-style guide, never used on a site, was stacked in the lead with an approved dark guide in second place. The owner: "its pretty decent, I should have had you use the [new] style first and polished that before mixing it, so the [older] one seems to be leading it most of all". Part of it was the older guide's own "When this guide is not the lead", which still kept its figure and its light for the top, against the rule that the lead decides the top.
+
+1. The style-guide job's step 6, and the Create job, say to try a new guide alone on one site and polish it before stacking it. `check` notes `style/untried-in-stack` when a guide of the user's own with no approved notes is stacked with others.
+2. The general guide says what a guide keeps in second place is never one of the three things the lead decides, and the template for new guides says so.
+

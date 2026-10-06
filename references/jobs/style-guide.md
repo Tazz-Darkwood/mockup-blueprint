@@ -36,7 +36,8 @@ A guide is not a look. For one kind of site it records which parts of a page get
    - Where what the user said and what their sites do pull apart (they liked a loud site, and the rest are calm), do not settle it yourself: put it to them in step 5.
    - Every note starts as `draft`. Five to ten notes is enough. Say what was not looked at.
 5. **Show it before using it.** Give the user the detail map and the rules in a few plain lines and ask whether that sounds like the sites they meant. Correct what they correct. Then stack it: the site's `project.style.guides` takes the guide's short name, exactly as for a built-in one.
-6. **Keep it alive.** Criticism of a mockup made with the guide goes to the lowest layer where it is still true, and when that is "this kind of site", it goes into the guide. A note that has held on two sites, with the owner agreeing both times, gets an `Approved by` line.
+6. **Try it alone first.** Use a new guide by itself on one site and polish it with the owner's critique before stacking it with other guides. Stacked untried with a guide that has been through critique, the older guide leads whatever the order: on the first try of a new game-style guide stacked with an approved one, the owner said the approved one "seems to be leading it most of all", and that he "should have had you use the [new] style first and polished that before mixing it".
+7. **Keep it alive.** Criticism of a mockup made with the guide goes to the lowest layer where it is still true, and when that is "this kind of site", it goes into the guide. A note that has held on two sites, with the owner agreeing both times, gets an `Approved by` line.
 
 If nobody is there to ask, do not make a guide: use the nearest, write this site's own detail map as the general guide says, and add a question asking whether a guide should be made.
 

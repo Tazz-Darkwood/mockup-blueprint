@@ -1,0 +1,24 @@
+{
+  "about": "A guide of the user's own that has no approved notes, stacked with others, brings a note to try it alone first.",
+  "home": {
+    "styles/style-feel-mine.md": [
+      "---\nname: Mine (a feel guide)\nsummary: A small guide for the test.\nkind: feel\ndetect: []\nchecked: 2026-10-05\nsource: the owner's taste\nmade_by: the test\n---\n\n# Mine\n\n## Notes\n\n### Big and bold\n- Status: draft\n- Source: the owner's taste.\n- Rule: everything is big.\n"
+    ]
+  },
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "\"mine\" is a guide of the user's own with no approved notes yet",
+        "[style/untried-in-stack]"
+      ],
+      "must_not": [
+        "\"warm\" is a guide of the user's own"
+      ]
+    }
+  ]
+}

@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.14.0"
+SKILL_VERSION = "0.14.1"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -1866,6 +1866,11 @@ def check_one(ctx_path, strict, render):
             notes.append(f"stacks {len(known)} guides in this order: {', '.join(known)}. "
                          + (f"\"{feel[0]}\" is the first feel guide, so it sets the page's colour, what fills the top and the main material; the others flavour it in its terms "
                             "(\"When guides are stacked\" in library/style-guide.md, and each guide's \"When this guide is not the lead\")" if feel else "Where they disagree, the earlier wins"))
+            for g in known:
+                own = [e for shelf in SHELVES for e in [on_shelf.get(f"style-{shelf}-{g}")] if e and inside(e["path"], own_styles())]
+                if own and not any(n["status"] == "approved" for n in own[0]["notes"]):
+                    notes.append(f"\"{g}\" is a guide of the user's own with no approved notes yet: if no site has been made with it alone, "
+                                 "try it alone first and polish it with the owner's critique before stacking it, or the guides that have been through critique will lead whatever the order  [style/untried-in-stack]")
             site_guide = stack.get("site_guide")
             sg = (bp.dir / str(site_guide)) if site_guide else None
             if sg and inside(sg, bp.dir) and sg.is_file() and not re.search(r"^#+ How the .*guides were combined", sg.read_text(encoding="utf-8", errors="replace"), re.M | re.I):
@@ -2618,7 +2623,7 @@ TODO: one note for each rule, five to ten in all, each in this form. Every rule 
 
 ## When this guide is not the lead
 
-TODO, for a feel guide only (delete this section for a purpose or field guide): when another feel guide leads, it sets the page's colour, what fills the top and the main material. Say what this guide keeps (its few rules that still make sense in another guide's colours and materials) and what it gives up, and how it flavours the page in the lead's terms. See "When guides are stacked" in the general style guide.
+TODO, for a feel guide only (delete this section for a purpose or field guide): when another feel guide leads, it sets the page's colour, what fills the top and the main material, and nothing here may claim any of the three. Say what this guide keeps (its few rules that still make sense in another guide's colours and materials) and what it gives up, and how it flavours the page in the lead's terms. See "When guides are stacked" in the general style guide.
 
 ## What this guide does not give you
 
