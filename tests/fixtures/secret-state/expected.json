@@ -1,0 +1,10 @@
+{
+  "about": "Steps for a secret state: 'keys' types a code and 'repeat' presses something many times; try sets the window's width; audit --after checks the page in the state those steps reach, before any context lists it.",
+  "steps": [
+    {"run": ["try", "index.html", "repeat 5 click #logo"], "browser": true, "must": ["messages that appeared: 5 taps"], "exit": 0},
+    {"run": ["try", "index.html", "keys ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight b a", "top", "--shot", "s.png"], "browser": true, "must": ["picture saved to s.png"], "exit": 0},
+    {"run": ["try", "index.html", "--width", "320"], "browser": true, "must": ["scrolls sideways: False"], "exit": 0},
+    {"run": ["audit", "index.html"], "browser": true, "must_not": ["far too faint"]},
+    {"run": ["audit", "index.html", "--after", "keys ArrowUp ArrowUp ArrowDown ArrowDown ArrowLeft ArrowRight ArrowLeft ArrowRight b a"], "browser": true, "must": ["The secret look, far too faint"]}
+  ]
+}

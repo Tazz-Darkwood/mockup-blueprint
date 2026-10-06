@@ -1,0 +1,23 @@
+{
+  "about": "While no element is described (the owner is still judging the look), check folds the many 'not written yet' errors into one line, so the findings that matter stay in view; the build still does not pass. A second look's stack is checked like the first.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "the context is not written yet (",
+        "question q1 (project): Is the look right?",
+        "Build:   NOT READY",
+        "the look \"secret side\" does not say how it is reached",
+        "stacks a guide called \"nosuchguide\" and no such guide exists"
+      ],
+      "must_not": [
+        "has no entry in elements",
+        "is empty (if it does not apply"
+      ]
+    }
+  ]
+}

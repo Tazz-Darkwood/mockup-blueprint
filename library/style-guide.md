@@ -39,6 +39,14 @@ Learned from two mockups of the same shop made with the same three guides in two
 5. **Write it down.** The site's own guide has a table, "How the guides were combined": one row for each part where two guides met, what each asked for, what was done, and which of the rules above settled it. A builder reading only the blueprint would otherwise apply the order alone.
 6. **Test it.** Picture the first screen with the order swapped. If someone could not tell which guide led, the lead is not leading: go back to rule 1. This is a first pass, made by whoever drew the page, and it has passed while the owner saw the opposite: twice, a page was judged to be led by its first guide and the owner said the second "seems to be leading it most of all". The owner's eye is the test; say in the report that yours was only a first pass.
 
+## A site with two looks
+
+Some sites have a second look the visitor can switch to: a dark theme that is designed rather than only darkened, a mode for a season, a secret version behind a code. Learned on a joke site whose secret code turned it into "a whole new site" (2026-10-05).
+
+- **Each look has its own brief line and its own stack.** Say in the brief what the second look is and how it is reached. It may stack its guides in another order, or other guides. Record it in the blueprint as `project.style.looks`, one entry per extra look: `{"name": "mana side", "reached_by": "the Konami code, or ten taps on the emblem", "guides": ["tavern-epic"]}`.
+- **Each look is checked on its own.** The template test, the test of which guide leads, and the counts of typefaces and colours apply to each look by itself. `audit --after <steps>` checks the page after the steps that reach a look, before any context exists; once it does, list those steps in `project.check_states` so `check` looks at it every time.
+- **Pictures of both, side by side,** when the owner is shown the look.
+
 ## Use it properly
 
 Before drawing anything, write the design brief (first note) and set the tokens. Everything on the page then uses a token; nothing gets a one-off size, colour or gap. A starting set, to be changed for each project:
@@ -78,7 +86,7 @@ Before drawing anything, write the design brief (first note) and set the tokens.
 2. Count: typefaces (two at most), text sizes in view (about three), accent colours (one, unless a stacked guide asks for more), primary buttons in view (one).
 3. Measure the longest line of reading text. Over 75 characters is too long.
 4. Look at it at phone width and at a very wide window, and run the list in `style-mobile.md`.
-5. Put it next to the last mockup made. If they could swap skins without anyone noticing, the brief was not followed. If the two share a lead guide, they will share its feel; what must differ is what the site is about (its subject, its people, its signature), and the site's guide says what does.
+5. Put it next to the last mockup made of a different site (not another version of this one). If they could swap skins without anyone noticing, the brief was not followed. If the two share a lead guide, they will share its feel; what must differ is what the site is about (its subject, its people, its signature), and the site's guide says what does.
 6. Run the template test (see "It must not look like a template" below): count the tells on the page, and name three things on it that were made for this site alone. Write the three in the site's own guide. If there are not three, it is not ready to show.
 7. With more than one feel guide stacked, run the test under "When guides are stacked": could someone tell which one leads?
 
@@ -164,6 +172,7 @@ Before drawing anything, write the design brief (first note) and set the tokens.
 - Status: draft
 - Source: Practical Typography ("the easiest and most visible improvement you can make to your typography is to use a professional font"); the limit of two is judgement
 - Rule: one typeface for body text and at most one more for headings. Pick them for the subject; do not fall back to the system font because it is there. If a web font is used, host the files with the site (see `google-fonts.md` for why) and show text straight away while it loads.
+- A site with a second look the visitor can switch to (a secret mode, a dark theme that is designed, not only darkened) may give that look its own two; count per look.
 - Check: measurable. Number of font families in use.
 
 ### Text is aligned left and never justified

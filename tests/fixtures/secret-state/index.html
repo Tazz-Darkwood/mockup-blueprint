@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secret state</title>
+<style>
+  body { margin: 0; font: 18px/1.5 sans-serif; background: #fff; color: #111; }
+  main { padding: 24px; }
+  .secret { display: none; background: #fff; color: #bbb; padding: 20px; }
+  body.flipped .secret { display: block; }
+  body.flipped .plain { display: none; }
+  #logo { min-width: 44px; min-height: 44px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Two looks</h1>
+<p class="plain">The ordinary look, easy to read.</p>
+<p class="secret">The secret look, far too faint to read.</p>
+<button type="button" id="logo">Logo</button>
+<p id="count" role="status">0 taps</p>
+</main>
+<script>
+  var code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], at = 0, taps = 0;
+  document.addEventListener('keydown', function (e) { at = e.key === code[at] ? at + 1 : (e.key === code[0] ? 1 : 0); if (at === code.length) { at = 0; document.body.classList.toggle('flipped'); } });
+  document.getElementById('logo').addEventListener('click', function () { taps++; document.getElementById('count').textContent = taps + ' taps'; if (taps === 5) document.body.classList.toggle('flipped'); });
+</script>
+</body>
+</html>

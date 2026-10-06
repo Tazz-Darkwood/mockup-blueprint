@@ -117,6 +117,12 @@ And two habits:
 - What would confirm it: a test in a browser whose scrollbars take up room, such as most on Windows.
 - Until then: use `width: 100%`, not `100vw`, for anything meant to span the page.
 
+### Things stacked in one grid cell: a positioned one is drawn over the others, whatever their order
+- Status: approved
+- Test: `tests/css-layout/grid-stack-positioned.html` (passed 2026-10-06, in Chromium)
+- What happens: a picture and a panel placed in the same grid cell, the panel written after the picture. With `position: relative` on the picture and nothing on the panel, the picture was drawn on top and the panel vanished behind it. Given `position: relative` too, the panel came back on top. Met on a mockup that laid its painted scene and its panels in one cell: "the panel's background, frame, portrait and name vanished and only the bars showed" (2026-10-05).
+- What to do: when things are stacked in one grid cell, give each of them a position (or a `z-index`), so the order they are written in is the order they are drawn in.
+
 ## Questions it raises
 
 - Does the header stay on screen as the page scrolls?

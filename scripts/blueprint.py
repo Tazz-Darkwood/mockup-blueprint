@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.14.2"
+SKILL_VERSION = "0.15.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -1039,10 +1039,14 @@ def phone_findings(phone):
 
 def do_steps(page, steps):
     """Carry out simple steps on a page: 'click <selector>', 'fill <selector>=<text>' (on a drop-down list, the option's
-    value or the words it shows; 'choose' is the same), 'press <key>', 'wait <ms>'.
+    value or the words it shows; 'choose' is the same), 'press <key>', 'keys <key> <key> ...' (a sequence, such as a
+    secret code), 'repeat <n> <step>' (the same step n times, up to 50), 'top' (scroll back to the top), 'wait <ms>'.
     Returns a list of steps that could not be done."""
-    failed = []
-    for step in steps or []:
+    failed, expanded = [], []
+    for step in steps or []:   # 'repeat 10 click #emblem' becomes ten clicks
+        m = re.match(r"^\s*repeat\s+(\d+)\s+(.+)$", str(step))
+        expanded += [m.group(2)] * min(int(m.group(1)), 50) if m else [step]
+    for step in expanded:
         verb, _, rest = str(step).strip().partition(" ")
         try:
             if verb == "click":
@@ -1059,6 +1063,12 @@ def do_steps(page, steps):
                     page.fill(selector, text, timeout=4000)
             elif verb == "press":
                 page.keyboard.press(rest)
+            elif verb == "keys":
+                for key in rest.split():
+                    page.keyboard.press(key)
+                    page.wait_for_timeout(40)
+            elif verb == "top":   # arrow keys and clicks scroll the page; a picture is usually wanted from the top
+                page.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             elif verb == "wait":
                 page.wait_for_timeout(min(max(int(rest), 0), 10000))   # a context file from elsewhere must not be able to stall the check
             else:
@@ -1502,6 +1512,8 @@ def cmd_audit(args):
             states = (ctx.get("project") or {}).get("check_states") if isinstance(ctx.get("project"), dict) else None
             siblings = len(ctx.get("files") or [])
             break
+    if args.after:   # a state the page reaches only after something is pressed, checked before the context exists to list it
+        states = list(states or []) + [{"name": "; ".join(args.after), "do": list(args.after)}]
     reports, note = ({}, None) if args.no_render else rendered_reports(files, states)
     if len(files) == 1 and siblings > 1:
         print(f"note: only this page was looked at. Its blueprint covers {siblings} pages; give the folder to audit them all.")
@@ -1852,7 +1864,13 @@ def check_one(ctx_path, strict, render):
     if stack is not None:
         on_shelf = {e["slug"]: e for e in load_entries()}
         named = [str(g) for g in stack.get("guides") or []]
-        for g in named:
+        looks = [lk for lk in stack.get("looks") or [] if isinstance(lk, dict)]
+        for lk in looks:   # a second look the visitor can switch to: its own stack, checked the same way
+            if not lk.get("reached_by"):
+                warnings.append(f"project.style.looks: the look \"{lk.get('name', '?')}\" does not say how it is reached (reached_by)")
+            if not lk.get("guides"):
+                warnings.append(f"project.style.looks: the look \"{lk.get('name', '?')}\" names no guides")
+        for g in dict.fromkeys(named + [str(g) for lk in looks for g in lk.get("guides") or []]):
             found = [on_shelf[f"style-{shelf}-{g}"] for shelf in SHELVES if f"style-{shelf}-{g}" in on_shelf]
             if not found:
                 warnings.append(f"project.style stacks a guide called \"{g}\" and no such guide exists, in the skill's library or in {own_styles()}; "
@@ -1892,6 +1910,18 @@ def check_one(ctx_path, strict, render):
     inferred = sum(c["inferred"] for c in counts.values())
     if strict and inferred:
         blocking.append(f"{inferred} item(s) are inferred, not confirmed (strict mode)")
+
+    # Before any element is described (the owner is still judging the look, Create step 7), every empty section and every
+    # control without context is an error, and they bury the few findings that matter now. Fold them into one line.
+    # Only for a mockup being made with the style stack: when annotating someone else's page, every missing note is the job itself.
+    if not bp.elements and isinstance(project.get("style"), dict):
+        unwritten = [e for e in errors if re.search(r"has no context|has no entry in (?:elements|screens)|^no screens described|^project\.[a-z_.]+ is (?:empty|missing)|^project\.status", e)]
+        if unwritten:
+            errors = [e for e in errors if e not in unwritten]
+            notes.insert(0, f"the context is not written yet: no element is described, so {len(unwritten)} error(s) about empty sections and controls "
+                            "without context are left out of this list and still stop the build. That is expected while the owner judges the look "
+                            "(Create step 7); write the context at step 10")
+            errors.append(f"the context is not written yet ({len(unwritten)} empty section(s) and control(s) without context, listed once it is begun)")
 
     # report
     def section(title, items, limit=400):
@@ -2394,6 +2424,8 @@ def cmd_try(args):
             args.of = rest.pop(0)
         elif word == "--strips":
             args.strips = True
+        elif word in ("--width", "--height") and rest and rest[0].isdigit():
+            setattr(args, word[2:], int(rest.pop(0)))
         elif word == "--tabs":
             args.tabs = True
         else:
@@ -2407,7 +2439,9 @@ def cmd_try(args):
     address = target.resolve().as_uri() + extra
     with sync_playwright() as pw:
         browser = open_browser(pw)
-        ctx = browser.new_context(**({"viewport": PHONE_SIZE, "is_mobile": True, "has_touch": True} if args.phone else {"viewport": {"width": 1280, "height": 900}}))
+        size = dict(PHONE_SIZE) if args.phone else {"width": 1280, "height": 900}
+        size.update({k: v for k, v in (("width", args.width), ("height", args.height)) if v})   # --width 320 to see a small phone, 1920 a wide window
+        ctx = browser.new_context(**({"viewport": size, "is_mobile": True, "has_touch": True} if args.phone else {"viewport": size}))
         guard(ctx)
         page = ctx.new_page()
         problems = []
@@ -3283,6 +3317,8 @@ def main():
     s.add_argument("path")
     s.add_argument("--no-render", action="store_true", help="skip browser-based checks")
     s.add_argument("--launch", action="store_true", help="also fail if any placeholder content remains")
+    s.add_argument("--after", action="append", metavar="STEP", help="also check the page after these steps (as for try; repeat the option for more steps), "
+                   "for a state the page reaches only when something is pressed: a dialog, a second look behind a secret code")
     s.add_argument("--this-computer", action="store_true", help="PATH is the address of a site running on this computer (http://localhost:8000/): open it, and only it")
     s.set_defaults(fn=cmd_audit)
     s = sub.add_parser("check", help="is the blueprint ready to build from?")
@@ -3302,14 +3338,16 @@ def main():
     s.set_defaults(fn=cmd_extract)
     s = sub.add_parser("try", help="open a page, carry out some presses, and report what happened")
     s.add_argument("page")
-    s.add_argument("steps", nargs=argparse.REMAINDER, help="e.g. \"click #add\" \"fill #email=a@b.org\" \"press Enter\" \"wait 500\"")
+    s.add_argument("steps", nargs=argparse.REMAINDER, help="e.g. \"click #add\" \"fill #email=a@b.org\" \"press Enter\" \"keys ArrowUp ArrowUp b a\" \"repeat 10 click #logo\" \"top\" \"wait 500\"")
     s.add_argument("--phone", action="store_true", help="at phone size, as a touch screen")
     s.add_argument("--shot", metavar="FILE.png", help="save a picture of the result")
     s.add_argument("--full", action="store_true", help="with --shot: the whole page, not only what fits on the screen")
     s.add_argument("--of", metavar="SELECTOR", help="with --shot: a picture of that one part of the page by itself")
     s.add_argument("--strips", action="store_true", help="with --shot: the whole page as pictures one screen tall, numbered")
     s.add_argument("--tabs", action="store_true", help="list where the keyboard goes, press by press, after the steps")
-    s.set_defaults(fn=cmd_try, of=None, strips=False, tabs=False)
+    s.add_argument("--width", type=int, help="window width in pixels (default 1280, or 390 with --phone)")
+    s.add_argument("--height", type=int, help="window height in pixels")
+    s.set_defaults(fn=cmd_try, of=None, strips=False, tabs=False, width=None, height=None)
     s = sub.add_parser("add-question", help="append a question to a blueprint with the next free id")
     s.add_argument("path")
     s.add_argument("question")

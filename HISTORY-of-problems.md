@@ -605,3 +605,16 @@ A site was revised to drop its second guide, as a copy, following the Revise job
 1. The Revise job's step 4: when the critique is about the whole look, go back to the brief and draw the page again, keeping only the words and what it does.
 2. The general guide's test of which guide leads is a first pass by whoever drew the page; it passed twice while the owner saw the opposite. The owner's eye is the test.
 
+## Version 0.15.0: what three runs of a joke site with a secret second look found (2026-10-06)
+- Status: fixed, except where said
+- Kind: script, check, instructions, library
+
+Three fresh Claudes made one joke site, whose secret code turned it into "a whole new site". Beyond what was about the style itself, they found:
+
+1. A state reached only by pressing things could not be checked before the context existed, so a second look's contrast failures went unseen until someone made a scratch copy by hand. `audit --after <step>` checks the page after those steps.
+2. `try` and the checks' steps can now type a sequence (`keys ArrowUp ArrowUp ... b a`), do a step many times (`repeat 10 click #emblem`) and scroll back to the top (`top`); `try --width` and `--height` set the window.
+3. While no element is described, `check` folded 58 "not written yet" errors into one line, so the findings that matter at that stage (open questions, warnings) can be seen. The build still does not pass.
+4. "Compare with the last mockup made" now means a different site, not another version of this one; the Create job records the guides in the site guide until the blueprint exists, and suggests a plain page opened by double-click as the default for a small site.
+5. A site with two looks: the general guide says each look has its own brief line and stack, is checked on its own (typefaces counted per look), and is shown side by side; the format has `project.style.looks`, which `check` validates.
+6. A library note, approved by its test: things stacked in one grid cell are drawn with a positioned one on top, whatever their order.
+

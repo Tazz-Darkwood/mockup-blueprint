@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Things stacked in one grid cell: a positioned one is drawn over the others, whatever their order</title>
+<script src="../harness.js"></script>
+<style>
+  body { margin: 0; font: 16px/1.4 sans-serif; }
+  .stage { display: grid; width: 400px; height: 200px; margin: 10px; }
+  .stage > * { grid-area: 1 / 1; }
+  .picture { position: relative; background: #48a; }
+  .panel { margin: 40px; background: #222; color: #fff; }
+  .fixed .panel { position: relative; }
+</style>
+</head>
+<body>
+<div class="stage" id="a"><div class="picture"></div><div class="panel" id="pa">Panel written after the picture</div></div>
+<div class="stage fixed" id="b"><div class="picture"></div><div class="panel" id="pb">Panel given position: relative too</div></div>
+<script>
+run(async () => {
+  const onTop = (id) => { const r = $(id).getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return hit === $(id) || $(id).contains(hit) ? 'panel' : 'picture'; };
+  const got = { panelAfterPositionedPicture: onTop('#pa'), bothPositioned: onTop('#pb') };
+  return { pass: got.panelAfterPositionedPicture === 'picture' && got.bothPositioned === 'panel',
+           detail: 'two things in the same grid cell, the picture first with position: relative, the panel after it. What is drawn on top at the panel\'s middle: ' + JSON.stringify(got) };
+});
+</script>
+</body>
+</html>
