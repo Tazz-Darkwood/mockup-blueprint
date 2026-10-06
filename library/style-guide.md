@@ -37,7 +37,7 @@ Learned from two mockups of the same shop made with the same three guides in two
 3. **Each guide governs the parts its detail map gives it.** Where two claim the same part, the earlier in the order wins, all the way down the list, not only the lead.
 4. **A purpose guide decides where things go on its own steps**: the layout of a product, a basket, a booking form, what must be shown and in what order, and that nothing covers a product picture. The feel guides decide what those things are made of. A field guide wins over a feel guide on what that trade's visitors expect. Both hold whatever the order.
 5. **Write it down.** The site's own guide has a table, "How the guides were combined": one row for each part where two guides met, what each asked for, what was done, and which of the rules above settled it. A builder reading only the blueprint would otherwise apply the order alone.
-6. **Test it.** Picture the first screen with the order swapped. If someone could not tell which guide led, the lead is not leading: go back to rule 1.
+6. **Test it.** Picture the first screen with the order swapped. If someone could not tell which guide led, the lead is not leading: go back to rule 1. This is a first pass, made by whoever drew the page, and it has passed while the owner saw the opposite: twice, a page was judged to be led by its first guide and the owner said the second "seems to be leading it most of all". The owner's eye is the test; say in the report that yours was only a first pass.
 
 ## Use it properly
 

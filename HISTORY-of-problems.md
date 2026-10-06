@@ -596,3 +596,12 @@ A new game-style guide, never used on a site, was stacked in the lead with an ap
 1. The style-guide job's step 6, and the Create job, say to try a new guide alone on one site and polish it before stacking it. `check` notes `style/untried-in-stack` when a guide of the user's own with no approved notes is stacked with others.
 2. The general guide says what a guide keeps in second place is never one of the three things the lead decides, and the template for new guides says so.
 
+## Version 0.14.2: when the critique is about the whole look (2026-10-05)
+- Status: added
+- Kind: instructions
+
+A site was revised to drop its second guide, as a copy, following the Revise job's "change only what the critique touches". The colours and borders changed and the layout stayed, and the owner: "It still really feels like the same as the [other] one cuz of the banner and the drawn person with the orb".
+
+1. The Revise job's step 4: when the critique is about the whole look, go back to the brief and draw the page again, keeping only the words and what it does.
+2. The general guide's test of which guide leads is a first pass by whoever drew the page; it passed twice while the owner saw the opposite. The owner's eye is the test.
+
