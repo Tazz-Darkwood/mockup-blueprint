@@ -577,3 +577,13 @@ Stacking had never been tested where it is hardest: two feel guides on one site,
 
 Left open: helpers for drawing a scene in code, which took most of each run's time. A project of its own.
 
+## Version 0.14.0: guides from online research, and other people's property (2026-10-05)
+- Status: added
+- Kind: instructions, script
+
+The skill's owner asked for a style guide with the feel of a famous online game, for a joke site among friends, and for two things the skill had no words for: what to do when the look someone wants belongs to someone else, and how to make a guide when the evidence is research online rather than sites to study or pictures from the owner.
+
+1. The style-guide job has a section, "When the evidence is research online": six kinds of source (the thing itself, its original artefacts, the thing in use, its makers in their own words, craft writing, documented values), reading pages rather than search summaries, keeping the evidence private, and counting as "N of 6 sources". Written from making that guide.
+2. It has another, "When the look belongs to someone else": capture the feel, sort what belongs to the genre from what belongs to the owner and write the sorting down, name the guide after the feel, warn plainly when asked for the property itself, and never copy art, logos or font files into a site. The owner's words: "replicate the feels and looks without breaching the IP or trademark, and warn the user if they try to make it breach". SKILL.md and the Create job point to it.
+3. `study --pictures` photographs the large pictures inside a page, however far down; it was done by hand the first time, for screenshots of a game's interface inside a published guide.
+

@@ -40,6 +40,33 @@ A guide is not a look. For one kind of site it records which parts of a page get
 
 If nobody is there to ask, do not make a guide: use the nearest, write this site's own detail map as the general guide says, and add a question asking whether a guide should be made.
 
+## When the evidence is research online
+
+Sometimes there are no sites to study and the owner has no pictures to give: the look they want belongs to a game, a film, a book cover era or a famous brand, and its own websites have moved on to a modern look. Then the evidence is research, done by you, and the guide says so. Learned making a guide from one game's look (2026-10-05); treat it as a method, not a recipe.
+
+1. **Look for six kinds of source**, and say in Sources which you found. Each answers a different question, and one kind alone gives a lopsided guide.
+   - *The thing itself*: its official site, opened with `study` for the key art, emblems and buttons it still shows.
+   - *Its original artefacts*: the first box, cover or poster, often on its encyclopedia article.
+   - *The thing in use*: screenshots of it working (a game's interface, a film's title cards), usually inside guides and wikis. `study <address> --pictures` photographs the large pictures inside a page, however far down they are.
+   - *Its makers in their own words*: interviews with its art director or designers. Their own sentences are the best evidence there is for why it looks as it does; quote them.
+   - *Craft writing*: artists explaining how the style is made, which turns into rules you can follow.
+   - *Documented values*: wikis and references that list its exact colours, fonts and sizes.
+2. **Read and look, do not summarise from search results.** Open the pages; a search engine's summary is a lead. Look at every picture you keep. Leave out what is off the subject (a cosplay photograph, an advert caught in a screenshot) and pages that are thin rewrites of others.
+3. **Keep the evidence private.** Pictures go into the study folder (`--guide <name>`) and nowhere else. They are someone else's work; they are looked at, never used in a site.
+4. **Count as "N of 6 sources"** in each note's Source, naming them R1 to R6, and quote the makers where they said it. Rules about parts of a web page that none of the sources has (a form, a long article) are judgement and say so.
+5. **Say what was refused or missing** (a page that would not open, a part of the look no source showed), and tell the owner in step 5.
+6. If the look is someone else's property, the next section applies as well.
+
+## When the look belongs to someone else
+
+An owner may ask for a guide, or a mockup, "like" a game, a film, a band or a brand. The feel of it can be had; the property cannot be taken. Asked for by the skill's owner (2026-10-05): "replicate the feels and looks without breaching the IP or trademark, and warn the user if they try to make it breach".
+
+- **Sort, and write the sorting down** in a note of its own, "Not the property", at the top of the guide's notes. Free to use: what belongs to the genre and is shared by many works (a style of painting, chunky proportions, metal frames, a colour convention such as rarity colours, generic words of the genre). Never used: the work's name, logo, wordmark and makers' names; the names of its places, characters and factions; its art, icons, screenshots, sounds and music; its font files (often licensed); quotes from it; and anything so close to it that someone could take the site for the owner's own.
+- **Name the guide after the feel, not the work.** "Tavern Epic", not the game's name.
+- **Warn, plainly, when asked to cross the line**: to use the logo, put the work's art or characters in, take its name for the site, or copy its interface. Say what the risk is in a sentence, say what you can do instead (the lookalike, made for the site), and that this is not legal advice; for anything sold or public at scale, suggest they ask someone who knows the law. Then do the lookalike. If they still want the property used, it is their decision to make with that advice, but do not copy someone else's art, logo or font files into a site yourself: draw or choose the site's own.
+- **A wink is fine; a name is not, by default.** A joke site among friends can say "a certain online game" and use the genre's own words.
+- **Every site made with such a guide** runs the guide's own test before showing: could anyone take this for the real thing's own site?
+
 ## A guide that someone else made
 
 A guide is advice that you act on, so one that arrives from another person is handled with care.

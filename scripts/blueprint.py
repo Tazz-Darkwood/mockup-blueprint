@@ -33,7 +33,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.13.0"
+SKILL_VERSION = "0.14.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
@@ -2713,7 +2713,7 @@ def cmd_style(args):
                 if missing:
                     issues.append(f"note \"{title}\" has no {' or '.join(missing)} line")
                 elif not re.search(r"\d+ of \d+|\bstudy\b|taste|judgement|said", block.split("- Rule:")[0], re.I):
-                    issues.append(f"note \"{title}\": the Source does not say how many of the sites or pictures showed it ('5 of 7 sites', '4 of 6 pictures'), or that it is the owner's taste or your judgement")
+                    issues.append(f"note \"{title}\": the Source does not say how many of the sites, pictures or sources showed it ('5 of 7 sites', '4 of 6 pictures', '3 of 6 sources'), or that it is the owner's taste or your judgement")
             if re.search(r"^kind:\s*feel\b", text, re.M) and "## When this guide is not the lead" not in text:
                 issues.append("no section \"When this guide is not the lead\": a feel guide stacked second needs to say what it keeps and what it gives up "
                               "(see \"When guides are stacked\" in the general style guide)")
@@ -2748,6 +2748,26 @@ STUDY_JS = page_script("study")
 
 
 PICTURE_KINDS = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+
+
+def study_page_pictures(page, out, name, most=8):
+    """With study --pictures: photograph the large pictures inside a page, top to bottom. For research into a look
+    that a page shows in pictures further down (a game's interface in a guide, a painter's work in an article)."""
+    saved = []
+    for el in page.locator("img").all():
+        if len(saved) >= most:
+            break
+        try:
+            if el.evaluate("i => i.naturalWidth") < 600:
+                continue
+            el.scroll_into_view_if_needed(timeout=3000)
+            page.wait_for_timeout(700)
+            path = out / f"{name}-picture-{len(saved) + 1}.png"
+            el.screenshot(path=str(path), timeout=5000)
+            saved.append(path.name)
+        except Exception:   # noqa: BLE001 - a picture that will not show is skipped
+            continue
+    return saved
 
 
 def study_picture(browser, path, out, name):
@@ -2856,6 +2876,8 @@ def cmd_study(args):
                         page.mouse.wheel(0, 850)
                         page.wait_for_timeout(1500)
                         page.screenshot(path=str(out / f"{name}-wide-2.png"))
+                        if args.pictures:   # the pictures inside the page (screenshots in a guide, art in an article), wherever they are on it
+                            m["pictures"] = study_page_pictures(page, out, name)
                     else:
                         m["phone"] = {k: v for k, v in page.evaluate(STUDY_JS).items() if k in ("largestText", "readingText", "picturesInFirstScreen", "boxOnTop", "looksBlocked")}
                         if m["phone"]["looksBlocked"]:
@@ -2915,6 +2937,8 @@ def cmd_study(args):
         text = (f"largest text {m['largestText']}px (\"{m['largestTextSays']}\", {m['largestTextFace']}), reading text {m['readingText']}px, faces {', '.join(m['faces'])}"
                 if m.get("largestText") else "no text could be measured in the first screen")
         line = f"{name}: {text}; {m['picturesInFirstScreen']} picture(s) in the first screen"
+        if m.get("pictures"):
+            line += f"; {len(m['pictures'])} picture(s) from inside the page saved ({m['pictures'][0]} and on)"
         if m.get("biggestPictureShare", 0) >= 50 and (m.get("largestText") or 0) < 40:
             line += f"; ONE PICTURE FILLS {m['biggestPictureShare']}% OF THE FIRST SCREEN: any large lettering is inside the picture, so the type sizes here say little"
         if m.get("boxOnTop"):
@@ -3310,6 +3334,7 @@ def main():
     s = sub.add_parser("study", help="open sites someone admires, or read pictures they gave, photograph and measure each, for writing a style guide from")
     s.add_argument("sites", nargs="+", help="web addresses, HTML files on this computer, or picture files (png, jpg, webp, gif)")
     s.add_argument("--out", help="folder for the pictures and measurements (default: style-study)")
+    s.add_argument("--pictures", action="store_true", help="also photograph the large pictures inside each page, wherever they are on it (screenshots in a guide, art in an article)")
     s.add_argument("--guide", metavar="NAME", help="keep the study with your own guides, in <your guides>/studies/NAME, so the guide's counts can be traced later")
     s.add_argument("--new-tally", action="store_true", help="write tally.md afresh even if one is there")
     s.add_argument("--wait", type=int, default=5000, help="milliseconds to let each page settle (default: 5000)")
