@@ -33,11 +33,12 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 VERSION = 1            # the shape of the context file
-SKILL_VERSION = "0.15.0"
+SKILL_VERSION = "0.16.0"
 VIEWER_NAME = "blueprint-viewer.js"
 VIEWER_SRC = Path(__file__).resolve().parent.parent / "assets" / VIEWER_NAME
 LIBRARY = Path(__file__).resolve().parent.parent / "library"
 SHELVES = ("feel", "purpose", "field")
+PART_PREFIX = "style-part-"   # part guides: one part of a page, a few named options, picked on their own (project.style.parts)
 
 
 def page_script(name):
@@ -1878,6 +1879,18 @@ def check_one(ctx_path, strict, render):
             for e in found:
                 if e["unfinished"]:
                     warnings.append(f"the style guide \"{g}\" still has {e['unfinished']} part(s) marked TODO: finish it before relying on it ({e['path']})  [style/guide-unfinished]")
+        picked = stack.get("parts") if isinstance(stack.get("parts"), dict) else {}
+        for part, option in picked.items():   # an option for a part of the page, picked on its own; it wins over the feel guides for that part
+            guide = on_shelf.get(PART_PREFIX + str(part))
+            if not guide:
+                warnings.append(f"project.style.parts names a part called \"{part}\" and there is none; 'style' lists the parts and their options  [style/part-missing]")
+                continue
+            for one in option if isinstance(option, list) else [option]:   # a list: a second pick for a second use (frames round panels, and the edges between sections)
+                if str(one) not in part_options(guide):
+                    warnings.append(f"project.style.parts: the part \"{part}\" has no option \"{one}\"; it offers {', '.join(part_options(guide))}  [style/part-missing]")
+        if picked:
+            notes.append("picks parts on their own: " + ", ".join(f"{k}: {' and '.join(v) if isinstance(v, list) else v}" for k, v in picked.items())
+                         + ". Each wins over the feel guides for that part only; read its option in library/style-part-<part>.md")
         known = [g for g in named if any(f"style-{shelf}-{g}" in on_shelf for shelf in SHELVES)]
         if len(known) > 1:
             feel = [g for g in known if f"style-feel-{g}" in on_shelf]
@@ -2008,7 +2021,7 @@ def load_entries():
     entries = [read_entry(f) for f in sorted(LIBRARY.glob("*.md")) if f.name != "README.md"]
     built_in = {e["slug"] for e in entries}
     for f in (sorted(own_styles().glob("style-*.md")) if own_styles().is_dir() else []):
-        if f.stem in built_in or not re.match(r"style-(?:feel|purpose|field)-[a-z0-9][a-z0-9-]*$", f.stem):
+        if f.stem in built_in or not re.match(r"style-(?:feel|purpose|field|part)-[a-z0-9][a-z0-9-]*$", f.stem):
             SET_ASIDE.append((f, "it has the name of a guide that comes with the skill" if f.stem in built_in else "its name is not style-feel-, style-purpose- or style-field- followed by a short name"))
             continue
         e = read_entry(f, own=True)
@@ -2039,6 +2052,7 @@ def entries_matching(raws, ctx=None):
     project = (ctx or {}).get("project") if isinstance((ctx or {}).get("project"), dict) else {}
     style = project.get("style") if isinstance(project.get("style"), dict) else {}
     stacked = {f"style-{shelf}-{name}" for name in style.get("guides") or [] for shelf in SHELVES}
+    stacked |= {PART_PREFIX + str(part) for part in (style.get("parts") if isinstance(style.get("parts"), dict) else {})}
     out = []
     for e in load_entries():
         general = e["slug"] in ("style-guide", "style-mobile")
@@ -2132,9 +2146,23 @@ def run_script_tests(entries):
     return results
 
 
+def test_pages(e):
+    """The test pages of a library entry: tests/<slug>/*.html, or for a part guide its swatch page, tests/parts/<part>.html."""
+    tests = e["path"].parent / "tests"
+    if e["slug"].startswith(PART_PREFIX):
+        page = tests / "parts" / (e["slug"][len(PART_PREFIX):] + ".html")
+        return [page] if page.is_file() else []
+    return sorted((tests / e["slug"]).glob("*.html"))
+
+
+def part_options(e):
+    """The option ids a part guide offers, from its '- Id:' lines, in order."""
+    return re.findall(r"^- Id:\s*([a-z0-9][a-z0-9-]*)\s*$", e["path"].read_text(encoding="utf-8", errors="replace"), re.M)
+
+
 def run_library_tests(entries, as_version):
     results = run_script_tests(entries)
-    if not any(sorted((e["path"].parent / "tests" / e["slug"]).glob("*.html")) for e in entries):
+    if not any(test_pages(e) for e in entries):
         return results
     try:
         from playwright.sync_api import sync_playwright
@@ -2150,7 +2178,7 @@ def run_library_tests(entries, as_version):
                 harness = LIBRARY / "tests" / "harness.js"
                 if not (tests / "harness.js").exists() or not same_text(tests / "harness.js", harness):
                     shutil.copyfile(harness, tests / "harness.js")
-            for t in sorted((tests / e["slug"]).glob("*.html")):
+            for t in test_pages(e):
                 # clipboard permission lets tests of copy buttons read back what was copied
                 context = browser.new_context(viewport={"width": 1000, "height": 700},
                                               permissions=["clipboard-read", "clipboard-write"])
@@ -2182,7 +2210,8 @@ def run_library_tests(entries, as_version):
                         page.wait_for_timeout(40)
                 except Exception as ex:
                     result = {"pass": False, "detail": "did not finish: " + str(ex).splitlines()[0]}
-                results[f"tests/{e['slug']}/{t.name}"] = result
+                key = f"tests/parts/{t.name}" if e["slug"].startswith(PART_PREFIX) else f"tests/{e['slug']}/{t.name}"
+                results[key] = result
                 context.close()
         browser.close()
     return results
@@ -2198,7 +2227,8 @@ def cmd_library(args):
         results = run_library_tests(chosen, args.as_version)
         failed = 0
         for e in chosen:
-            mine = {k: v for k, v in results.items() if k.startswith(f"tests/{e['slug']}/")}
+            mine = {k: v for k, v in results.items() if k.startswith(f"tests/{e['slug']}/")
+                    or (e["slug"].startswith(PART_PREFIX) and k == f"tests/parts/{e['slug'][len(PART_PREFIX):]}.html")}
             version = args.as_version or e["meta"].get("version", "no version")
             print(f"{e['meta'].get('name', e['slug'])} ({version}): {sum(r['pass'] for r in mine.values())}/{len(mine)} tests passed")
             for path, r in mine.items():
@@ -2731,13 +2761,44 @@ def cmd_style(args):
         if not args.name:
             die("say which guide: style check bakery")
         wanted = re.sub(r"[^a-z0-9]+", "-", args.name.lower()).strip("-")
-        found = [e for e in entries if e["slug"] in {f"style-{shelf}-{wanted}" for shelf in SHELVES}]
+        found = [e for e in entries if e["slug"] in {f"style-{shelf}-{wanted}" for shelf in SHELVES} | {PART_PREFIX + wanted}]
         if not found:
             die(f"no guide called {wanted}; 'style' lists the ones there are")
         problems = 0
         for e in found:
             text = e["path"].read_text(encoding="utf-8")
             issues = []
+            if e["slug"].startswith(PART_PREFIX):   # a part guide: options, not notes
+                options = re.split(r"^### ", text.split("\n## Options", 1)[-1].split("\n## ", 1)[0], flags=re.M)[1:] if "\n## Options" in text else []
+                if not 4 <= len(options) <= 8:
+                    issues.append(f"{len(options)} option(s) under Options; four to eight is the aim")
+                for block in options:
+                    title = block.splitlines()[0].strip()
+                    missing = [k for k in ("Id", "Status", "Looks like", "Made with", "Careful", "Used on") if not re.search(rf"^- {k}:", block, re.M)]
+                    if missing:
+                        issues.append(f"option \"{title}\" has no {', '.join(missing)} line")
+                    elif re.search(r"^- Id:\s*(\S+)", block, re.M).group(1) != re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-"):
+                        issues.append(f"option \"{title}\": its Id should be its name in lower case with hyphens")
+                known_parts = {p["slug"][len(PART_PREFIX):]: part_options(p) for p in entries if p["slug"].startswith(PART_PREFIX)}
+                goes_with = "\n".join(re.findall(r"^- Goes with:.*$", text, re.M))
+                for part, option in re.findall(r"`([a-z]+): ([a-z0-9-]+)`", goes_with):
+                    if part not in known_parts or option not in known_parts[part]:
+                        issues.append(f"Goes with names \"{part}: {option}\", and there is no such part or option")
+                for heading in ("## Choosing", "## Options", "## Swatch book", "## Not covered yet"):
+                    if heading not in text:
+                        issues.append(f"no section headed '{heading[3:]}'")
+                pages = test_pages(e)
+                if not pages:
+                    issues.append(f"no swatch book: tests/parts/{e['slug'][len(PART_PREFIX):]}.html")
+                else:
+                    shown = re.findall(r'data-option="([a-z0-9-]+)"', pages[0].read_text(encoding="utf-8", errors="replace"))
+                    if shown != part_options(e):
+                        issues.append(f"the swatch book shows {', '.join(shown) or 'nothing'}; the guide offers {', '.join(part_options(e))}: they must match, in order")
+                print(f"{e['path']}: " + ("nothing missing" if not issues else f"{len(issues)} thing(s) to put right"))
+                for issue in issues:
+                    print(f"  - {issue}")
+                problems += len(issues)
+                continue
             if e["unfinished"]:
                 issues.append(f"{e['unfinished']} part(s) still marked TODO")
             for key in ("name", "summary", "kind", "source"):
@@ -2775,6 +2836,12 @@ def cmd_style(args):
         if not mine:
             print("  (none yet)")
         print()
+    parts = [e for e in entries if e["slug"].startswith(PART_PREFIX)]
+    if parts:
+        print("Parts of a page (pick one option for a part, on its own, with any guides: project.style.parts):")
+        for e in parts:
+            print(f"  {e['slug'][len(PART_PREFIX):]:<14} {'yours   ' if e['own'] else 'built in'}  options: {', '.join(part_options(e)) or '(none found)'}  {e['path']}")
+        print("  Each has a swatch book that shows every option: library/tests/parts/<part>.html\n")
     for f, why in SET_ASIDE:
         print(f"NOT LOADED: {f} ({why})")
     print("A site may stack any of these together, more than one of a kind included. The first feel guide named sets the page's colour, its top and its material;\n"

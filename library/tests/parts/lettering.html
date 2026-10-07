@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lettering: the options</title>
+<script src="../harness.js"></script>
+<style>
+/* Every face here is a file in fonts/, under the SIL Open Font License (licence files beside them). Nothing is fetched. */
+@font-face { font-family: 'Newsreader'; src: url('fonts/newsreader-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Source Sans 3'; src: url('fonts/source-sans-3-latin-wght-normal.woff2') format('woff2'); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: 'Young Serif'; src: url('fonts/young-serif-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Karla'; src: url('fonts/karla-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('fonts/bricolage-grotesque-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Figtree'; src: url('fonts/figtree-latin-wght-normal.woff2') format('woff2'); font-weight: 300 900; font-display: swap; }
+@font-face { font-family: 'Caprasimo'; src: url('fonts/caprasimo-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Atkinson Hyperlegible Next'; src: url('fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Pirata One'; src: url('fonts/pirata-one-latin.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Alegreya'; src: url('fonts/alegreya-latin.woff2') format('woff2'); font-weight: 400 900; font-display: swap; }
+@font-face { font-family: 'Cinzel Decorative'; src: url('fonts/CinzelDecorative-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Signika'; src: url('fonts/Signika.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: 'Caveat'; src: url('fonts/caveat-wght-normal.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
+
+*, *::before, *::after { box-sizing: border-box; }
+svg { display: block; max-width: 100%; }
+:root { --page-ground: #f2f0eb; --page-ink: #1d1f22; --page-soft: #4f545b; }
+@media (prefers-color-scheme: dark) { :root { --page-ground: #17181a; --page-ink: #eceae5; --page-soft: #b9b6ae; } }
+body { margin: 0; background: var(--page-ground); color: var(--page-ink); font: 1.0625rem/1.5 system-ui, sans-serif; overflow-wrap: break-word; }
+.page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.page > h1 { font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.15; margin: 0 0 0.5rem; }
+.page > p { margin: 0 0 1.5rem; max-width: 62ch; color: var(--page-soft); }
+.book { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 56rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.swatch { margin: 0; border-radius: 6px; overflow: clip; display: grid; grid-template-rows: auto 1fr; }
+.swatch > header { padding: 0.5rem 1rem; background: #2a2c30; color: #f4f2ee; font: 600 0.9375rem/1.4 system-ui, sans-serif; display: flex; flex-wrap: wrap; gap: 0 0.75rem; justify-content: space-between; }
+.swatch > header h2 { font: inherit; margin: 0; }
+.swatch > header code { font: 0.875rem/1.4 ui-monospace, monospace; color: #d6d3cc; }
+.show { padding: 1.5rem 1.25rem; min-height: 15rem; }
+.show p { margin: 0.75rem 0 0; max-width: 44ch; }
+.show .faces { margin-top: 1rem; font-size: 1rem; }
+.show button { margin-top: 1rem; min-height: 2.75rem; padding: 0.5rem 1.25rem; cursor: pointer; }
+.show h2, .show h3 { margin: 0; }
+
+/* ---------- sober pair */
+.o-sober { --ground: #ffffff; --ink: #1c2321; --soft: #4d5754; --accent: #1f6b45; --mark: #f6dd73;
+  background: var(--ground); color: var(--ink); font: 1.125rem/1.55 'Source Sans 3', 'Segoe UI', sans-serif; }
+.o-sober h3 { font: 600 clamp(2rem, 1.5rem + 1.6vw, 2.75rem)/1.1 'Newsreader', Georgia, serif; text-wrap: balance; }
+.o-sober h3 em { font-style: normal; background: linear-gradient(transparent 62%, var(--mark) 62%); }
+.o-sober .fact { margin-top: 1rem; padding-top: 0.5rem; border-top: 3px solid var(--ink); display: flex; gap: 0.75rem; align-items: baseline; flex-wrap: wrap; }
+.o-sober .fact b { font: 600 2rem/1.1 'Newsreader', Georgia, serif; }
+.o-sober .faces { color: var(--soft); }
+.o-sober button { font: 600 1.0625rem 'Source Sans 3', sans-serif; background: var(--accent); color: #fff; border: 0; border-radius: 6px; }
+
+/* ---------- soft serif */
+.o-soft { --ground: #2e4f39; --ink: #f7f1e3; --soft: #d9d2bf; --accent: #b4471f;
+  background: var(--ground); color: var(--ink); font: 1.125rem/1.5 'Karla', system-ui, sans-serif; }
+.o-soft h3 { font: 400 clamp(2.25rem, 1.6rem + 2vw, 3.25rem)/1.06 'Young Serif', Georgia, serif; letter-spacing: -0.01em; text-wrap: balance; }
+.o-soft .faces { color: var(--soft); }
+.o-soft button { font: 600 1.0625rem 'Karla', sans-serif; background: var(--accent); color: #fff; border: 0; border-radius: 10px; }
+
+/* ---------- lively grotesque */
+.o-lively { --ground: #eef4e8; --ink: #1d2a1f; --soft: #4a584c; --accent: #f2b33d;
+  background: var(--ground); color: var(--ink); font: 1.125rem/1.55 'Figtree', 'Segoe UI', sans-serif; }
+.o-lively .label { font: 700 0.875rem/1 'Figtree', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); }
+
+.o-lively h3 { font: 800 clamp(2.25rem, 1.6rem + 2vw, 3.25rem)/1.05 'Bricolage Grotesque', 'Trebuchet MS', sans-serif; letter-spacing: -0.02em; margin-top: 0.5rem; }
+.o-lively .faces { color: var(--soft); }
+.o-lively button { font: 700 1.0625rem 'Figtree', sans-serif; background: var(--accent); color: var(--ink); border: 1px solid #8a6414; border-radius: 8px; }
+
+/* ---------- poster face */
+.o-poster { --sun: #ffc83a; --felt: #1e3f8f; --red: #c9321e; --paper: #fffaf0; --ink: #1a2142;
+  --cut: polygon(0.6% 1.4%, 99.5% 0, 100% 98.8%, 0 100%);
+  background: var(--sun); color: var(--ink); font: 1.125rem/1.5 'Atkinson Hyperlegible Next', system-ui, sans-serif; }
+.o-poster h3 { font: 400 1rem/1 'Caprasimo', Georgia, serif; }
+.o-poster .block { position: relative; z-index: 0; display: block; width: fit-content; padding: 0.06em 0.2em 0.12em;
+  font-size: clamp(3rem, 2rem + 4vw, 4.75rem); line-height: 1; color: var(--paper); rotate: -2.5deg; }
+.o-poster .block::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--felt); clip-path: var(--cut); }
+.o-poster .block + .block { margin: -0.07em 0 0 0.55em; rotate: 1.5deg; }
+.o-poster .block + .block::before { background: var(--red); clip-path: polygon(0 0, 100% 2.5%, 99.2% 100%, 0.8% 97%); }
+.o-poster button { font: 400 1.25rem 'Caprasimo', Georgia, serif; background: var(--red); color: #fff; border: 0; border-radius: 4px; }
+
+/* ---------- bladed letters */
+.o-bladed { --ground: #1e0f14; --letter: #c9a25a; --text: #f0e2c2; --soft: #d2c2a2; --pen: #000; --button: #ffcf5a;
+  background: var(--ground); color: var(--text); font: 1.125rem/1.5 'Alegreya', Georgia, serif; }
+.o-bladed .mark { font: 400 1.5rem/1.1 'Pirata One', 'Palatino Linotype', serif; color: var(--letter); text-shadow: 2px 2px 0 var(--pen); }
+.o-bladed h3 { margin-top: 0.5rem; font: 400 clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem)/0.98 'Pirata One', 'Palatino Linotype', serif; letter-spacing: 0.01em; text-shadow: 3px 3px 0 var(--pen); }
+.o-bladed .faces { color: var(--soft); }
+.o-bladed button { font: 700 1.0625rem 'Alegreya', Georgia, serif; background: var(--button); color: #1e0f14; border: 0; border-radius: 2px; }
+
+/* ---------- chiselled metal */
+.o-metal { --sky: #2f6fb6; --metal: #ffd76a; --metal-hi: #fff2b8; --metal-lo: #8a5c14; --metal-edge: #3a2405; --text: #ffffff; --panel: rgb(20 12 8 / 0.88);
+  background: linear-gradient(#2a64a8, #4f8fd0 60%, #6aa86a 60%, #4c8c4c); color: var(--text); font: 1.125rem/1.5 'Signika', 'Trebuchet MS', sans-serif; text-align: center; }
+.o-metal .title { font: 700 clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem)/1 'Cinzel Decorative', Georgia, serif; color: var(--metal);
+  text-shadow: 0 -1px 0 var(--metal-hi),
+    2px 2px 0 var(--metal-edge), -2px 2px 0 var(--metal-edge), 2px -2px 0 var(--metal-edge), -2px -2px 0 var(--metal-edge),
+    0 4px 0 var(--metal-lo), 0 7px 0 var(--metal-edge), 0 12px 18px rgb(0 0 0 / 0.55); }
+.o-metal .words { margin: 1.25rem auto 0; max-width: 30rem; padding: 0.75rem 1rem 1rem; background: var(--panel); border: 3px solid #e2ad3b; border-radius: 10px; }
+.o-metal .words p { margin: 0 auto; }
+.o-metal .words .faces { margin-top: 0.75rem; color: #e9dfcc; }
+.o-metal button { font: 700 1.125rem 'Signika', sans-serif; background: linear-gradient(#ffe48f, #ffc93a 60%); color: #2a1604; border: 2px solid var(--metal-edge); border-radius: 8px; }
+
+/* ---------- hand marks */
+.o-hand { --paper: #f6efe0; --ink: #23201b; --soft: #575046; --felt: #2e5a8a; --green: #2f5a3b; --stamp: #8a1f1f;
+  background: var(--paper); color: var(--ink); font: 1.125rem/1.5 'Karla', system-ui, sans-serif; }
+.o-hand h3 { font: 400 clamp(2rem, 1.5rem + 1.8vw, 2.875rem)/1.1 'Young Serif', Georgia, serif; }
+.o-hand .rest { position: relative; display: inline-block; padding-bottom: 0.3em; }
+.o-hand .squiggle { position: absolute; left: 0; bottom: 0; width: 100%; height: 0.3em; }
+.o-hand .squiggle path { fill: none; stroke: var(--felt); stroke-width: 4; stroke-linecap: round; }
+.o-hand .row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 1rem; }
+.o-hand .stamp { display: inline-block; padding: 2px 0.5rem; border: 3px double var(--stamp); color: var(--stamp); background: #efe2c6;
+  font: 700 0.875rem/1.2 'Karla', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; rotate: -6deg; }
+.o-hand .note { display: inline-flex; align-items: center; gap: 0.5rem; font: 600 1.5rem/1.15 'Caveat', 'Segoe Print', cursive; color: var(--green); }
+.o-hand .note svg { width: 3.5rem; height: 1.75rem; }
+.o-hand .note path { fill: none; stroke: var(--green); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.o-hand .faces { color: var(--soft); }
+.o-hand button { font: 700 1.0625rem 'Karla', sans-serif; background: var(--green); color: #fff; border: 0; border-radius: 8px; }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Lettering: the options</h1>
+  <p>Each box is one option from <code>style-part-lettering.md</code>, set in the faces a mockup really used. Colours are only there to show the lettering in a setting it suits; they are not part of the option.</p>
+
+  <div class="book">
+    <section class="swatch" data-option="sober-pair">
+      <header><h2>Sober pair</h2><code>sober-pair</code></header>
+      <div class="show o-sober">
+        <h3>One-on-one <em>biology</em> tutoring, in town and online.</h3>
+        <div class="fact"><b>12 years</b><span>teaching biology</span></div>
+        <p>A few students at a time, for as long as it helps. Lessons follow the school's own course.</p>
+        <button type="button">Get in touch</button>
+        <p class="faces">Newsreader over Source Sans 3</p>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="soft-serif">
+      <header><h2>Soft serif</h2><code>soft-serif</code></header>
+      <div class="show o-soft">
+        <h3>Soap made slowly, with herbs you can name.</h3>
+        <p>I make every bar myself: olive oil, a handful of herbs, and four weeks on the drying rack.</p>
+        <button type="button">Shop the soaps</button>
+        <p class="faces">Young Serif over Karla</p>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="lively-grotesque">
+      <header><h2>Lively grotesque</h2><code>lively-grotesque</code></header>
+      <div class="show o-lively">
+        <span class="label">Season two</span>
+        <h3>Dig a nest that outlasts the winter.</h3>
+        <p>Pick a colony, claim a corner of the farm and keep it fed. Everyone plays in the same farm.</p>
+        <button type="button">Choose a colony</button>
+        <p class="faces">Bricolage Grotesque over Figtree</p>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="poster-face">
+      <header><h2>Poster face</h2><code>poster-face</code></header>
+      <div class="show o-poster">
+        <h3><span class="block">Lend a</span><span class="block">hand</span></h3>
+        <p>Our events only happen because members and neighbours pitch in. Pick one and we'll send the details.</p>
+        <button type="button">Sign me up</button>
+        <p class="faces">Caprasimo over Atkinson Hyperlegible Next</p>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="bladed-letters">
+      <header><h2>Bladed letters</h2><code>bladed-letters</code></header>
+      <div class="show o-bladed">
+        <span class="mark">The Copper Kettle</span>
+        <h3>Carved by hand, sold at the fair.</h3>
+        <p>Walking sticks, lanterns and leather-bound notebooks, made by five of us for the autumn fair.</p>
+        <button type="button">See what's on the bench</button>
+        <p class="faces">Pirata One over Alegreya</p>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="chiselled-metal">
+      <header><h2>Chiselled metal</h2><code>chiselled-metal</code></header>
+      <div class="show o-metal">
+        <h3 class="title">Sunstone Keep</h3>
+        <div class="words">
+          <p>The gates open at dawn. Bring a friend and a full flask.</p>
+          <button type="button">Accept the quest</button>
+          <p class="faces">Cinzel Decorative over Signika</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="swatch" data-option="hand-marks">
+      <header><h2>Hand marks</h2><code>hand-marks</code></header>
+      <div class="show o-hand">
+        <h3>Help at <span class="rest">the spring fair<svg class="squiggle" viewBox="0 0 300 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8c20-8 30 6 50 0s30-8 50-1 30 6 50 0 30-7 50-1 30 5 46 0 30-6 46-1"/></svg></span></h3>
+        <div class="row">
+          <span class="stamp" aria-hidden="true">Full</span><span>Cake stall: all 6 places taken.</span>
+        </div>
+        <div class="row">
+          <span class="note" aria-hidden="true">this week's bars <svg viewBox="0 0 56 28"><path d="M2 20c12-14 30-16 46-6M42 6l7 8-9 4"/></svg></span>
+        </div>
+        <button type="button">Pick another stall</button>
+        <p class="faces">Drawn squiggle and stamp; Caveat for the note, only where the site allows a third face</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+run(async () => {
+  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
+  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
+  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "about": "Parts of a page picked on their own: check accepts real options, a list of two for one part, and names a part or option that does not exist; style lists every part with its options.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "picks parts on their own: background: detailed-ground, density: busy, frames: inked-panel and wavy-edge",
+        "the part \"light\" has no option \"candlelight\"",
+        "names a part called \"weather\" and there is none"
+      ],
+      "must_not": [
+        "no option \"detailed-ground\"",
+        "no option \"inked-panel\"",
+        "no option \"wavy-edge\""
+      ]
+    },
+    {
+      "run": [
+        "style"
+      ],
+      "must": [
+        "Parts of a page",
+        "background",
+        "detailed-ground",
+        "density",
+        "frames",
+        "materials",
+        "lettering",
+        "light"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "check",
+        "background"
+      ],
+      "must": [
+        "nothing missing"
+      ]
+    }
+  ]
+}

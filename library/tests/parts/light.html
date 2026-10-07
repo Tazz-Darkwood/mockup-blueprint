@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light: the options</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  img, svg { display: block; max-width: 100%; height: auto; }
+  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.0625rem; line-height: 1.5; color: #1c1f23; background: #ecebe7; overflow-wrap: break-word; }
+  .page { max-width: 72rem; margin-inline: auto; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; }
+  .page > h1 { font-size: clamp(2rem, 1.5rem + 2.5vw, 3rem); line-height: 1.1; margin: 0 0 0.5rem; }
+  .page > p { max-width: 60ch; margin: 0 0 2rem; }
+  .book { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  @media (min-width: 52rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .swatch { position: relative; isolation: isolate; overflow: clip; min-height: 20rem; padding: 1.5rem; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.75rem; }
+  .swatch h2 { margin: 0; font-size: 0.875rem; letter-spacing: 0.1em; text-transform: uppercase; font-family: system-ui, sans-serif; }
+  .swatch h3 { margin: 0; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); line-height: 1.15; }
+  .swatch p { margin: 0; max-width: 40ch; }
+  .swatch button { align-self: flex-start; min-height: 44px; padding: 0.5rem 1.25rem; font: 700 1rem/1.2 system-ui, sans-serif; border: 0; border-radius: 4px; cursor: pointer; }
+  .swatch button:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+  .art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .lit { padding-top: 10rem; }   /* the scene shows above the words */
+  .words { padding: 1rem 1.25rem; border-radius: 4px; display: flex; flex-direction: column; gap: 0.75rem; }
+
+  /* ---------------------------------------------------------------- flat and even */
+  .s-flat { --ground: #f7f4ee; --surface: #fff; --ink: #1c1f23; --accent: #2f5d50;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.06);
+    background: var(--ground); color: var(--ink); justify-content: center; }
+  .s-flat .words { background: var(--surface); box-shadow: var(--shadow); }
+  .s-flat button { background: var(--accent); color: #fff; }
+  .s-flat button:focus-visible { outline-color: var(--accent); }
+
+  /* ---------------------------------------------------------------- daylight */
+  .s-day { --sky-top: #2a78d4; --sky-mid: #7cc4ff; --sky-low: #ffe6a6; --sun: #fff8d2; --hill: #4fae3e; --hill-far: #9a88dc; color: #fff; }
+  .s-day .art { background:
+      radial-gradient(circle at 74% 4.5rem, var(--sun) 0 7%, rgb(255 240 168 / 0.8) 10%, transparent 32%),
+      conic-gradient(from 200deg at 74% 4.5rem, transparent 0 10deg, rgb(255 246 196 / 0.25) 10deg 22deg, transparent 22deg 40deg, rgb(255 246 196 / 0.22) 40deg 50deg, transparent 50deg),
+      linear-gradient(var(--sky-top), var(--sky-mid) 45%, var(--sky-low) 72%); }
+  .s-day .art::before { content: ""; position: absolute; inset: auto 0 0 0; height: 42%;
+      background: radial-gradient(120% 90% at 30% 100%, var(--hill) 60%, transparent 61%), radial-gradient(90% 70% at 85% 100%, #3f9a36 60%, transparent 61%), linear-gradient(transparent 30%, var(--hill-far) 30%); }
+  .s-day .words { background: rgb(22 18 14 / 0.9); border: 3px solid #e3b341; }
+  .s-day h3 { color: #ffd35c; }
+  .s-day button { background: #ffd23f; color: #241304; }
+
+  /* ---------------------------------------------------------------- moonlight */
+  .s-moon { --sky-top: #050f2a; --sky-mid: #12306b; --sky-low: #2f6aaf; --moon: #eaf8ff; color: #e8efff; }
+  .s-moon .art { background:
+      radial-gradient(circle at 22% 4.5rem, var(--moon) 0 6.5%, rgb(191 230 255 / 0.45) 9%, transparent 26%),
+      radial-gradient(1.5px 1.5px at 60% 15%, #fff, transparent), radial-gradient(1.5px 1.5px at 82% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 45% 35%, #fff, transparent), radial-gradient(1px 1px at 90% 12%, #fff, transparent),
+      linear-gradient(var(--sky-top), var(--sky-mid) 50%, var(--sky-low)); }
+  .s-moon .art::before { content: ""; position: absolute; inset: auto 0 0 0; height: 34%;
+      background: linear-gradient(170deg, transparent 40%, #0b1a3c 41%); }
+  .s-moon .words { background: rgb(5 12 34 / 0.88); border: 3px solid #9fb6d9; }
+  .s-moon h3 { color: #c9dcff; }
+  .s-moon button { background: #9fd0ff; color: #08122c; }
+
+  /* ---------------------------------------------------------------- sky by the clock */
+  .s-clock { --sky-top: #2a78d4; --sky-low: #ffe6a6; --sun-x: 50%; --sun-y: 30%; --sun: #fff8d2; color: #fff; }
+  .s-clock .art { background:
+      radial-gradient(circle at var(--sun-x) var(--sun-y), var(--sun) 0 5%, transparent 18%),
+      linear-gradient(var(--sky-top), var(--sky-low)); }
+  .s-clock .hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .s-clock .hours li { height: 3rem; border-radius: 3px; border: 2px solid rgb(0 0 0 / 0.5); position: relative; }
+  .s-clock .hours li[data-h="6"]  { background: linear-gradient(#2b3f7a, #ffb27a); }
+  .s-clock .hours li[data-h="12"] { background: linear-gradient(#2a78d4, #ffe6a6); }
+  .s-clock .hours li[data-h="19"] { background: linear-gradient(#3b2a6b, #ff9a5a); }
+  .s-clock .hours li[data-h="0"]  { background: linear-gradient(#050f2a, #2f6aaf); }
+  .s-clock .words { background: rgb(18 20 32 / 0.9); }
+  .s-clock .hours span { position: absolute; left: 0; bottom: -1.7rem; padding: 0.2rem 0.35rem; font: 0.875rem/1 system-ui, sans-serif; color: #fff; background: #121420; border-radius: 2px; }
+  .s-clock .hours { margin-bottom: 1.6rem; }
+  .s-clock button { background: #e9a23b; color: #221a14; }
+
+  /* ---------------------------------------------------------------- one light */
+  .s-one { --room: #1e0e11; --glow: #f2a541; --on-glow: #1e0e11; --pale: #efe6d6; background: var(--room); color: var(--pale); }
+  .s-one .art { background:
+      radial-gradient(circle at 50% 4.5rem, transparent 0 12%, rgb(5 3 10 / 0.55) 45%, rgb(5 3 10 / 0.85) 80%),
+      repeating-linear-gradient(-52deg, transparent 0 7px, rgb(0 0 0 / 0.35) 7px 8px),
+      linear-gradient(#2a1418, #160a0d); }
+  .s-one .lamp { position: absolute; z-index: -1; left: 50%; top: 4.5rem; width: 18px; height: 28px; translate: -50% -50%; border-radius: 4px 4px 2px 2px; background: #ffd27a; box-shadow: 0 0 0 3px #3a2410; }
+  .s-one .breath { position: absolute; z-index: -1; left: 50%; top: 4.5rem; width: 22rem; aspect-ratio: 1; translate: -50% -50%;
+      background: radial-gradient(circle, rgb(255 190 100 / 0.42), rgb(255 160 70 / 0.12) 40%, transparent 68%);
+      mix-blend-mode: screen; animation: breathe 7s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: 0.6; scale: 0.94; } }
+  @media (prefers-reduced-motion: reduce) { .s-one .breath { animation: none; } }
+  .s-one .words { background: #12070a; border: 2px solid #4a2a20; }
+  .s-one button { background: var(--glow); color: var(--on-glow); }
+
+  /* ---------------------------------------------------------------- spotlight on the main thing */
+  .s-spot { --ground: #20232b; --glow: #ffb030; background: var(--ground); color: #eef0f4; justify-content: center; }
+  .s-spot .art { background: radial-gradient(circle at 50% 50%, transparent 30%, rgb(0 0 0 / 0.35) 90%); }
+  .s-spot .target { position: relative; isolation: isolate; align-self: center; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.25rem; }
+  .s-spot .target::before { content: ""; position: absolute; inset: -30%; z-index: -1; pointer-events: none;
+      background: radial-gradient(closest-side, rgb(255 196 90 / 0.4), rgb(255 160 40 / 0.14) 50%, transparent);
+      opacity: 0.6; transition: opacity 0.6s ease, scale 0.6s ease; }
+  .s-spot .target:has(button:hover, button:focus-visible)::before { opacity: 1; scale: 1.2; }
+  @media (prefers-reduced-motion: reduce) { .s-spot .target::before { transition: none; } }
+  .s-spot .target p { background: #20232b; padding: 0.25rem 0.5rem; }
+  .s-spot button { align-self: center; background: var(--glow); color: #1a1205; }
+  .s-spot .note { font: 0.875rem/1.4 system-ui, sans-serif; color: #c8ccd4; text-align: center; max-width: none; }
+
+  /* ---------------------------------------------------------------- glow on edges */
+  .s-edge { --rim: #5aa2ff; --rim-2: #c27bff; --rim-3: #ff8c1a; background: #120c07; color: #fff; justify-content: center; }
+  .s-edge .slots { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .s-edge .slot { width: 56px; height: 56px; border-radius: 6px; background: #241a12;
+      box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--c), 0 0 12px 3px var(--c); }
+  .s-edge .verdict { color: #ffb46a; text-shadow: 0 0 12px currentColor; }
+  .s-edge .tier { font: 700 0.875rem/1 system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+  .s-edge button { background: #1d2a44; color: #fff; box-shadow: 0 0 0 2px var(--rim), 0 0 14px 2px rgb(90 162 255 / 0.6); }
+  .s-edge button:focus-visible { outline: 3px solid #fff; }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Light: the options</h1>
+  <p>Every option in the light part guide, drawn live. Words always sit on a calm patch that passes the contrast minimum; the light is behind or round them, never under the letters.</p>
+
+  <div class="book">
+    <section class="swatch s-flat" data-option="flat-and-even" aria-labelledby="h-flat">
+      <div class="words">
+        <h2 id="h-flat">Flat and even</h2>
+        <h3>No light at all</h3>
+        <p>One flat ground, one soft shadow used the same way everywhere. Every pair of text and ground is measured once.</p>
+        <button type="button">Sign up</button>
+      </div>
+    </section>
+
+    <section class="swatch lit s-day" data-option="daylight" aria-labelledby="h-day">
+      <div class="art" aria-hidden="true"></div>
+      <div class="words">
+        <h2 id="h-day">Daylight</h2>
+        <h3>Everything lit</h3>
+        <p>A bright sky and one sun, the brightest point. The words go on a dark panel, never on the sky.</p>
+        <button type="button">Start now</button>
+      </div>
+    </section>
+
+    <section class="swatch lit s-moon" data-option="moonlight" aria-labelledby="h-moon">
+      <div class="art" aria-hidden="true"></div>
+      <div class="words">
+        <h2 id="h-moon">Moonlight</h2>
+        <h3>Cool and quiet</h3>
+        <p>The same scene at night: a pale moon, everything dim and blue. Measure text near the horizon, where the sky is lightest.</p>
+        <button type="button">Come in</button>
+      </div>
+    </section>
+
+    <section class="swatch s-clock" data-option="sky-by-the-clock" aria-labelledby="h-clock">
+      <div class="art" aria-hidden="true"></div>
+      <ol class="hours" aria-label="The same sky at four hours">
+        <li data-h="6"><span>6:00</span></li>
+        <li data-h="12"><span>12:00</span></li>
+        <li data-h="19"><span>19:00</span></li>
+        <li data-h="0"><span>0:00</span></li>
+      </ol>
+      <div class="words">
+        <h2 id="h-clock">Sky by the clock</h2>
+        <h3 id="clock-now">The sky keeps time</h3>
+        <p>The big sky behind this box is set from your own clock. Contrast must pass at the worst hour.</p>
+        <button type="button">Visit</button>
+      </div>
+    </section>
+
+    <section class="swatch lit s-one" data-option="one-light" aria-labelledby="h-one">
+      <div class="art" aria-hidden="true"></div>
+      <div class="breath" aria-hidden="true"></div>
+      <div class="lamp" aria-hidden="true"></div>
+      <div class="words">
+        <h2 id="h-one">One light</h2>
+        <h3>A lamp in a dark room</h3>
+        <p>Near the lamp is lit in its colour; the rest falls into dark. The main button takes the lamp's colour.</p>
+        <button type="button">Browse</button>
+      </div>
+    </section>
+
+    <section class="swatch s-spot" data-option="spotlight-on-the-main-thing" aria-labelledby="h-spot">
+      <div class="art" aria-hidden="true"></div>
+      <div class="target">
+        <h2 id="h-spot">Spotlight on the main thing</h2>
+        <h3>One thing lit</h3>
+        <p>Point at the button, or tab to it: the light grows.</p>
+        <button type="button">Add to basket</button>
+      </div>
+    </section>
+
+    <section class="swatch s-edge" data-option="glow-on-edges" aria-labelledby="h-edge">
+      <h2 id="h-edge">Glow on edges</h2>
+      <div class="slots" aria-hidden="true">
+        <div class="slot" style="--c: var(--rim)"></div>
+        <div class="slot" style="--c: var(--rim-2)"></div>
+        <div class="slot" style="--c: var(--rim-3)"></div>
+      </div>
+      <h3 class="verdict">Bright rims, small things</h3>
+      <p>The glow does not count towards contrast: the letters' own colour must pass. <span class="tier">Rare, epic, legendary</span></p>
+      <button type="button">Claim reward</button>
+    </section>
+  </div>
+</main>
+
+<script>
+  // sky by the clock: the big sky follows the visitor's own clock, set once (nothing animates)
+  (function () {
+    const now = new Date(), hour = now.getHours() + now.getMinutes() / 60;
+    const sunUp = Math.sin(((hour - 6) / 12) * Math.PI);
+    const day = Math.min(1, Math.max(0, (sunUp + 0.12) / 0.37));
+    const glow = Math.max(0, 1 - Math.abs(sunUp) / 0.3);
+    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    const rgb = (c) => 'rgb(' + c.join(' ') + ')';
+    let top = mix([5, 15, 42], [42, 120, 212], day), low = mix([47, 106, 175], [255, 230, 166], day);
+    low = mix(low, [255, 154, 90], glow * 0.7);
+    const el = document.querySelector('.s-clock');
+    el.style.setProperty('--sky-top', rgb(top));
+    el.style.setProperty('--sky-low', rgb(low));
+    el.style.setProperty('--sun', day > 0.1 ? '#fff8d2' : '#eaf8ff');
+    el.style.setProperty('--sun-x', (15 + 70 * ((hour % 12) / 12)) + '%');
+    el.style.setProperty('--sun-y', (60 - 40 * Math.abs(sunUp)) + '%');
+    document.getElementById('clock-now').textContent = 'The sky at ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+  })();
+</script>
+<script src="../harness.js"></script>
+<script>
+run(async () => {
+  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
+  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
+  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
+});
+</script>
+</body>
+</html>

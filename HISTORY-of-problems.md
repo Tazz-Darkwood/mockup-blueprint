@@ -618,3 +618,13 @@ Three fresh Claudes made one joke site, whose secret code turned it into "a whol
 5. A site with two looks: the general guide says each look has its own brief line and stack, is checked on its own (typefaces counted per look), and is shown side by side; the format has `project.style.looks`, which `check` validates.
 6. A library note, approved by its test: things stacked in one grid cell are drawn with a positioned one on top, whatever their order.
 
+## Version 0.16.0: parts of a page, picked on their own (2026-10-07)
+- Status: added
+- Kind: library, script
+
+Asked for by the skill's owner: "instead of making each style from scratch you can grab stuff for each part that applies. For example I really like the detail in the background of [one guide] but I don't want to have to use that style just to get that background."
+
+1. Six part guides: background, density, frames and edges, materials, lettering, light. Each offers four to eight named options taken from the mockups made so far, with what it looks like, the CSS that worked, what to be careful of, what it goes with, and how many mockups used it. Every option is draft.
+2. Each part has a swatch book, `library/tests/parts/<part>.html`, that draws every option live and is also its test. The lettering book carries its own free fonts with their licences; the background book's tiles are drawn by a script beside it.
+3. A site picks options in its own guide and in the blueprint as `project.style.parts` (a part may take a list of two). A pick wins over the feel guides for that part only. `check` names a part or option that does not exist; `style` lists every part with its options; `style check <part>` checks a part guide, its cross-references and that its swatch book matches it.
+
