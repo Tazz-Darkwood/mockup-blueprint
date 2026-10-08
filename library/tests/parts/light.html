@@ -3,228 +3,475 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Light: the options</title>
+<title>Light: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
-  img, svg { display: block; max-width: 100%; height: auto; }
-  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.0625rem; line-height: 1.5; color: #1c1f23; background: #ecebe7; overflow-wrap: break-word; }
-  .page { max-width: 72rem; margin-inline: auto; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; }
-  .page > h1 { font-size: clamp(2rem, 1.5rem + 2.5vw, 3rem); line-height: 1.1; margin: 0 0 0.5rem; }
-  .page > p { max-width: 60ch; margin: 0 0 2rem; }
-  .book { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
-  @media (min-width: 52rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .swatch { position: relative; isolation: isolate; overflow: clip; min-height: 20rem; padding: 1.5rem; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.75rem; }
-  .swatch h2 { margin: 0; font-size: 0.875rem; letter-spacing: 0.1em; text-transform: uppercase; font-family: system-ui, sans-serif; }
-  .swatch h3 { margin: 0; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); line-height: 1.15; }
-  .swatch p { margin: 0; max-width: 40ch; }
-  .swatch button { align-self: flex-start; min-height: 44px; padding: 0.5rem 1.25rem; font: 700 1rem/1.2 system-ui, sans-serif; border: 0; border-radius: 4px; cursor: pointer; }
-  .swatch button:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
-  .art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-  .lit { padding-top: 10rem; }   /* the scene shows above the words */
-  .words { padding: 1rem 1.25rem; border-radius: 4px; display: flex; flex-direction: column; gap: 0.75rem; }
+/* Built by source/light.py from source/light-template.html: edit those, then run python3 light.py ../light.html in
+   source/. Every colour below is a shared colour name (tokens.css), or the colour of the light itself, written as
+   numbers and turned into a colour with oklch(var(...)). Each swatch is drawn twice, on a light page and a dark one,
+   from the same CSS; light-dark() picks what differs, from the page's color-scheme. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+.clock-set { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin: 0 0 1rem; }
+.clock-set input { min-height: 44px; padding: 0 0.5rem; font: inherit; border: 2px solid var(--ink-soft); border-radius: 4px; background: var(--surface); color: var(--ink); }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 56ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
-  /* ---------------------------------------------------------------- flat and even */
-  .s-flat { --ground: #f7f4ee; --surface: #fff; --ink: #1c1f23; --accent: #2f5d50;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.06);
-    background: var(--ground); color: var(--ink); justify-content: center; }
-  .s-flat .words { background: var(--surface); box-shadow: var(--shadow); }
-  .s-flat button { background: var(--accent); color: #fff; }
-  .s-flat button:focus-visible { outline-color: var(--accent); }
+/* ---------- every swatch: a ground, the scene on it (a stack of cards and a ball), the light, a raised sheet ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.ground { position: relative; isolation: isolate; overflow: clip; min-height: 19rem; padding: 2.25rem 1.25rem;
+  display: grid; grid-template-columns: minmax(0, 17.5rem) minmax(0, 1fr); gap: 1.5rem; align-items: center;
+  background: var(--ground); color: var(--on-ground); --shade: rgb(var(--shadow-rgb)); }
+@container (max-width: 30rem) { .ground { grid-template-columns: minmax(0, 1fr); } }
+.main { position: relative; }   /* not a stacking context, so the spotlight under it blends with the ground */
+.sheet { position: relative; z-index: 3; padding: 1.25rem; border-radius: 6px; background: var(--surface-raised); color: var(--ink);
+  box-shadow: var(--shadow-mid), var(--edge-lit), var(--rim, 0 0 transparent); }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 1rem; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent);
+  box-shadow: var(--shadow-low), var(--rim, 0 0 transparent), var(--bloom, 0 0 transparent); }
+.side { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 2.25rem; min-height: 9rem; }
+/* a stack of three cards: paper on paper. The two plain ones are rectangles and take box-shadow; the torn one on top
+   is clipped, so it takes the same shadow as a filter (the rule in the guide). Each takes the LOW shadow: a sheet's
+   height is counted from what it lies on. */
+.stack { position: relative; width: 9.5rem; height: 8rem; flex: none; }
+.stack i { position: absolute; width: 7.5rem; height: 5.5rem; border-radius: 3px; background: var(--surface);
+  box-shadow: var(--shadow-low), var(--edge-lit), var(--rim, 0 0 transparent);
+  background-image: repeating-linear-gradient(transparent 0 0.9rem, var(--line) 0.9rem calc(0.9rem + 1px)); background-position: 0 0.6rem; }
+.stack i:nth-child(1) { left: 0; top: 0.4rem; rotate: -4deg; }
+.stack i:nth-child(2) { left: 1.1rem; top: 1.3rem; rotate: 3deg; background-color: var(--surface-raised); }
+.stack i.torn { left: 0.6rem; top: 2.3rem; rotate: -1.5deg; background: none; box-shadow: none; filter: var(--drop-low) var(--drop-rim,); }
+.stack i.torn::before { content: ""; position: absolute; inset: 0; background: var(--surface-raised);
+  clip-path: polygon(0 4%, 9% 0, 22% 5%, 37% 1%, 52% 6%, 68% 0, 83% 4%, 100% 1%, 98% 100%, 0 97%); }
+.stack i.torn::after { content: ""; position: absolute; left: 30%; top: -0.45rem; width: 2.6rem; height: 0.9rem; rotate: -6deg;
+  background: color-mix(in oklab, var(--mark) 30%, transparent); }   /* tape: it casts with the paper, since the filter is on the element */
+/* a ball: it shows where the light comes from (the bright side) and floats over the page like a sheet does */
+.ball { width: 3.75rem; aspect-ratio: 1; flex: none; border-radius: 50%; box-shadow: var(--shadow-mid);
+  background: radial-gradient(circle at calc(50% - var(--hx) * 20%) calc(50% - var(--hy) * 22%),
+    color-mix(in oklab, light-dark(var(--surface-raised), var(--ink)) 80%, var(--mark)) 0, color-mix(in oklab, var(--mark) 45%, var(--surface)) 38%,
+    color-mix(in oklab, var(--mark) 70%, var(--shade)) 82%); }
+.di-none .ball { background: color-mix(in oklab, var(--mark) 45%, var(--surface)); }   /* no direction: no bright side */
+/* each layer of light is its own element with its blend mode on it: a blend mode on a ::before inside a layer with a
+   z-index only blends inside that layer, and paints as plain colour */
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 
-  /* ---------------------------------------------------------------- daylight */
-  .s-day { --sky-top: #2a78d4; --sky-mid: #7cc4ff; --sky-low: #ffe6a6; --sun: #fff8d2; --hill: #4fae3e; --hill-far: #9a88dc; color: #fff; }
-  .s-day .art { background:
-      radial-gradient(circle at 74% 4.5rem, var(--sun) 0 7%, rgb(255 240 168 / 0.8) 10%, transparent 32%),
-      conic-gradient(from 200deg at 74% 4.5rem, transparent 0 10deg, rgb(255 246 196 / 0.25) 10deg 22deg, transparent 22deg 40deg, rgb(255 246 196 / 0.22) 40deg 50deg, transparent 50deg),
-      linear-gradient(var(--sky-top), var(--sky-mid) 45%, var(--sky-low) 72%); }
-  .s-day .art::before { content: ""; position: absolute; inset: auto 0 0 0; height: 42%;
-      background: radial-gradient(120% 90% at 30% 100%, var(--hill) 60%, transparent 61%), radial-gradient(90% 70% at 85% 100%, #3f9a36 60%, transparent 61%), linear-gradient(transparent 30%, var(--hill-far) 30%); }
-  .s-day .words { background: rgb(22 18 14 / 0.9); border: 3px solid #e3b341; }
-  .s-day h3 { color: #ffd35c; }
-  .s-day button { background: #ffd23f; color: #241304; }
+/* ---------- the shadow colour: S(k) is the shade at k times --shadow-strength, never over 100% ---------- */
+/* written out in each recipe below as color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * k) * 100%), transparent) */
 
-  /* ---------------------------------------------------------------- moonlight */
-  .s-moon { --sky-top: #050f2a; --sky-mid: #12306b; --sky-low: #2f6aaf; --moon: #eaf8ff; color: #e8efff; }
-  .s-moon .art { background:
-      radial-gradient(circle at 22% 4.5rem, var(--moon) 0 6.5%, rgb(191 230 255 / 0.45) 9%, transparent 26%),
-      radial-gradient(1.5px 1.5px at 60% 15%, #fff, transparent), radial-gradient(1.5px 1.5px at 82% 30%, #fff, transparent),
-      radial-gradient(1px 1px at 45% 35%, #fff, transparent), radial-gradient(1px 1px at 90% 12%, #fff, transparent),
-      linear-gradient(var(--sky-top), var(--sky-mid) 50%, var(--sky-low)); }
-  .s-moon .art::before { content: ""; position: absolute; inset: auto 0 0 0; height: 34%;
-      background: linear-gradient(170deg, transparent 40%, #0b1a3c 41%); }
-  .s-moon .words { background: rgb(5 12 34 / 0.88); border: 3px solid #9fb6d9; }
-  .s-moon h3 { color: #c9dcff; }
-  .s-moon button { background: #9fd0ff; color: #08122c; }
+/* ---------- direction ---------- */
+.di-none      { --lx: 0;    --ly: 0;   --hx: 0;  --hy: 0; --light-at: 50% 30%; }
+.di-overhead  { --lx: 0;    --ly: 1;   --hx: 0;  --hy: 1; --light-at: 50% 2%; }
+.di-top-left  { --lx: 0.5;  --ly: 1;   --hx: 1;  --hy: 1; --light-at: 8% 6%; }
+.di-top-right { --lx: -0.5; --ly: 1;   --hx: -1; --hy: 1; --light-at: 92% 6%; }
+.di-low-side  { --lx: 2;    --ly: 0.7; --hx: 2;  --hy: 0; --light-at: 2% 45%; }
+.ground { --dx: calc(var(--lx) * 1px); --dy: calc(var(--ly) * 1px); }
+.sun-mark { position: absolute; z-index: 4; width: 1.75rem; height: 1.75rem; translate: -50% -50%; left: var(--x); top: var(--y);
+  color: var(--mark); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.di-top-left .sun-mark { --x: 1.25rem; --y: 1.25rem; }
+.di-top-right .sun-mark { --x: calc(100% - 1.25rem); --y: 1.25rem; }
+.di-overhead .sun-mark { --x: 50%; --y: 1.1rem; }
+.di-low-side .sun-mark { --x: 0.9rem; --y: 45%; }
 
-  /* ---------------------------------------------------------------- sky by the clock */
-  .s-clock { --sky-top: #2a78d4; --sky-low: #ffe6a6; --sun-x: 50%; --sun-y: 30%; --sun: #fff8d2; color: #fff; }
-  .s-clock .art { background:
-      radial-gradient(circle at var(--sun-x) var(--sun-y), var(--sun) 0 5%, transparent 18%),
-      linear-gradient(var(--sky-top), var(--sky-low)); }
-  .s-clock .hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
-  .s-clock .hours li { height: 3rem; border-radius: 3px; border: 2px solid rgb(0 0 0 / 0.5); position: relative; }
-  .s-clock .hours li[data-h="6"]  { background: linear-gradient(#2b3f7a, #ffb27a); }
-  .s-clock .hours li[data-h="12"] { background: linear-gradient(#2a78d4, #ffe6a6); }
-  .s-clock .hours li[data-h="19"] { background: linear-gradient(#3b2a6b, #ff9a5a); }
-  .s-clock .hours li[data-h="0"]  { background: linear-gradient(#050f2a, #2f6aaf); }
-  .s-clock .words { background: rgb(18 20 32 / 0.9); }
-  .s-clock .hours span { position: absolute; left: 0; bottom: -1.7rem; padding: 0.2rem 0.35rem; font: 0.875rem/1 system-ui, sans-serif; color: #fff; background: #121420; border-radius: 2px; }
-  .s-clock .hours { margin-bottom: 1.6rem; }
-  .s-clock button { background: #e9a23b; color: #221a14; }
+/* ---------- shadows ---------- */
+.sh-none { --shadow-low: 0 0 transparent; --shadow-mid: 0 0 transparent; --shadow-high: 0 0 transparent; --drop-low: opacity(1); --edge-lit: 0 0 transparent; }
+.sh-soft {
+  --shadow-high: calc(var(--dx) * 2) calc(var(--dy) * 4) 6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.45) * 100%), transparent),
+    calc(var(--dx) * 8) calc(var(--dy) * 14) 28px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent), calc(var(--dx) * 20) calc(var(--dy) * 34) 64px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.35) * 100%), transparent);
+  --shadow-low: var(--dx) var(--dy) 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent),
+    calc(var(--dx) * 2) calc(var(--dy) * 3) 6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent);
+  --shadow-mid: var(--dx) calc(var(--dy) * 2) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.5) * 100%), transparent),
+    calc(var(--dx) * 4) calc(var(--dy) * 6) 12px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent),
+    calc(var(--dx) * 10) calc(var(--dy) * 16) 32px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.35) * 100%), transparent);
+  --drop-low: drop-shadow(var(--dx) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 3) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 14%, transparent)); }
+.sh-paper-lift {
+  --shadow-high: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent), calc(var(--dx) * 9) calc(var(--dy) * 18) 30px -10px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1) * 100%), transparent);
+  --shadow-low: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent),
+    calc(var(--dx) * 2) calc(var(--dy) * 4) 7px -2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.7) * 100%), transparent);
+  --shadow-mid: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent),
+    calc(var(--dx) * 5) calc(var(--dy) * 10) 18px -6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.9) * 100%), transparent);
+  --drop-low: drop-shadow(calc(var(--dx) * 0.5) var(--dy) 0.5px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 4) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.6) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 12%, transparent)); }
+.sh-crisp {
+  --shadow-high: calc(var(--dx) * 7) calc(var(--dy) * 10) 0 color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.6) * 100%), transparent);
+  --shadow-low: calc(var(--dx) * 2) calc(var(--dy) * 3) 0 color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.6) * 100%), transparent);
+  --shadow-mid: calc(var(--dx) * 4) calc(var(--dy) * 6) 0 color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.6) * 100%), transparent);
+  --drop-low: drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 3) 0 color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.6) * 100%), transparent));
+  --edge-lit: 0 0 transparent; }
+.sh-deep {
+  --shadow-high: calc(var(--dx) * 3) calc(var(--dy) * 6) 6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.2) * 100%), transparent), calc(var(--dx) * 14) calc(var(--dy) * 28) 52px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.7) * 100%), transparent);
+  --shadow-low: var(--dx) calc(var(--dy) * 2) 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.2) * 100%), transparent),
+    calc(var(--dx) * 3) calc(var(--dy) * 6) 10px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent);
+  --shadow-mid: calc(var(--dx) * 2) calc(var(--dy) * 4) 4px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.2) * 100%), transparent),
+    calc(var(--dx) * 8) calc(var(--dy) * 16) 30px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.5) * 100%), transparent);
+  --drop-low: drop-shadow(var(--dx) calc(var(--dy) * 2) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.2) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 3) calc(var(--dy) * 6) 5px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 18%, transparent)); }
 
-  /* ---------------------------------------------------------------- one light */
-  .s-one { --room: #1e0e11; --glow: #f2a541; --on-glow: #1e0e11; --pale: #efe6d6; background: var(--room); color: var(--pale); }
-  .s-one .art { background:
-      radial-gradient(circle at 50% 4.5rem, transparent 0 12%, rgb(5 3 10 / 0.55) 45%, rgb(5 3 10 / 0.85) 80%),
-      repeating-linear-gradient(-52deg, transparent 0 7px, rgb(0 0 0 / 0.35) 7px 8px),
-      linear-gradient(#2a1418, #160a0d); }
-  .s-one .lamp { position: absolute; z-index: -1; left: 50%; top: 4.5rem; width: 18px; height: 28px; translate: -50% -50%; border-radius: 4px 4px 2px 2px; background: #ffd27a; box-shadow: 0 0 0 3px #3a2410; }
-  .s-one .breath { position: absolute; z-index: -1; left: 50%; top: 4.5rem; width: 22rem; aspect-ratio: 1; translate: -50% -50%;
-      background: radial-gradient(circle, rgb(255 190 100 / 0.42), rgb(255 160 70 / 0.12) 40%, transparent 68%);
-      mix-blend-mode: screen; animation: breathe 7s ease-in-out infinite; }
-  @keyframes breathe { 50% { opacity: 0.6; scale: 0.94; } }
-  @media (prefers-reduced-motion: reduce) { .s-one .breath { animation: none; } }
-  .s-one .words { background: #12070a; border: 2px solid #4a2a20; }
-  .s-one button { background: var(--glow); color: var(--on-glow); }
+/* ---------- glow ---------- */
+/* the colour of the light things give off: its own value, not the accent. Warm tungsten gold by default; the sky turns
+   it (a rim catches daylight or moonlight), but a lamp is always its own warm light. A site that wants its lamp in the
+   accent sets --lamp: var(--accent). */
+.ground { --lamp-lch: 0.84 0.13 78; --lamp: oklch(var(--lamp-lch)); }
+.ground.sk-day { --lamp-lch: 0.86 0.11 85; }
+.ground.sk-dusk { --lamp-lch: 0.8 0.14 55; }
+.ground.sk-night { --lamp-lch: 0.8 0.08 235; }
+.ground.gl-lamp { --lamp-lch: 0.84 0.13 78; }
+/* lamp: one pool of warm light where the direction says the light comes from. Light shows by the dark round it: the far
+   side darkens (multiply), the near side brightens (screen). On a light page the pool is the page turning warm and pale
+   towards the lamp (a warm tint multiplied, warm white screened); on a dark one it is the lamp's own gold. */
+.gl-lamp .fx-lamp-shade { mix-blend-mode: multiply;
+  background: radial-gradient(circle at var(--light-at), light-dark(color-mix(in oklab, var(--lamp) 55%, transparent), transparent) 0,
+    light-dark(color-mix(in oklab, var(--lamp) 18%, transparent), transparent) 18%, transparent 30%, color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.3) * 100%), transparent) 85%); }
+.gl-lamp .fx-lamp-light { mix-blend-mode: screen;
+  --pool: light-dark(color-mix(in oklab, var(--lamp) 30%, var(--surface-raised)), var(--lamp));
+  background: radial-gradient(circle at var(--light-at), var(--pool) 0, color-mix(in oklab, var(--pool) 45%, transparent) 12%,
+    color-mix(in oklab, var(--pool) 14%, transparent) 30%, transparent 55%); }
+.lamp-src { position: absolute; z-index: 2; left: var(--light-at-x); top: var(--light-at-y); width: 1rem; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(circle, oklch(var(--lamp-core, 0.99 0.03 90)) 0 30%, var(--lamp) 75%);
+  box-shadow: 0 0 10px 3px color-mix(in oklab, var(--lamp) 70%, transparent), 0 0 30px 12px color-mix(in oklab, var(--lamp) 35%, transparent); }
+.di-none .lamp-src { --light-at-x: 50%; --light-at-y: 30%; }
+.di-overhead .lamp-src { --light-at-x: 50%; --light-at-y: 1rem; }
+.di-top-left .lamp-src { --light-at-x: 1.25rem; --light-at-y: 1.1rem; }
+.di-top-right .lamp-src { --light-at-x: calc(100% - 1.25rem); --light-at-y: 1.1rem; }
+.di-low-side .lamp-src { --light-at-x: 0.8rem; --light-at-y: 45%; }
+/* edges: a thin rim of light round frames and controls, in the light's colour. On a light page the halo is stronger, so it reads as warm light, not a ring */
+.gl-edges { --rim: 0 0 0 1px var(--lamp), 0 0 12px 2px light-dark(color-mix(in oklab, var(--lamp) 70%, transparent), color-mix(in oklab, var(--lamp) 55%, transparent));
+  --drop-rim: drop-shadow(0 0 0.5px var(--lamp)) drop-shadow(0 0 6px light-dark(color-mix(in oklab, var(--lamp) 70%, transparent), color-mix(in oklab, var(--lamp) 60%, transparent))); }
+/* bloom: a wide soft haze of light round the brightest thing only, the main button; even all round, as light spreads */
+.gl-bloom { --bloom: 0 0 30px 4px light-dark(color-mix(in oklab, var(--lamp) 75%, transparent), color-mix(in oklab, var(--lamp) 50%, transparent)); }
 
-  /* ---------------------------------------------------------------- spotlight on the main thing */
-  .s-spot { --ground: #20232b; --glow: #ffb030; background: var(--ground); color: #eef0f4; justify-content: center; }
-  .s-spot .art { background: radial-gradient(circle at 50% 50%, transparent 30%, rgb(0 0 0 / 0.35) 90%); }
-  .s-spot .target { position: relative; isolation: isolate; align-self: center; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.25rem; }
-  .s-spot .target::before { content: ""; position: absolute; inset: -30%; z-index: -1; pointer-events: none;
-      background: radial-gradient(closest-side, rgb(255 196 90 / 0.4), rgb(255 160 40 / 0.14) 50%, transparent);
-      opacity: 0.6; transition: opacity 0.6s ease, scale 0.6s ease; }
-  .s-spot .target:has(button:hover, button:focus-visible)::before { opacity: 1; scale: 1.2; }
-  @media (prefers-reduced-motion: reduce) { .s-spot .target::before { transition: none; } }
-  .s-spot .target p { background: #20232b; padding: 0.25rem 0.5rem; }
-  .s-spot button { align-self: center; background: var(--glow); color: #1a1205; }
-  .s-spot .note { font: 0.875rem/1.4 system-ui, sans-serif; color: #c8ccd4; text-align: center; max-width: none; }
+/* ---------- sky: the colour of the light over the page. It tints whatever the background put on the ground (multiply
+   for colour, screen for the sun or moon), and makes shadows take the sky's opposite temperature. Never over the sheet. */
+.fx-sky-mul { mix-blend-mode: multiply; background: var(--sky-mul); }
+.fx-sky-scr { mix-blend-mode: screen; background: var(--sky-scr); }
+/* the colours are set on the two layers themselves, so a small copy (the clock's chips) can be set to its own hour */
+.sk-day { --cool: 0.42 0.1 250; --shade: color-mix(in oklab, rgb(var(--shadow-rgb)) 70%, oklch(var(--cool))); }
+.sk-day :is(.fx-sky-mul, .fx-sky-scr) { --sky-top: 0.8 0.08 235; --sun: 0.97 0.07 92; --sun-dk: 0.82 0.12 82;
+  --sky-mul: linear-gradient(light-dark(oklch(var(--sky-top) / 0.5), oklch(var(--sky-top) / 0.6)), transparent 60%);
+  --sky-scr: radial-gradient(circle at var(--light-at), light-dark(oklch(var(--sun) / 0.85), oklch(var(--sun-dk) / 0.4)), transparent 55%),
+    linear-gradient(light-dark(transparent, oklch(var(--sky-top) / 0.16)), transparent 60%); }
+.sk-dusk { --cool: 0.35 0.12 300; --shade: color-mix(in oklab, rgb(var(--shadow-rgb)) 65%, oklch(var(--cool))); }
+.sk-dusk :is(.fx-sky-mul, .fx-sky-scr) { --dusk-high: 0.68 0.11 305; --dusk-low: 0.84 0.12 55; --dusk-sun: 0.8 0.16 48;
+  --sky-mul: linear-gradient(light-dark(oklch(var(--dusk-high) / 0.55), oklch(var(--dusk-high) / 0.7)), light-dark(oklch(var(--dusk-low) / 0.6), oklch(var(--dusk-low) / 0.7)));
+  --sky-scr: radial-gradient(circle at var(--light-at), light-dark(oklch(var(--dusk-sun) / 0.6), oklch(var(--dusk-sun) / 0.35)), transparent 50%),
+    linear-gradient(light-dark(transparent, oklch(var(--dusk-high) / 0.14)), light-dark(transparent, oklch(var(--dusk-low) / 0.2))); }
+.sk-night { --cool: 0.2 0.08 265; --shade: color-mix(in oklab, rgb(var(--shadow-rgb)) 55%, oklch(var(--cool))); }
+.sk-night :is(.fx-sky-mul, .fx-sky-scr) { --night-high: 0.42 0.1 262; --night-low: 0.6 0.08 250; --moon: 0.92 0.04 230;
+  --sky-mul: linear-gradient(light-dark(oklch(var(--night-high) / 0.6), oklch(var(--night-high) / 0.8)), light-dark(oklch(var(--night-low) / 0.45), oklch(var(--night-low) / 0.7)));
+  --sky-scr: radial-gradient(circle at var(--light-at), light-dark(oklch(var(--moon) / 0.5), oklch(var(--moon) / 0.22)), transparent 35%),
+    linear-gradient(light-dark(transparent, oklch(var(--night-low) / 0.16)), transparent); }
+/* by the clock: the script sets --day (0 night, 1 day) and --dusk (1 at sunrise and sunset) from the hour */
+.sk-by-the-clock { --day: 1; --dusk: 0; --cool-day: 0.42 0.1 250; --cool-night: 0.2 0.08 265;
+  --shade: color-mix(in oklab, rgb(var(--shadow-rgb)) 62%, color-mix(in oklab, oklch(var(--cool-day)) calc(var(--day) * 100%), oklch(var(--cool-night)))); }
+.sk-by-the-clock :is(.fx-sky-mul, .fx-sky-scr) { --sky-top: 0.8 0.08 235; --sun: 0.97 0.07 92; --sun-dk: 0.82 0.12 82; --night-high: 0.42 0.1 262; --night-low: 0.6 0.08 250;
+  --dusk-low: 0.84 0.12 55; --moon: 0.92 0.04 230;
+  --sky-mul: linear-gradient(transparent 25%, light-dark(oklch(var(--dusk-low) / calc(var(--dusk) * 0.65)), oklch(var(--dusk-low) / calc(var(--dusk) * 0.7)))),
+    linear-gradient(color-mix(in oklab, light-dark(oklch(var(--sky-top) / 0.5), oklch(var(--sky-top) / 0.6)) calc(var(--day) * 100%), light-dark(oklch(var(--night-high) / 0.6), oklch(var(--night-high) / 0.8))),
+      color-mix(in oklab, transparent calc(var(--day) * 100%), light-dark(oklch(var(--night-low) / 0.45), oklch(var(--night-low) / 0.7))));
+  --sky-scr: radial-gradient(circle at var(--light-at), color-mix(in oklab, light-dark(oklch(var(--sun) / 0.85), oklch(var(--sun-dk) / 0.4)) calc(var(--day) * 100%), light-dark(oklch(var(--moon) / 0.5), oklch(var(--moon) / 0.22))), transparent 50%),
+    linear-gradient(transparent 25%, light-dark(transparent, oklch(var(--dusk-low) / calc(var(--dusk) * 0.22)))),
+    linear-gradient(color-mix(in oklab, light-dark(transparent, oklch(var(--sky-top) / 0.16)) calc(var(--day) * 100%), light-dark(transparent, oklch(var(--night-low) / 0.16))), transparent 70%); }
+.chips { display: flex; gap: 0.5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.chips li { flex: 1; font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); text-align: center; }
+.chip { position: relative; display: block; height: 2.25rem; margin-bottom: 0.25rem; overflow: clip; border-radius: 3px; background: var(--ground);
+  isolation: isolate; box-shadow: inset 0 0 0 1px var(--line); }
 
-  /* ---------------------------------------------------------------- glow on edges */
-  .s-edge { --rim: #5aa2ff; --rim-2: #c27bff; --rim-3: #ff8c1a; background: #120c07; color: #fff; justify-content: center; }
-  .s-edge .slots { display: flex; gap: 1rem; flex-wrap: wrap; }
-  .s-edge .slot { width: 56px; height: 56px; border-radius: 6px; background: #241a12;
-      box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--c), 0 0 12px 3px var(--c); }
-  .s-edge .verdict { color: #ffb46a; text-shadow: 0 0 12px currentColor; }
-  .s-edge .tier { font: 700 0.875rem/1 system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
-  .s-edge button { background: #1d2a44; color: #fff; box-shadow: 0 0 0 2px var(--rim), 0 0 14px 2px rgb(90 162 255 / 0.6); }
-  .s-edge button:focus-visible { outline: 3px solid #fff; }
+/* ---------- focus ---------- */
+/* spotlight: a pool of light behind the main thing, the rest a step darker; it grows when the main button is reached */
+.fo-spotlight .main::before, .fo-spotlight .main::after { content: ""; position: absolute; pointer-events: none; }
+.fo-spotlight .main::before { z-index: 2; inset: -30% -25%; mix-blend-mode: screen; opacity: 0.75; transition: opacity 0.5s ease, scale 0.5s ease;
+  background: radial-gradient(closest-side, light-dark(color-mix(in oklab, var(--lamp) 25%, var(--surface-raised)), color-mix(in oklab, var(--lamp) 45%, var(--surface-raised))), transparent); }
+.fo-spotlight .main::after { z-index: 2; inset: -100vmax; mix-blend-mode: multiply;   /* one fixed circle; past it the shade stays even, so no edge */
+  background: radial-gradient(circle 26rem at 50% 50%, transparent 30%, color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.4) * 100%), transparent)); }
+.fo-spotlight .main:has(.btn:hover, .btn:focus-visible)::before { opacity: 1; scale: 1.12; }
+@media (prefers-reduced-motion: reduce) { .fo-spotlight .main::before { transition: none; } }
+/* vignette: the corners fall into shade, and the dark is pushed past the edges so it reads as light, not a frame */
+.fo-vignette .fx-vignette { mix-blend-mode: multiply;
+  background: radial-gradient(ellipse 80% 75% at 50% 45%, transparent 50%, color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 2) * 100%), transparent) 110%); }
+
+/* ---------- what the visitor's settings switch off ---------- */
+@media (prefers-contrast: more) {
+  .fx-sky-mul, .fx-sky-scr, .fx-vignette, .fx-lamp-shade, .fo-spotlight .main::after { opacity: 0.35; }
+  .ground { --rim: 0 0 transparent; --bloom: 0 0 transparent; }
+  .sheet { outline: 1px solid var(--ink-soft); }
+}
+@media (forced-colors: active) { .sheet, .stack i { border: 1px solid CanvasText; } }
 </style>
 </head>
-<body>
-<main class="page">
-  <h1>Light: the options</h1>
-  <p>Every option in the light part guide, drawn live. Words always sit on a calm patch that passes the contrast minimum; the light is behind or round them, never under the letters.</p>
+<body class="mode-light">
 
-  <div class="book">
-    <section class="swatch s-flat" data-option="flat-and-even" aria-labelledby="h-flat">
-      <div class="words">
-        <h2 id="h-flat">Flat and even</h2>
-        <h3>No light at all</h3>
-        <p>One flat ground, one soft shadow used the same way everywhere. Every pair of text and ground is measured once.</p>
-        <button type="button">Sign up</button>
-      </div>
-    </section>
+<!-- the sun mark: where the light comes from, drawn once and used by every swatch -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+  <defs><symbol id="sun" viewBox="0 0 28 28"><circle cx="14" cy="14" r="5"/><path d="M14 2v4M14 22v4M2 14h4M22 14h4M5.5 5.5l2.8 2.8M19.7 19.7l2.8 2.8M5.5 22.5l2.8-2.8M19.7 8.3l2.8-2.8"/></symbol></defs>
+</svg>
 
-    <section class="swatch lit s-day" data-option="daylight" aria-labelledby="h-day">
-      <div class="art" aria-hidden="true"></div>
-      <div class="words">
-        <h2 id="h-day">Daylight</h2>
-        <h3>Everything lit</h3>
-        <p>A bright sky and one sun, the brightest point. The words go on a dark panel, never on the sky.</p>
-        <button type="button">Start now</button>
-      </div>
-    </section>
+<main>
+<h1>Light: the layers</h1>
+<p class="intro">Five layers, each switched on its own: where the light comes from, the shadows raised things cast, what glows, the colour of the sky's light, and where the eye is led. Every option is shown on a light page (left) and the same CSS on a dark page (right), with the other layers at their defaults; the starting points at the end are saved sets of picks. In each: a raised sheet with a button, a stack of three cards (the top one torn and taped), and a ball that shows the bright side.</p>
+<p class="clock-set"><label for="clock">Set the clock for the swatches that follow it (empty: your own clock, or <code>?t=21:40</code> in the address)</label> <input type="time" id="clock"></p>
 
-    <section class="swatch lit s-moon" data-option="moonlight" aria-labelledby="h-moon">
-      <div class="art" aria-hidden="true"></div>
-      <div class="words">
-        <h2 id="h-moon">Moonlight</h2>
-        <h3>Cool and quiet</h3>
-        <p>The same scene at night: a pale moon, everything dim and blue. Measure text near the horizon, where the sky is lightest.</p>
-        <button type="button">Come in</button>
-      </div>
-    </section>
+<h2 class="layer">Direction</h2>
+<p class="layer-note">Where the light comes from. The sun mark shows it; every shadow and the ball's bright side follow it.</p>
+<section class="swatch" data-option="direction:none">
+<div class="ground di-none sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>None</h3><p class="id">direction: none</p><p>No source: shadows sit evenly all round, and nothing has a bright side.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="direction:overhead">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<svg class="sun-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><use href="#sun"/></svg><div class="main"><div class="sheet"><h3>Overhead</h3><p class="id">direction: overhead</p><p>Light from straight above: every shadow falls just below.</p><button class="btn" type="button">Continue</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="direction:top-left">
+<div class="ground di-top-left sh-soft gl-none sk-none fo-none">
+<svg class="sun-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><use href="#sun"/></svg><div class="main"><div class="sheet"><h3>Top left</h3><p class="id">direction: top-left</p><p>Light from above and to the left, the long habit of screens.</p><button class="btn" type="button">Open</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="direction:top-right">
+<div class="ground di-top-right sh-soft gl-none sk-none fo-none">
+<svg class="sun-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><use href="#sun"/></svg><div class="main"><div class="sheet"><h3>Top right</h3><p class="id">direction: top-right</p><p>Light from above and to the right: a window on the other side.</p><button class="btn" type="button">Open</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="direction:low-side">
+<div class="ground di-low-side sh-soft gl-none sk-none fo-none">
+<svg class="sun-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><use href="#sun"/></svg><div class="main"><div class="sheet"><h3>Low side</h3><p class="id">direction: low-side</p><p>A low light from one side: long shadows, late in the day.</p><button class="btn" type="button">Go on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<h2 class="layer">Shadows</h2>
+<p class="layer-note">What raised things cast. The sheet stands highest, the button and the cards lie low. On the dark page, raised things are lighter instead, with a faint lit edge.</p>
+<section class="swatch" data-option="shadows:none">
+<div class="ground di-overhead sh-none gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>None</h3><p class="id">shadows: none</p><p>Nothing is raised: sheets are told apart by colour and line.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="shadows:soft">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Soft</h3><p class="id">shadows: soft</p><p>Layered, tinted shadows that grow softer as things rise.</p><button class="btn" type="button">Continue</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="shadows:paper-lift">
+<div class="ground di-overhead sh-paper-lift gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Paper lift</h3><p class="id">shadows: paper-lift</p><p>A tight contact line and a soft lift: paper lying on paper.</p><button class="btn" type="button">Pin it up</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="shadows:crisp">
+<div class="ground di-overhead sh-crisp gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Crisp</h3><p class="id">shadows: crisp</p><p>A hard, flat offset with no blur, like a print or a cut-out.</p><button class="btn" type="button">Join in</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="shadows:deep">
+<div class="ground di-overhead sh-deep gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Deep</h3><p class="id">shadows: deep</p><p>Heavy, dark shadows: panels standing well off a dark world.</p><button class="btn" type="button">Enter</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<h2 class="layer">Glow</h2>
+<p class="layer-note">Light given off by things. On a dark page it glows; on a light page it can only show as colour and as the shade round it.</p>
+<section class="swatch" data-option="glow:none">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>None</h3><p class="id">glow: none</p><p>Nothing gives off light.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="glow:lamp">
+<div class="ground di-overhead sh-soft gl-lamp sk-none fo-none">
+<div class="fx fx-lamp-shade" aria-hidden="true"></div><div class="fx fx-lamp-light" aria-hidden="true"></div><i class="lamp-src" aria-hidden="true"></i><div class="main"><div class="sheet"><h3>Lamp</h3><p class="id">glow: lamp</p><p>One warm pool of light; the far side falls into shade.</p><button class="btn" type="button">Come in</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="glow:edges">
+<div class="ground di-overhead sh-soft gl-edges sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Edges</h3><p class="id">glow: edges</p><p>Thin rims of light round frames and controls.</p><button class="btn" type="button">Claim</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="glow:bloom">
+<div class="ground di-overhead sh-soft gl-bloom sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Bloom</h3><p class="id">glow: bloom</p><p>A soft haze round the brightest thing only: the main button.</p><button class="btn" type="button">Begin</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<h2 class="layer">Sky</h2>
+<p class="layer-note">The colour of the light over the page. It tints the ground and the things on it, never the sheet with the words.</p>
+<section class="swatch" data-option="sky:none">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>None</h3><p class="id">sky: none</p><p>White light: the page keeps its own colours.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="sky:day">
+<div class="ground di-overhead sh-soft gl-none sk-day fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Day</h3><p class="id">sky: day</p><p>A clear sky and a warm sun: shadows turn a little blue.</p><button class="btn" type="button">Set out</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="sky:dusk">
+<div class="ground di-overhead sh-soft gl-none sk-dusk fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Dusk</h3><p class="id">sky: dusk</p><p>Low, warm light from one side, violet overhead.</p><button class="btn" type="button">Stay late</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="sky:night">
+<div class="ground di-overhead sh-soft gl-none sk-night fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Night</h3><p class="id">sky: night</p><p>Moonlight: the scene goes blue and dim; sheets stay readable.</p><button class="btn" type="button">Look up</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="sky:by-the-clock">
+<div class="ground di-overhead sh-soft gl-none sk-by-the-clock fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>By the clock</h3><p class="id">sky: by-the-clock</p><p>The light follows a clock. Four hours of it:</p><ul class="chips" aria-label="The same light at four hours"><li><span class="chip" data-t="rise" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dawn <span class="chip-time"></span></li><li><span class="chip" data-t="noon" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>noon <span class="chip-time"></span></li><li><span class="chip" data-t="set" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dusk <span class="chip-time"></span></li><li><span class="chip" data-t="night" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>night <span class="chip-time"></span></li></ul><button class="btn" type="button">See tonight</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<h2 class="layer">Focus</h2>
+<p class="layer-note">Where the light leads the eye.</p>
+<section class="swatch" data-option="focus:none">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>None</h3><p class="id">focus: none</p><p>The light is even across the page.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="focus:spotlight">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-spotlight">
+<div class="main"><div class="sheet"><h3>Spotlight</h3><p class="id">focus: spotlight</p><p>A pool of light on the main thing; it grows when you reach the button.</p><button class="btn" type="button">Buy this</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="focus:vignette">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-vignette">
+<div class="fx fx-vignette" aria-hidden="true"></div><div class="main"><div class="sheet"><h3>Vignette</h3><p class="id">focus: vignette</p><p>The corners fall into shade, so the eye stays in the middle.</p><button class="btn" type="button">Look closer</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks; any layer not named is at its default.</p>
+<section class="swatch" data-option="start:flat-and-even">
+<div class="ground di-none sh-none gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Flat and even</h3><p class="id">direction: none; shadows: none</p><p>No light at all: a page, not a picture.</p><button class="btn" type="button">Read on</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:professional">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Professional</h3><p class="id">direction: overhead; shadows: soft</p><p>Soft, tinted elevation from above, used sparingly.</p><button class="btn" type="button">Book a call</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:warm">
+<div class="ground di-top-left sh-paper-lift gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Warm</h3><p class="id">direction: top-left; shadows: paper-lift</p><p>A kitchen table by a window: paper on paper.</p><button class="btn" type="button">Order</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:daylight">
+<div class="ground di-top-right sh-crisp gl-none sk-day fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Daylight</h3><p class="id">direction: top-right; shadows: crisp; sky: day</p><p>Bright open air: a high sun and hard little shadows.</p><button class="btn" type="button">Set out</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:moonlight">
+<div class="ground di-top-left sh-soft gl-none sk-night fo-vignette">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="fx fx-vignette" aria-hidden="true"></div><div class="main"><div class="sheet"><h3>Moonlight</h3><p class="id">direction: top-left; shadows: soft; sky: night; focus: vignette</p><p>Night, cool and quiet: everything visible but blue.</p><button class="btn" type="button">Look up</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:sky-by-the-clock">
+<div class="ground di-overhead sh-soft gl-none sk-by-the-clock fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Sky by the clock</h3><p class="id">direction: overhead; shadows: soft; sky: by-the-clock</p><p>The page keeps time. Four hours of it:</p><ul class="chips" aria-label="The same light at four hours"><li><span class="chip" data-t="rise" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dawn <span class="chip-time"></span></li><li><span class="chip" data-t="noon" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>noon <span class="chip-time"></span></li><li><span class="chip" data-t="set" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dusk <span class="chip-time"></span></li><li><span class="chip" data-t="night" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>night <span class="chip-time"></span></li></ul><button class="btn" type="button">See tonight</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="ground di-overhead sh-paper-lift gl-bloom sk-by-the-clock fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Almanac plate</h3><p class="id">direction: overhead; shadows: paper-lift; sky: by-the-clock; glow: bloom</p><p>Printed charts under the visitor's own sky:</p><ul class="chips" aria-label="The same light at four hours"><li><span class="chip" data-t="rise" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dawn <span class="chip-time"></span></li><li><span class="chip" data-t="noon" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>noon <span class="chip-time"></span></li><li><span class="chip" data-t="set" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>dusk <span class="chip-time"></span></li><li><span class="chip" data-t="night" aria-hidden="true"><span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span></span>night <span class="chip-time"></span></li></ul><button class="btn" type="button">Come and look</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:one-light">
+<div class="ground di-top-left sh-soft gl-lamp sk-none fo-none">
+<div class="fx fx-lamp-shade" aria-hidden="true"></div><div class="fx fx-lamp-light" aria-hidden="true"></div><i class="lamp-src" aria-hidden="true"></i><div class="main"><div class="sheet"><h3>One light</h3><p class="id">direction: top-left; shadows: soft; glow: lamp</p><p>A room with one lamp in it; the rest falls away.</p><button class="btn" type="button">Come in</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:spotlight-on-the-main-thing">
+<div class="ground di-overhead sh-soft gl-none sk-none fo-spotlight">
+<div class="main"><div class="sheet"><h3>Spotlight on the main thing</h3><p class="id">shadows: soft; focus: spotlight</p><p>The light picks out the one thing that matters.</p><button class="btn" type="button">Buy this</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:glow-on-edges">
+<div class="ground di-overhead sh-deep gl-edges sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Glow on edges</h3><p class="id">shadows: deep; glow: edges</p><p>Bright rims on small things, like a game screen.</p><button class="btn" type="button">Claim</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="ground di-low-side sh-deep gl-lamp sk-none fo-vignette">
+<div class="fx fx-lamp-shade" aria-hidden="true"></div><div class="fx fx-lamp-light" aria-hidden="true"></div><i class="lamp-src" aria-hidden="true"></i><div class="fx fx-vignette" aria-hidden="true"></div><div class="main"><div class="sheet"><h3>Sorcery</h3><p class="id">direction: low-side; shadows: deep; glow: lamp; focus: vignette</p><p>A low lamp in a dark room; the corners are lost.</p><button class="btn" type="button">Enter</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="ground di-overhead sh-deep gl-edges sk-day fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Gilded dark</h3><p class="id">direction: overhead; shadows: deep; glow: edges; sky: day</p><p>Panels over a bright painted world, rimmed in light.</p><button class="btn" type="button">Play</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="ground di-top-right sh-paper-lift gl-lamp sk-night fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="fx fx-lamp-shade" aria-hidden="true"></div><div class="fx fx-lamp-light" aria-hidden="true"></div><i class="lamp-src" aria-hidden="true"></i><div class="main"><div class="sheet"><h3>Lantern fair</h3><p class="id">direction: top-right; shadows: paper-lift; glow: lamp; sky: night</p><p>One paper lantern over a market at night.</p><button class="btn" type="button">Book a stall</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<div class="ground di-top-right sh-paper-lift gl-none sk-day fo-none">
+<span class="fx fx-sky-mul" aria-hidden="true"></span><span class="fx fx-sky-scr" aria-hidden="true"></span><div class="main"><div class="sheet"><h3>Field journal</h3><p class="id">direction: top-right; shadows: paper-lift; sky: day</p><p>Taped-in pages in morning sun.</p><button class="btn" type="button">Join a walk</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="ground di-top-left sh-crisp gl-none sk-none fo-none">
+<div class="main"><div class="sheet"><h3>Repair cafe</h3><p class="id">direction: top-left; shadows: crisp</p><p>Cut card and pegboard: flat light, hard shadows.</p><button class="btn" type="button">Bring it in</button></div></div><div class="side" aria-hidden="true"><div class="stack"><i></i><i></i><i class="torn"></i></div><div class="ball"></div></div>
+</div>
+</section>
 
-    <section class="swatch s-clock" data-option="sky-by-the-clock" aria-labelledby="h-clock">
-      <div class="art" aria-hidden="true"></div>
-      <ol class="hours" aria-label="The same sky at four hours">
-        <li data-h="6"><span>6:00</span></li>
-        <li data-h="12"><span>12:00</span></li>
-        <li data-h="19"><span>19:00</span></li>
-        <li data-h="0"><span>0:00</span></li>
-      </ol>
-      <div class="words">
-        <h2 id="h-clock">Sky by the clock</h2>
-        <h3 id="clock-now">The sky keeps time</h3>
-        <p>The big sky behind this box is set from your own clock. Contrast must pass at the worst hour.</p>
-        <button type="button">Visit</button>
-      </div>
-    </section>
-
-    <section class="swatch lit s-one" data-option="one-light" aria-labelledby="h-one">
-      <div class="art" aria-hidden="true"></div>
-      <div class="breath" aria-hidden="true"></div>
-      <div class="lamp" aria-hidden="true"></div>
-      <div class="words">
-        <h2 id="h-one">One light</h2>
-        <h3>A lamp in a dark room</h3>
-        <p>Near the lamp is lit in its colour; the rest falls into dark. The main button takes the lamp's colour.</p>
-        <button type="button">Browse</button>
-      </div>
-    </section>
-
-    <section class="swatch s-spot" data-option="spotlight-on-the-main-thing" aria-labelledby="h-spot">
-      <div class="art" aria-hidden="true"></div>
-      <div class="target">
-        <h2 id="h-spot">Spotlight on the main thing</h2>
-        <h3>One thing lit</h3>
-        <p>Point at the button, or tab to it: the light grows.</p>
-        <button type="button">Add to basket</button>
-      </div>
-    </section>
-
-    <section class="swatch s-edge" data-option="glow-on-edges" aria-labelledby="h-edge">
-      <h2 id="h-edge">Glow on edges</h2>
-      <div class="slots" aria-hidden="true">
-        <div class="slot" style="--c: var(--rim)"></div>
-        <div class="slot" style="--c: var(--rim-2)"></div>
-        <div class="slot" style="--c: var(--rim-3)"></div>
-      </div>
-      <h3 class="verdict">Bright rims, small things</h3>
-      <p>The glow does not count towards contrast: the letters' own colour must pass. <span class="tier">Rare, epic, legendary</span></p>
-      <button type="button">Claim reward</button>
-    </section>
-  </div>
 </main>
 
 <script>
-  // sky by the clock: the big sky follows the visitor's own clock, set once (nothing animates)
-  (function () {
-    const now = new Date(), hour = now.getHours() + now.getMinutes() / 60;
-    const sunUp = Math.sin(((hour - 6) / 12) * Math.PI);
-    const day = Math.min(1, Math.max(0, (sunUp + 0.12) / 0.37));
-    const glow = Math.max(0, 1 - Math.abs(sunUp) / 0.3);
-    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
-    const rgb = (c) => 'rgb(' + c.join(' ') + ')';
-    let top = mix([5, 15, 42], [42, 120, 212], day), low = mix([47, 106, 175], [255, 230, 166], day);
-    low = mix(low, [255, 154, 90], glow * 0.7);
-    const el = document.querySelector('.s-clock');
-    el.style.setProperty('--sky-top', rgb(top));
-    el.style.setProperty('--sky-low', rgb(low));
-    el.style.setProperty('--sun', day > 0.1 ? '#fff8d2' : '#eaf8ff');
-    el.style.setProperty('--sun-x', (15 + 70 * ((hour % 12) / 12)) + '%');
-    el.style.setProperty('--sun-y', (60 - 40 * Math.abs(sunUp)) + '%');
-    document.getElementById('clock-now').textContent = 'The sky at ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
-  })();
-</script>
-<script src="../harness.js"></script>
-<script>
-run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
-});
+/* Sky by the clock: the same code as in the guide. Rough sunrise and sunset from the date and a place (good to about
+   half an hour, enough for the colour of the light), the light's state from the hour, and three ways to set the clock
+   for pictures: ?t=HH:MM, the field above, or data-t on an element. Repaints once a minute, with no transition, so
+   there is nothing to stop under reduced motion. */
+function sunTimes(date, lat, lon) {
+  const n = Math.round((date - new Date(date.getFullYear(), 0, 0)) / 864e5);
+  const decl = 23.44 * Math.sin(2 * Math.PI * (284 + n) / 365) * Math.PI / 180;
+  const half = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat * Math.PI / 180) * Math.tan(decl)))) * 12 / Math.PI;
+  // local clock time when the sun is highest: from the longitude when the page knows it, else from the time zone
+  // (noon, plus an hour in summer time, plus a little: most places sit west of their zone's middle)
+  const jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset(), jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
+  const solarNoon = lon == null ? 12.3 + (date.getTimezoneOffset() < Math.max(jan, jul) ? 1 : 0) : 12 - date.getTimezoneOffset() / 60 - lon / 15;
+  return { rise: solarNoon - half, set: solarNoon + half };
+}
+function lightAt(hour, rise, set) {
+  const clamp = (v) => Math.max(0, Math.min(1, v));
+  let h;                                                   // 1 at noon, 0 at sunrise and sunset, -1 deep in the night
+  if (hour >= rise && hour <= set) h = Math.cos(((hour - (rise + set) / 2) / ((set - rise) / 2)) * Math.PI / 2);
+  else {
+    const away = Math.min((rise - hour + 24) % 24, (hour - set + 24) % 24), nightHalf = (24 - (set - rise)) / 2;
+    h = -Math.sin(Math.min(1, away / nightHalf) * Math.PI / 2);
+  }
+  return { day: clamp((h + 0.12) / 0.34), dusk: clamp(1 - Math.abs(h - 0.02) / 0.24) };
+}
+function hourOf(text) { const m = /^(\d{1,2}):(\d{2})$/.exec(text || ''); return m ? +m[1] + m[2] / 60 : null; }
+function paintSky() {
+  const now = new Date(), field = document.getElementById('clock');
+  const asked = hourOf(field && field.value) ?? hourOf(new URLSearchParams(location.search).get('t'));
+  const lat = +(document.body.dataset.lat || 45), lon = document.body.dataset.lon == null ? null : +document.body.dataset.lon;
+  const { rise, set } = sunTimes(now, lat, lon);
+  for (const el of document.querySelectorAll('.sk-by-the-clock, .sk-by-the-clock [data-t]')) {
+    const moment = { rise, noon: (rise + set) / 2, set: set + 0.25, night: (set + 24 + rise) / 2 % 24 }[el.dataset.t];
+    const hour = moment ?? hourOf(el.dataset.t) ?? asked ?? now.getHours() + now.getMinutes() / 60;
+    const label = el.parentElement.querySelector('.chip-time');
+    if (label && moment !== undefined) label.textContent = String(Math.floor(hour)).padStart(2, '0') + ':' + String(Math.round(hour % 1 * 60) % 60).padStart(2, '0');
+    const { day, dusk } = lightAt(hour, rise, set);
+    el.style.setProperty('--day', day.toFixed(3));
+    el.style.setProperty('--dusk', dusk.toFixed(3));
+  }
+}
+function startClock() {
+  const field = document.getElementById('clock'), t = new URLSearchParams(location.search).get('t');
+  if (field && t && hourOf(t) !== null && !field.value) field.value = t.padStart(5, '0');
+  if (field) field.addEventListener('input', paintSky);
+  paintSky();
+  setInterval(paintSky, 60000);
+}
+document.addEventListener('DOMContentLoaded', startClock);   /* after swatches.js has made the dark copies */
+run(swatchTest);
 </script>
 </body>
 </html>

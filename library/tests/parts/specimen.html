@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen</title>
+<!-- A page made only of the shared hooks and the common markup the parts ask for, for trying what 'blueprint.py style css' writes.
+     Put parts.css and parts.js beside a copy of this file (style css --recipe <name> --out <folder>/parts.css), then open it.
+     It carries every hook (.page .band .sheet .panel .btn .btn-main .field .tag .badge .picture .deco .rule .icon .mark .lead .label)
+     and the optional pieces of most options: a texture span and a fixing span in each sheet (materials), an ornament (frames),
+     signs, a find and a sign in a sheet's margin (background), lettering's marks, a spotlit thing (.light-main), and a band
+     holding only a drawn picture (density's one big moment). Pieces a pick does not use stay hidden or empty.
+     It has no styles of its own beyond a fallback, so everything seen comes from the parts, and it reads plainly with no parts.css. -->
+<link rel="stylesheet" href="parts.css">
+<style>
+  /* only what keeps the page usable if a part is missing */
+  .specimen-grid { display: grid; gap: var(--gap-items, 1.5rem); grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+  .specimen-row { display: flex; flex-wrap: wrap; gap: var(--gap-inside, 0.75rem); align-items: center; }
+  .specimen-scene { display: block; width: 100%; height: auto; max-height: 36rem; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="band">
+    <nav aria-label="Main" class="specimen-row">
+      <a href="#visit">Visit</a> <a href="#what">What we do</a> <a href="#join">Join</a>
+    </nav>
+  </header>
+  <main>
+    <section class="band" id="visit" aria-labelledby="visit-h">
+      <svg class="background-sign" height="0" style="position: absolute; width: 170px; left: -40px; top: 18%; rotate: -12deg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#background-sg-ring"/></svg>
+      <svg class="background-sign" height="0" style="position: absolute; width: 120px; right: 2%; bottom: -30px; rotate: 18deg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#background-sg-moon"/></svg>
+      <svg class="deco" data-deco="few" aria-hidden="true" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="20" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+      <div class="light-main">
+        <div class="sheet">
+          <span class="materials-mat" aria-hidden="true"></span>
+          <span class="materials-fix" aria-hidden="true" style="position: absolute"><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg><i class="materials-tape materials-tape-l"></i><i class="materials-tape materials-tape-r"></i><svg class="materials-clip" width="64" height="44" viewBox="0 0 64 44" focusable="false"><use href="#materials-clip"/></svg><i class="materials-rail"></i><i class="materials-string"></i><i class="materials-hole"></i><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg></span>
+          <span class="frames-ornament" aria-hidden="true"></span>
+          <p class="label">The next one</p>
+          <h1 id="visit-h"><span class="lettering-word">Saturday 14</span> <span class="lettering-word">November</span></h1>
+          <p class="lead">A morning of something worth doing, with real words at a real length so the measure, the scale and the spacing can be judged. <span class="lettering-hl">Bring what is broken.</span></p>
+          <div class="specimen-row">
+            <a class="btn btn-main" href="#join">Put your name down</a>
+            <a class="btn" href="#what"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h10"/></svg> What to bring</a>
+            <span class="tag">Free</span> <span class="badge">3 places left</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="band" id="what" aria-labelledby="what-h">
+      <svg class="background-find" height="0" fill="none" stroke="currentColor" style="position: absolute; width: 7rem; right: 3%; top: 0.5rem" viewBox="0 0 120 90" aria-hidden="true" focusable="false"><g filter="url(#background-pen)"><path class="background-fill-a" d="M20 80h80l-6-36H26z"/><path d="M20 80h80l-6-36H26zM44 44V24a16 16 0 0 1 32 0v20"/><circle class="background-solid" cx="60" cy="62" r="4"/></g></svg>
+      <svg class="background-sign" height="0" style="position: absolute; width: 90px; left: 46%; top: -40px; rotate: 30deg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#background-sg-rose"/></svg>
+      <h2 id="what-h">What we <span class="lettering-ring">do<svg width="0" height="0" aria-hidden="true" focusable="false"><use href="#lettering-ring"/></svg></span></h2>
+      <div class="specimen-grid">
+        <article class="sheet">
+          <span class="materials-mat" aria-hidden="true"></span>
+          <span class="materials-fix" aria-hidden="true" style="position: absolute"><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg><i class="materials-tape materials-tape-l"></i><i class="materials-tape materials-tape-r"></i><svg class="materials-clip" width="64" height="44" viewBox="0 0 64 44" focusable="false"><use href="#materials-clip"/></svg><i class="materials-rail"></i><i class="materials-string"></i><i class="materials-hole"></i><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg></span>
+          <figure class="picture"><svg role="img" aria-label="A drawn jug" viewBox="0 0 120 80" width="100%"><rect width="120" height="80" fill="currentColor" opacity="0.15"/><path d="M45 20h30l6 40H39z" fill="currentColor" opacity="0.6"/></svg><figcaption>A drawing stands in for a photograph.</figcaption></figure>
+          <h3>Mending</h3><p>Lamps, zips, kettles and bikes, mended with you, not for you.</p>
+        </article>
+        <article class="sheet">
+          <span class="materials-mat" aria-hidden="true"></span>
+          <span class="materials-fix" aria-hidden="true" style="position: absolute"><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg><i class="materials-tape materials-tape-l"></i><i class="materials-tape materials-tape-r"></i><svg class="materials-clip" width="64" height="44" viewBox="0 0 64 44" focusable="false"><use href="#materials-clip"/></svg><i class="materials-rail"></i><i class="materials-string"></i><i class="materials-hole"></i><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg></span>
+          <span class="lettering-stamp" aria-hidden="true">Full</span>
+          <h3>Tea</h3><p>There is always tea, and usually cake, by donation. Saturday's urn is full; Sunday's still has room.</p><hr class="rule">
+          <ul><li>Tea and coffee</li><li>Cake, when someone bakes</li></ul>
+        </article>
+        <article class="sheet">
+          <span class="materials-mat" aria-hidden="true"></span>
+          <span class="materials-fix" aria-hidden="true" style="position: absolute"><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg><i class="materials-tape materials-tape-l"></i><i class="materials-tape materials-tape-r"></i><svg class="materials-clip" width="64" height="44" viewBox="0 0 64 44" focusable="false"><use href="#materials-clip"/></svg><i class="materials-rail"></i><i class="materials-string"></i><i class="materials-hole"></i><svg class="materials-pin" width="24" height="24" viewBox="0 0 24 24" focusable="false"><use href="#materials-pin"/></svg></span>
+          <svg class="background-sign background-in-margin" width="0" height="0" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#background-sg-diamond"/></svg>
+          <h3>Learning</h3><p>Every fix is a lesson: you leave knowing how it was done.</p>
+          <p class="lettering-hand"><svg width="0" height="0" aria-hidden="true" focusable="false"><use href="#lettering-arrow"/></svg>ask for Sam</p>
+          <svg class="deco" data-deco="more" aria-hidden="true" width="40" height="40" viewBox="0 0 40 40"><path d="M5 35 35 5" stroke="currentColor" stroke-width="3"/></svg>
+        </article>
+      </div>
+    </section>
+    <section class="band" aria-label="The hall on a Saturday morning">
+      <figure class="picture"><svg class="specimen-scene" role="img" aria-label="A drawing of a village hall on a hill, the sun low behind it" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+        <rect width="1200" height="600" style="fill: var(--surface-raised, #e8e2d6)"/>
+        <circle cx="880" cy="190" r="90" style="fill: var(--accent, #b4532a)" opacity="0.55"/>
+        <path d="M0 420Q300 330 600 400T1200 380V600H0Z" style="fill: var(--mark, #8a7a62)" opacity="0.45"/>
+        <path d="M0 470Q260 420 560 470T1200 460V600H0Z" style="fill: var(--ink-soft, #6b6257)" opacity="0.55"/>
+        <path d="M470 330h200v120H470z" style="fill: var(--surface, #fffaf0)"/><path d="M450 335l120-80 120 80z" style="fill: var(--ink, #2b2620)"/>
+        <path d="M550 380h40v70h-40z" style="fill: var(--ink, #2b2620)"/>
+      </svg></figure>
+    </section>
+    <section class="band" id="join" aria-labelledby="join-h">
+      <svg class="background-sign" height="0" style="position: absolute; width: 140px; right: 0; top: 10%; rotate: -20deg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#background-sg-tree"/></svg>
+      <div class="sheet">
+        <span class="materials-mat" aria-hidden="true"></span>
+        <h2 id="join-h">Join as a fixer</h2>
+        <form class="specimen-form" onsubmit="event.preventDefault()">
+          <p><label for="n">Your name</label><br><input class="field" id="n" name="n" autocomplete="name"></p>
+          <p><label for="s">What can you mend?</label><br><select class="field" id="s" name="s"><option>Bikes</option><option>Clothes</option><option>Electrics</option></select></p>
+          <p><label><input type="checkbox" name="r"> Remind me the day before</label></p>
+          <p><button class="btn btn-main" type="submit">Put my name down</button></p>
+        </form>
+      </div>
+      <div class="panel" role="note"><p><strong>Note:</strong> a raised panel, like a menu or a message. <svg class="mark" aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 16 16"><path d="M8 1l2 5h5l-4 3 2 6-5-4-5 4 2-6-4-3h5z" fill="currentColor"/></svg></p></div>
+      <svg class="deco" data-deco="most" aria-hidden="true" width="48" height="48" viewBox="0 0 48 48"><rect x="8" y="8" width="32" height="32" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+    </section>
+  </main>
+  <footer class="band"><p><small>A specimen page for the skill's parts. Nothing here is real.</small></p></footer>
+</div>
+<script src="parts.js" defer></script>
+</body>
+</html>

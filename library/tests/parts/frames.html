@@ -3,235 +3,501 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Frames and edges: the options</title>
+<title>Frames and edges: the layers</title>
+<link rel="stylesheet" href="tokens.css">
 <script src="../harness.js"></script>
+<script src="swatches.js"></script>
 <style>
+/* Built by source/frames.py from source/frames-template.html: edit those, then run python3 frames.py ../frames.html in
+   source/. Every colour below is a shared colour name (tokens.css) or a mix of two of them. Each swatch is drawn twice,
+   on a light page and a dark one, from the same CSS. The frames part decides only lines and edges: the shadows are a
+   stand-in for the light part's soft shadow from overhead, and corners are var(--radius, 0) from corners and shapes. */
 *, *::before, *::after { box-sizing: border-box; }
-img, svg { display: block; max-width: 100%; height: auto; }
-body {
-  margin: 0; padding: 1.5rem 1rem 3rem;
-  font: 17px/1.5 Georgia, 'Times New Roman', serif; color: #1c1f23; background: #f4f1ea;
-  overflow-wrap: break-word;
-}
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
 h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
-.intro { max-width: 60ch; margin: 0 0 2rem; }
-.book { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 2rem 1.5rem; max-width: 80rem; }
-.swatch { min-width: 0; padding: 1rem; background: #fff; border: 1px solid #b9b2a3; border-radius: 6px; }
-.swatch > h2 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
-.swatch > .id { margin: 0; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: #4b5059; }
-.swatch > .for { margin: 0.25rem 0 1.25rem; font-size: 1rem; color: #4b5059; }
-.demo h3 { margin: 0 0 0.5rem; font-size: 1.25rem; line-height: 1.2; }
-.demo p { margin: 0 0 1rem; }
-.demo p:last-child { margin-bottom: 0; }
-.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 0; border-radius: 4px;
-  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: #2f5d50; color: #fff; }
-:focus-visible { outline: 3px solid #1c1f23; outline-offset: 3px; }
-.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 60ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
-/* ---------- none: space and a printer's mark ---------- */
-.f-none { padding: 0.5rem 0.25rem; }
-.f-none .item { text-align: center; }
-.f-none .item + .item { margin-top: 1.5rem; }
-.f-none .item:not(:last-child)::after { content: "\2042" / ""; display: block; margin-top: 1.25rem; font-size: 1.25rem; color: #565d66; }
-.f-none .item p { max-width: 30ch; margin-inline: auto; }
+/* ---------- stand-ins for other parts: the light part's soft shadow from overhead ---------- */
+.scene { --lx: 0; --ly: 1; --hx: 0; --hy: 1; --shade: rgb(var(--shadow-rgb));
+  --shadow-low: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent),
+    0 3px 6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent);
+  --drop-low: drop-shadow(0 1px 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent))
+    drop-shadow(0 3px 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent)); }
+.scene.flat { --shadow-low: 0 0 transparent; --drop-low: opacity(1); }
+.scene.rounded { --radius: 10px; }
 
-/* ---------- hairline ---------- */
-.f-hairline { --rule: 1px solid #8a8f98; --rule-heavy: 2px solid #1c1f23; }
-.f-hairline .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: var(--rule-heavy); border-bottom: var(--rule); margin-bottom: 1rem; }
-.f-hairline .fact { padding: 0.75rem 0; }
-.f-hairline .fact + .fact { border-left: var(--rule); padding-left: 1rem; }
-.f-hairline .fact b { display: block; font-size: 1.5rem; line-height: 1.1; }
-.f-hairline .specimen { border: 1px solid #1c1f23; border-radius: 3px; padding: 1rem; }
+/* ---------- every swatch: a section with a sheet (a short form in it) and a list, then the next section on a band ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.scene { background: var(--ground); color: var(--on-ground); }
+.top { display: grid; grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: 1.75rem 2rem; align-items: start; padding: 1.5rem 1.5rem 2.25rem; }
+@container (max-width: 34rem) { .top { grid-template-columns: minmax(0, 1fr); padding-inline: 1rem; } }
+.sheet { position: relative; isolation: isolate; padding: 1.25rem; border-radius: var(--radius, 0);
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow-low); }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.id { margin: 0.125rem 0 0.5rem; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+@media (max-width: 40rem) { .id { font-size: 1rem; } }
+.sheet p { margin: 0 0 0.75rem; }
+.field label { display: block; font-size: 0.9375rem; }
+.field input { display: block; width: 100%; min-height: 44px; margin-top: 0.25rem; padding: 0 0.625rem; font: inherit; font-size: 1.0625rem;
+  background: var(--surface); color: var(--ink); border: var(--field-edge); border-radius: min(var(--radius, 0px), 6px); }
+.tick label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; font-size: 0.9375rem; }
+.tick input { appearance: none; font-size: 1rem; flex: none; width: 1.375rem; height: 1.375rem; margin: 0; background: var(--surface);
+  border: var(--field-edge); border-radius: min(var(--radius, 0px), 4px); display: grid; place-content: center; }
+.tick input:checked { background: var(--accent); border-color: var(--accent-edge); }
+.tick input:checked::after { content: ""; width: 0.75rem; height: 0.4rem; margin-top: -0.2rem; rotate: -45deg;
+  border: solid var(--on-accent); border-width: 0 0 3px 3px; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge);
+  border-radius: min(var(--radius, 0px), 8px); font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); }
+.list h4 { margin: 0 0 0.75rem; font-size: 1.125rem; line-height: 1.2; }
+.items { margin: 0; padding: 0; list-style: none; max-width: 30rem; }
+.items li { position: relative; }
+.items b { display: block; font: 700 0.875rem/1.4 system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+.list { color: var(--on-ground); }
+.list .items b { color: var(--on-ground); }
+.low { position: relative; padding: 1.25rem 1.5rem; background: var(--band-2); color: var(--on-band); }
+.low p { margin: 0; max-width: 46ch; }
+.orn { position: absolute; pointer-events: none; z-index: 2; }
 
-/* ---------- card ---------- */
-.f-card { padding: 1rem; background: #ece7dc; border-radius: 6px; }
-.f-card .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.1); padding: 1.25rem; }
+/* ---------- the part's own names, made from the shared ones ---------- */
+.scene { --frame-line: var(--line); --frame-strong: color-mix(in oklab, var(--line), var(--ink) 45%);
+  --metal-pale: color-mix(in oklab, var(--metal, var(--mark)) 40%, light-dark(var(--surface-raised), var(--ink)));
+  --metal-deep: color-mix(in oklab, var(--metal, var(--mark)) 45%, rgb(var(--shadow-rgb))); --edge-ink: opacity(1); }
 
-/* ---------- torn paper ---------- */
-.f-torn { --cut: polygon(0.6% 1.4%, 99.5% 0, 100% 98.8%, 0 100%); }
-.f-torn .top { background: #ffc83a; padding: 1.5rem 1rem 2.5rem; }
-.f-torn .low { position: relative; background: #1e3f8f; color: #1e3f8f; padding: 1.75rem 1rem 1.5rem; }
-.f-torn .low .edge { position: absolute; left: 0; top: -15px; width: 100%; height: 16px; }
-.f-torn .paper { position: relative; isolation: isolate; padding: 1.5rem 1.25rem 1.25rem; color: #1a2142;
-  filter: drop-shadow(0 3px 0 rgb(10 18 50 / 0.3)) drop-shadow(0 10px 14px rgb(10 18 50 / 0.25)); }
-.f-torn .paper::before { content: ""; position: absolute; inset: 0; z-index: -1; background: #fffaf0; clip-path: var(--cut); rotate: -1.2deg; }
-.f-torn .tear::before { background: #ffe0b3; rotate: 0.9deg;
-  clip-path: polygon(0 1%, 7% 0, 18% 1.2%, 33% 0.2%, 52% 1%, 70% 0, 88% 0.8%, 100% 0, 99.3% 22%, 100% 47%, 99.2% 74%, 100% 99%, 81% 100%, 60% 98.8%, 41% 100%, 23% 99%, 6% 100%, 0 99%, 0.8% 70%, 0 45%, 0.7% 20%); }
-.f-torn .tape { position: absolute; top: -0.7rem; left: 50%; translate: -50% 0; width: 5rem; height: 1.4rem; background: rgb(207 174 124 / 0.8); rotate: -3deg;
-  clip-path: polygon(0 12%, 5% 0, 10% 14%, 15% 2%, 20% 12%, 25% 0, 100% 0, 100% 88%, 95% 100%, 90% 86%, 85% 98%, 80% 88%, 75% 100%, 0 100%); }
-.f-torn .btn { background: #c9321e; box-shadow: 0 4px 0 #1a2142; }
+/* ---------- border ---------- */
+.bo-none .sheet { border: 1px solid transparent; }   /* shows only in forced colours, where the sheet needs it */
+.bo-hairline .sheet { border: 1px solid var(--frame-line); }
+.bo-hairline { --edge-ink: drop-shadow(1px 0 0 var(--frame-strong)) drop-shadow(-1px 0 0 var(--frame-strong)) drop-shadow(0 1px 0 var(--frame-strong)) drop-shadow(0 -1px 0 var(--frame-strong)); }
+.bo-rule .sheet { border: 1px solid var(--frame-line); border-top: 4px solid var(--ink); }
+.bo-double .sheet { border: 3px solid var(--frame-strong); padding: calc(1.25rem + 4px); }
+.bo-double .sheet::after { content: ""; position: absolute; inset: 3px; pointer-events: none; border: 1px solid var(--frame-strong);
+  border-radius: max(0px, calc(var(--radius, 0px) - 6px)); }
+.bo-inked .sheet { border: 3px solid var(--ink); }
+.bo-inked { --edge-ink: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink)) drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink)); }
+.bo-pen-line .sheet { border: 2px solid transparent; }
+.bo-pen-line .sheet::after { content: ""; position: absolute; inset: -4px; pointer-events: none; border: 2px solid var(--ink);
+  border-radius: var(--radius, 0); outline: 1px solid color-mix(in oklab, var(--ink) 45%, transparent); outline-offset: -5px; filter: url(#pen); }
+.bo-carved-band .sheet { border: 1px solid var(--frame-strong); padding: calc(1.25rem + 16px); }
+.bo-carved-band .sheet::after { content: ""; position: absolute; inset: 3px; padding: 12px; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(circle at calc(50% - var(--hx) * 14%) calc(50% - var(--hy) * 14%), var(--metal-pale) 0 12%, var(--mark) 38%,
+      var(--metal-deep) 58%, transparent 64%) 0 0 / 12px 12px round border-box,
+    color-mix(in oklab, var(--mark) 22%, var(--surface));
+  outline: 1px solid var(--frame-strong); outline-offset: -1px;
+  -webkit-mask: linear-gradient(var(--ink) 0 0) content-box, linear-gradient(var(--ink) 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--ink) 0 0) content-box exclude, linear-gradient(var(--ink) 0 0); }
+.bo-metal-ring .sheet { border: 2px solid var(--metal-deep); padding: calc(1.25rem + 9px); }
+.bo-metal-ring .sheet::after { content: ""; position: absolute; inset: 0; padding: 9px; pointer-events: none; border-radius: inherit;
+  background:   /* each side a rounded bar: a bright stripe along it; the sides facing the light brighter than the two away from it */
+    linear-gradient(var(--metal, var(--mark)), var(--metal-pale) 35%, var(--metal, var(--mark)) 70%, var(--metal-deep)) top / 100% 9px no-repeat,
+    linear-gradient(to top, var(--metal-deep), var(--metal, var(--mark)) 40%, var(--metal-deep)) bottom / 100% 9px no-repeat,
+    linear-gradient(to right, var(--metal, var(--mark)), var(--metal-pale) 35%, var(--metal, var(--mark)) 70%, var(--metal-deep)) left / 9px 100% no-repeat,
+    linear-gradient(to left, var(--metal-deep), var(--metal, var(--mark)) 40%, var(--metal-deep)) right / 9px 100% no-repeat;
+  box-shadow: inset 0 0 0 1px var(--metal-deep);
+  -webkit-mask: linear-gradient(var(--ink) 0 0) content-box, linear-gradient(var(--ink) 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--ink) 0 0) content-box exclude, linear-gradient(var(--ink) 0 0); }
+.bo-double, .bo-rule, .bo-pen-line, .bo-carved-band, .bo-metal-ring { --edge-ink: drop-shadow(1px 0 0 var(--frame-strong)) drop-shadow(-1px 0 0 var(--frame-strong)) drop-shadow(0 1px 0 var(--frame-strong)) drop-shadow(0 -1px 0 var(--frame-strong)); }
 
-/* ---------- inked panel ---------- */
-.f-inked { padding: 1.25rem 1rem 1.5rem; background: #e9e1cf; display: grid; gap: 1.5rem; }
-.f-inked .inked { border: 3px solid #07060f; box-shadow: 5px 6px 0 #07060f; background: #fbfaf5; padding: 1.25rem; }
-.f-inked .btn { background: #f3b52f; color: #1b1a18; border: 3px solid #07060f; border-radius: 0; box-shadow: 3px 4px 0 #07060f; }
-.f-inked .pen { border: 10px solid transparent; background: #fffdf7; background-clip: padding-box; padding: 0.75rem;
-  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160' width='160' height='160'%3E%3Cdefs%3E%3Cfilter id='r' x='-10%25' y='-30%25' width='120%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='2' seed='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3.5'/%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='%231f2a22' stroke-linecap='round' filter='url(%23r)'%3E%3Crect x='8' y='8' width='144' height='144' rx='10' stroke-width='2.2' stroke-opacity='0.85'/%3E%3Crect x='10.5' y='6.5' width='141' height='146' rx='12' stroke-width='1.1' stroke-opacity='0.4'/%3E%3C/g%3E%3C/svg%3E") 30 / 14px / 3px stretch; }
-.f-inked .pen p { margin: 0.5rem 0 0; font-size: 1rem; }
+/* ---------- edge of a sheet: the paper is a ::before behind the words, clipped; only the paper turns ---------- */
+.shaped .sheet { background: none; box-shadow: none; border-color: transparent; filter: var(--edge-ink) var(--drop-low); }
+.shaped .sheet::after { display: none; }   /* ring borders need a straight edge: on a shaped sheet the border is the outline above */
+.shaped .sheet::before { content: ""; position: absolute; inset: -1px; z-index: -1; background: var(--surface); }
+.ed-cut .sheet::before { clip-path: polygon(0.8% 1.6%, 99.4% 0, 100% 98.6%, 0.3% 100%); rotate: -0.7deg; }
+.ed-torn .sheet::before { clip-path: var(--tear); rotate: 0.5deg; }
+.ed-deckled .sheet::before { inset: 2px; filter: url(#deckle);   /* a fibrous fringe a step off the sheet, so the ragged edge reads on a near ground */
+  background: linear-gradient(var(--surface) 0 0) center / calc(100% - 10px) calc(100% - 10px) no-repeat,
+    light-dark(color-mix(in oklab, var(--surface), var(--ink) 7%), color-mix(in oklab, var(--surface), var(--ink) 26%)); }
 
-/* ---------- carved plate ---------- */
-.f-carved { background: #1d120e; color: #f1e6cf; }
-.f-carved .band { height: 22px; border-block: 1px solid #000;
-  background: #3b2614 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M0 15 6 7 12 15 18 7 24 15' fill='none' stroke='%23c9a25a' stroke-width='1.6'/%3E%3Ccircle cx='12' cy='4' r='1.3' fill='%23c9a25a'/%3E%3C/svg%3E") left center / auto 22px repeat-x; }
-.f-carved .inner { padding: 1.25rem 1rem 1.5rem; display: grid; gap: 1.25rem; }
-.f-carved .plate { border: 14px solid #3b2614; background-clip: padding-box;
-  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54' width='54' height='54'%3E%3Cpath fill-rule='evenodd' fill='%234a3018' d='M0 0H54V54H0ZM18 18V36H36V18Z'/%3E%3Cpath fill='none' stroke='%231a0f06' stroke-width='2' d='M1 1H53V53H1ZM17 17H37V37H17Z'/%3E%3Cpath fill='none' stroke='%23c9a25a' stroke-width='1' d='M5 5H49V49H5ZM14 14H40V40H14Z'/%3E%3Cg fill='%23d9b56a' stroke='%231a0f06' stroke-width='0.8'%3E%3Ccircle cx='9.5' cy='9.5' r='3.4'/%3E%3Ccircle cx='44.5' cy='9.5' r='3.4'/%3E%3Ccircle cx='9.5' cy='44.5' r='3.4'/%3E%3Ccircle cx='44.5' cy='44.5' r='3.4'/%3E%3Ccircle cx='27' cy='9.5' r='1.8'/%3E%3Ccircle cx='27' cy='44.5' r='1.8'/%3E%3Ccircle cx='9.5' cy='27' r='1.8'/%3E%3Ccircle cx='44.5' cy='27' r='1.8'/%3E%3C/g%3E%3C/svg%3E") 18 / 14px round;
-  background-color: #120a08; background-image: radial-gradient(circle at 35% 30%, #3a2a20, #120a08 75%); padding: 6%; }
-.f-carved .plate svg { width: 100%; }
-.f-carved figcaption { margin-top: 0.5rem; font-size: 1rem; color: #e6d7b8; }
-.f-carved figure { margin: 0; }
-.f-carved .plain { border: 3px solid #0b0705; background: #f0e3c4; color: #241608; padding: 1.25rem;
-  box-shadow: inset 0 0 0 5px #f0e3c4, inset 0 0 0 7px #8a6d36, 4px 5px 0 #000; }
-.f-carved .btn { background: #ffcd57; color: #241608; }
+/* ---------- edge between sections: drawn at the top of the lower section, in its colour, one pixel over the seam ---------- */
+.seam { position: absolute; left: 0; width: 100%; pointer-events: none; color: var(--band-2); }
+svg.seam { top: -23px; height: 24px; }
+.seam .trace { fill: none; stroke: var(--frame-strong); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.se-valance .seam { top: -1px; height: 15px; background: var(--ground);
+  -webkit-mask: radial-gradient(circle 14px at 50% 0, var(--ink) 96%, transparent) 0 0 / 28px 14px round no-repeat;
+  mask: radial-gradient(circle 14px at 50% 0, var(--ink) 96%, transparent) 0 0 / 28px 14px round no-repeat; }
+.se-valance .low { padding-top: 2.25rem; }
+.se-band .low { margin-top: 18px; }   /* room for the strip; a transparent border would show in forced colours */
+.se-band .seam { top: -18px; height: 18px; border-block: 1px solid var(--frame-strong);
+  background: repeating-linear-gradient(-55deg, var(--metal-deep) 0, var(--mark) 2px, var(--metal-pale) 3.5px, var(--mark) 5px, var(--metal-deep) 7px); }   /* a twisted rope */
 
-/* ---------- riveted metal ---------- */
-.f-metal { --metal-hi: #fff2b8; --metal: #e2ad3b; --metal-lo: #8a5c14; --metal-dark: #3a2405; --gem: #ffe23d; --gem-lo: #c26f00;
-  padding: 2.25rem 1rem 1.5rem; color: #f8f0e0; font-family: system-ui, sans-serif;
-  background: linear-gradient(#5d3fa4, #c2557a 60%, #e98f4a); }
-.f-metal .metal { position: relative; background: rgb(22 14 8 / 0.92); border-radius: 12px; padding: 1.75rem 1.5rem 1.5rem;
-  box-shadow: 0 0 0 3px var(--metal-dark), 0 10px 28px rgb(0 0 0 / 0.5); }
-.f-metal .metal::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 8px; pointer-events: none;
-  background:
-    radial-gradient(circle at 7px 7px, var(--metal-hi) 0 1.5px, var(--metal-dark) 2.5px 4px, transparent 4.5px),
-    radial-gradient(circle at calc(100% - 7px) 7px, var(--metal-hi) 0 1.5px, var(--metal-dark) 2.5px 4px, transparent 4.5px),
-    radial-gradient(circle at 7px calc(100% - 7px), var(--metal-hi) 0 1.5px, var(--metal-dark) 2.5px 4px, transparent 4.5px),
-    radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), var(--metal-hi) 0 1.5px, var(--metal-dark) 2.5px 4px, transparent 4.5px),
-    linear-gradient(170deg, var(--metal-hi), var(--metal) 22%, var(--metal-lo) 48%, var(--metal) 70%, var(--metal-hi) 92%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude; }
-.f-metal .metal::after { content: ""; position: absolute; top: -13px; left: 50%; width: 26px; height: 26px; border-radius: 3px;
-  transform: translateX(-50%) rotate(45deg); border: 3px solid var(--metal-dark);
-  background: radial-gradient(circle at 35% 35%, #fff 0 10%, var(--gem) 32%, var(--gem-lo) 95%);
-  box-shadow: 0 0 0 3px var(--metal), 0 0 0 5px var(--metal-dark); }
-.f-metal h3 { color: #ffd76a; font-family: Georgia, serif; text-shadow: 0 2px 0 #000; }
-.f-metal .btn { background: #8f1d14; color: #ffdd7f; border: 2px solid #3a2405; box-shadow: inset 0 2px 0 #cf4a2e; }
+/* ---------- ornament: one empty element inside the sheet, aria-hidden ---------- */
+.or-corners .orn { inset: 4px; background: var(--mark); -webkit-mask: var(--corner-tl) top left / 34px no-repeat, var(--corner-tr) top right / 34px no-repeat,
+    var(--corner-bl) bottom left / 34px no-repeat, var(--corner-br) bottom right / 34px no-repeat;
+  mask: var(--corner-tl) top left / 34px no-repeat, var(--corner-tr) top right / 34px no-repeat,
+    var(--corner-bl) bottom left / 34px no-repeat, var(--corner-br) bottom right / 34px no-repeat; }
+.or-corners .sheet { padding: calc(1.25rem + 14px); }   /* room for the pieces: the frame adds its own width to the padding density sets */
+.bo-carved-band.or-corners .sheet { padding: calc(1.25rem + 22px); }
+.or-studs .orn { inset: var(--stud-at, 6px); --stud: radial-gradient(circle at calc(50% - var(--hx) * 18%) calc(50% - var(--hy) * 18%),
+    var(--metal-pale) 0 18%, var(--metal, var(--mark)) 45%, var(--metal-deep) 70%, transparent 74%);
+  background: var(--stud) top left / 14px 14px no-repeat, var(--stud) top right / 14px 14px no-repeat,
+    var(--stud) bottom left / 14px 14px no-repeat, var(--stud) bottom right / 14px 14px no-repeat; }
+.bo-metal-ring.or-studs .orn { --stud-at: 0px; }
+.shaped.or-studs .orn { --stud-at: 12px; }   /* pins go through the paper, not past its edge */
+.bo-carved-band.or-studs .orn, .bo-carved-band.or-corners .orn { inset: 5px; }
+.or-keystone .orn { top: -12px; left: 50%; width: 22px; height: 22px; translate: -50% 0; rotate: 45deg; border: 2px solid var(--metal-deep);
+  background: radial-gradient(circle at 35% 35%, var(--metal-pale) 0 14%, var(--mark) 55%, var(--metal-deep) 100%);
+  outline: 2px solid var(--metal, var(--mark)); }
+.or-keystone .sheet { margin-top: 0.75rem; }
+.or-crop-marks .orn { inset: -14px; --c: var(--frame-strong);
+  background: linear-gradient(var(--c) 0 0) 0 13px / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) 13px 0 / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 100% 13px / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) calc(100% - 13px) 0 / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 0 calc(100% - 13px) / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) 13px 100% / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 100% calc(100% - 13px) / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) calc(100% - 13px) 100% / 1px 9px no-repeat; }
 
-/* ---------- wavy edge ---------- */
-.f-wavy .band { position: relative; isolation: isolate; padding: 1.5rem 1rem 3.5rem; }
-.f-wavy .band > .edge { position: absolute; bottom: -1px; left: 0; width: 100%; height: 40px; z-index: -1; }
-.f-wavy .one { background: #ffe8a3; color: #2a1d14; }
-.f-wavy .one > .edge { color: #3f7d38; }
-.f-wavy .two { background: #3f7d38; color: #fff; padding-bottom: 2rem; }
-.f-wavy .scallops { height: 24px; background: radial-gradient(circle at 50% 0, #3f7d38 0 70%, transparent 71%) 0 0 / 40px 24px repeat-x, #8b2332; }
-.f-wavy .three { background: #8b2332; color: #fff; padding: 0.75rem 1rem 1.5rem; }
-.f-wavy .btn { background: #fff; color: #2a1d14; }
+/* ---------- dividers between items ---------- */
+.dv-space .items li + li { margin-top: 1.25rem; }
+.dv-hairline .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--frame-line); }
+.dv-dashed .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 2px dashed var(--frame-strong); }
+.dv-double-rule .items { border-top: 3px solid var(--frame-strong); padding-top: 0.875rem;   /* an Oxford rule: thick, then thin */
+  background: linear-gradient(var(--frame-strong) 0 0) 0 2px / 100% 1px no-repeat; }
+.dv-double-rule .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--frame-line); }
+.dv-ornament .items li + li { margin-top: 0.5rem; }
+.dv-ornament .items li + li::before { content: "\2042" / ""; display: block; margin-bottom: 0.5rem; text-align: center; font-size: 1.25rem; line-height: 1; color: var(--mark); }
+
+/* ---------- controls: the edge of a field and a tick box (never framed like a picture) ---------- */
+.co-fine { --field-edge: 1px solid var(--ink-soft); }
+.co-firm { --field-edge: 2px solid var(--ink); }
+
+/* ---------- what the visitor's settings change ---------- */
+@media (forced-colors: active) {
+  .sheet, .shaped .sheet { border: 1px solid CanvasText; filter: none; }
+  .bo-rule .sheet { border-top-width: 4px; }
+  .bo-double .sheet, .bo-inked .sheet { border-width: 3px; }
+  .sheet::before, .sheet::after, .orn, .seam { display: none; }
+  .low { border-top: 1px solid CanvasText; }
+}
+@media (prefers-contrast: more) { .scene { --frame-line: var(--frame-strong); } }
 </style>
+<style>:root { --tear: polygon(0.0% 0.3%, 3.3% 0.3%, 6.7% 1.6%, 10.0% 0.2%, 13.3% 0.3%, 16.7% 1.4%, 20.0% 0.7%, 23.3% 0.8%, 26.7% 1.5%, 30.0% 1.5%, 33.3% 0.7%, 36.7% 1.4%, 40.0% 0.4%, 43.3% 0.7%, 46.7% 0.9%, 50.0% 3.1%, 53.3% 1.1%, 56.7% 1.0%, 60.0% 0.4%, 63.3% 0.1%, 66.7% 0.9%, 70.0% 1.0%, 73.3% 0.8%, 76.7% 0.0%, 80.0% 2.9%, 83.3% 1.5%, 86.7% 1.2%, 90.0% 0.8%, 93.3% 0.1%, 96.7% 0.8%, 100.0% 0.3%, 99.3% 6.7%, 99.3% 13.3%, 97.3% 20.0%, 98.8% 26.7%, 99.3% 33.3%, 99.1% 40.0%, 99.6% 46.7%, 99.5% 53.3%, 98.7% 60.0%, 99.5% 66.7%, 98.9% 73.3%, 99.2% 80.0%, 99.2% 86.7%, 99.7% 93.3%, 100.0% 99.7%, 96.7% 98.6%, 93.3% 99.8%, 90.0% 99.8%, 86.7% 99.2%, 83.3% 99.6%, 80.0% 99.6%, 76.7% 97.6%, 73.3% 98.6%, 70.0% 98.6%, 66.7% 96.9%, 63.3% 98.7%, 60.0% 98.8%, 56.7% 99.9%, 53.3% 98.9%, 50.0% 98.3%, 46.7% 99.3%, 43.3% 97.7%, 40.0% 98.8%, 36.7% 98.8%, 33.3% 98.7%, 30.0% 99.0%, 26.7% 98.8%, 23.3% 99.8%, 20.0% 99.6%, 16.7% 99.5%, 13.3% 99.1%, 10.0% 99.3%, 6.7% 98.9%, 3.3% 98.4%, 0.0% 99.7%, 1.2% 93.3%, 2.9% 86.7%, 0.5% 80.0%, 2.5% 73.3%, 0.5% 66.7%, 1.0% 60.0%, 0.3% 53.3%, 0.1% 46.7%, 0.6% 40.0%, 0.8% 33.3%, 0.3% 26.7%, 0.9% 20.0%, 0.2% 13.3%, 0.8% 6.7%); --corner-tl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg transform=''%3E%3Cg fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 27V9Q3 3 9 3H27'/%3E%3Cpath d='M27 3q2 4 -2 6'/%3E%3Cpath d='M3 27q4 2 6 -2'/%3E%3Cpath d='M8 20V12Q8 8 12 8H20' stroke-width='1.2'/%3E%3C/g%3E%3Cpath d='M10 10q7 0 8 8q-8 -1 -8 -8z'/%3E%3C/g%3E%3C/svg%3E"); --corner-tr: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg transform='translate(30 0) scale(-1 1)'%3E%3Cg fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 27V9Q3 3 9 3H27'/%3E%3Cpath d='M27 3q2 4 -2 6'/%3E%3Cpath d='M3 27q4 2 6 -2'/%3E%3Cpath d='M8 20V12Q8 8 12 8H20' stroke-width='1.2'/%3E%3C/g%3E%3Cpath d='M10 10q7 0 8 8q-8 -1 -8 -8z'/%3E%3C/g%3E%3C/svg%3E"); --corner-bl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg transform='translate(0 30) scale(1 -1)'%3E%3Cg fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 27V9Q3 3 9 3H27'/%3E%3Cpath d='M27 3q2 4 -2 6'/%3E%3Cpath d='M3 27q4 2 6 -2'/%3E%3Cpath d='M8 20V12Q8 8 12 8H20' stroke-width='1.2'/%3E%3C/g%3E%3Cpath d='M10 10q7 0 8 8q-8 -1 -8 -8z'/%3E%3C/g%3E%3C/svg%3E"); --corner-br: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cg transform='translate(30 30) scale(-1 -1)'%3E%3Cg fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 27V9Q3 3 9 3H27'/%3E%3Cpath d='M27 3q2 4 -2 6'/%3E%3Cpath d='M3 27q4 2 6 -2'/%3E%3Cpath d='M8 20V12Q8 8 12 8H20' stroke-width='1.2'/%3E%3C/g%3E%3Cpath d='M10 10q7 0 8 8q-8 -1 -8 -8z'/%3E%3C/g%3E%3C/svg%3E"); }</style>
 </head>
-<body>
-<svg class="defs" aria-hidden="true" focusable="false">
-  <symbol id="pic" viewBox="0 0 240 160">
-    <rect width="240" height="160" fill="#2b3d5c"/>
-    <circle cx="176" cy="46" r="18" fill="#f3d27a"/>
-    <path d="M0 120 60 62 104 104 150 54 240 132V160H0Z" fill="#5d7a4a"/>
-    <path d="M0 140Q60 116 120 136T240 130V160H0Z" fill="#3e5a34"/>
-  </symbol>
+<body class="mode-light">
+
+<!-- shared drawings, outside the swatches (swatches.js strips ids inside them): the pen's wobble, the deckle, the seams -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+  <filter id="pen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4"/>
+    <feDisplacementMap in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="deckle" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="0.7"/></filter>
+
 </svg>
 
-<h1>Frames and edges: the options</h1>
-<p class="intro">What goes round panels, cards and pictures, and the edges between sections. Each box is one option from <code>style-part-frames.md</code>, drawn with its own technique. None of them goes round a field people type in.</p>
+<main>
+<h1>Frames and edges: the layers</h1>
+<p class="intro">Six layers, each switched on its own: the border round a sheet, the edge of the sheet itself, the edge between two sections, ornament on the border, the dividers between items, and the edge of a field. Every option is shown on a light page (left) and the same CSS on a dark page (right), with the other layers at their defaults; the starting points at the end are saved sets of picks. In each: a sheet with a short form, a list of three items, and the next section below on a band of colour. Shadows are a stand-in for the light part, and corners are square unless a corners part sets them.</p>
 
-<main class="book">
-
-<section class="swatch" data-option="none">
-  <h2>None</h2>
-  <p class="id">none</p>
-  <p class="for">For: cards and sections. Space does the grouping.</p>
-  <div class="demo f-none">
-    <div class="item"><h3>The first item</h3><p>No line and no box. The gap between items is twice the gap inside one.</p></div>
-    <div class="item"><h3>The second item</h3><p>A printer’s mark sits in the gap, centred.</p><button class="btn" type="button">Read it</button></div>
-  </div>
+<h2 class="layer">Border</h2>
+<p class="layer-note">The line round a sheet or panel. Look at the sheet on the left; the list and the band are unchanged.</p>
+<section class="swatch" data-option="border:none">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>None</h3><p class="id">border: none</p><p>No line: space and the sheet's own colour do the grouping.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="hairline">
-  <h2>Hairline</h2>
-  <p class="id">hairline</p>
-  <p class="for">For: rows of facts, small boxes, pictures, sections.</p>
-  <div class="demo f-hairline">
-    <div class="facts"><div class="fact"><b>12 years</b>teaching</div><div class="fact"><b>4 to 1</b>a small group</div></div>
-    <div class="specimen"><h3>A small box</h3><p>One pixel of ink round it, square corners, nothing else.</p><button class="btn" type="button">Book a lesson</button></div>
-  </div>
+<section class="swatch" data-option="border:hairline">
+<div class="scene bo-hairline ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Hairline</h3><p class="id">border: hairline</p><p>One thin line in the line colour, all round.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="card">
-  <h2>Card</h2>
-  <p class="id">card</p>
-  <p class="for">For: a panel holding a form or a summary. Not the repeated item on a warm or artistic site.</p>
-  <div class="demo f-card">
-    <div class="card"><h3>Your order</h3><p>A lighter box, rounded corners and a soft shadow: familiar and tidy.</p><button class="btn" type="button">Check out</button></div>
-  </div>
+<section class="swatch" data-option="border:rule">
+<div class="scene bo-rule ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Rule</h3><p class="id">border: rule</p><p>A heavy rule across the top, a hairline round the rest: a ledger.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="torn-paper">
-  <h2>Torn paper</h2>
-  <p class="id">torn-paper</p>
-  <p class="for">For: cards, notices and the edge between sections.</p>
-  <div class="demo f-torn">
-    <div class="top">
-      <div class="paper"><span class="tape" aria-hidden="true"></span><h3>Saturday litter pick</h3><p>The paper turns; the words stay level.</p><button class="btn" type="button">Count me in</button></div>
-    </div>
-    <div class="low">
-      <svg class="edge" viewBox="0 0 1200 28" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 28V11L32 17L61 10L93 5L123 12L162 4L186 3L225 13L242 18L285 12L318 5L352 5L404 9L478 10L536 18L580 15L638 7L683 16L750 2L801 18L862 14L910 17L971 4L1038 5L1108 4L1160 18L1200 8V28Z"/></svg>
-      <div class="paper tear"><h3>A torn sheet</h3><p>Ragged on all four sides, below a torn edge between two bands.</p></div>
-    </div>
-  </div>
+<section class="swatch" data-option="border:double">
+<div class="scene bo-double ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Double</h3><p class="id">border: double</p><p>A heavy line and a thin one inside it, like a plate in a book.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="inked-panel">
-  <h2>Inked panel</h2>
-  <p class="id">inked-panel</p>
-  <p class="for">For: panels, pictures, sections. The pen line suits a hand-made site.</p>
-  <div class="demo f-inked">
-    <div class="inked"><h3>A panel, inked</h3><p>A thick flat line and a hard shadow with no blur.</p><button class="btn" type="button">Turn the page</button></div>
-    <figure class="pen" style="margin:0"><svg viewBox="0 0 240 160" role="img" aria-label="A small landscape drawing"><use href="#pic"/></svg><p>The pen-drawn line: a wobbly frame round a picture.</p></figure>
-  </div>
+<section class="swatch" data-option="border:inked">
+<div class="scene bo-inked ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Inked</h3><p class="id">border: inked</p><p>A thick, flat line in the ink colour, as if printed.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="carved-plate">
-  <h2>Carved plate</h2>
-  <p class="id">carved-plate</p>
-  <p class="for">For: pictures, a whole first screen, and a band between sections.</p>
-  <div class="demo f-carved">
-    <div class="band" aria-hidden="true"></div>
-    <div class="inner">
-      <figure><div class="plate"><svg viewBox="0 0 240 160" role="img" aria-label="A small landscape drawing"><use href="#pic"/></svg></div><figcaption>The picture is shown whole inside the frame.</figcaption></figure>
-      <div class="plain"><h3>The plain plate</h3><p>A heavy line, then a thin brass rule inside it.</p><button class="btn" type="button">See the piece</button></div>
-    </div>
-    <div class="band" aria-hidden="true"></div>
-  </div>
+<section class="swatch" data-option="border:pen-line">
+<div class="scene bo-pen-line ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Pen line</h3><p class="id">border: pen-line</p><p>A line drawn round by hand, wobbling a little, gone over twice.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="riveted-metal">
-  <h2>Riveted metal</h2>
-  <p class="id">riveted-metal</p>
-  <p class="for">For: a few window-like panels on a game-style site. Never on every item.</p>
-  <div class="demo f-metal">
-    <div class="metal"><h3>The quest board</h3><p>A bevelled ring with a rivet in each corner and a gem on top, round a nearly opaque panel.</p><button class="btn" type="button">Accept</button></div>
-  </div>
+<section class="swatch" data-option="border:carved-band">
+<div class="scene bo-carved-band ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Carved band</h3><p class="id">border: carved-band</p><p>A band of carved beads between two fine rules.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
-
-<section class="swatch" data-option="wavy-edge">
-  <h2>Wavy edge</h2>
-  <p class="id">wavy-edge</p>
-  <p class="for">For: the edge between sections only. Pair it with a frame or with none.</p>
-  <div class="demo f-wavy">
-    <div class="band one">
-      <h3>A band of colour</h3><p>Its foot is a soft wave in the next band’s colour.</p>
-      <svg class="edge" viewBox="0 0 1600 80" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 80 V46 Q80 20 190 48 Q320 86 480 50 Q630 14 780 52 Q930 92 1080 56 Q1220 18 1360 46 Q1500 74 1600 34 V80 Z"/></svg>
-    </div>
-    <div class="band two"><h3>The next band</h3><p>Then a row of scallops, like a canopy.</p><button class="btn" type="button">Go on</button></div>
-    <div class="scallops" aria-hidden="true"></div>
-    <div class="three"><p>And the band below it.</p></div>
-  </div>
+<section class="swatch" data-option="border:metal-ring">
+<div class="scene bo-metal-ring ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Metal ring</h3><p class="id">border: metal-ring</p><p>A bevelled metal ring with a dark line round it.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Edge of a sheet</h2>
+<p class="layer-note">The outline of the paper itself. On a shaped edge, the border is drawn as an outline that follows the shape.</p>
+<section class="swatch" data-option="edge:straight">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Straight</h3><p class="id">edge: straight</p><p>A machine-cut sheet with straight sides.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="edge:cut">
+<div class="scene bo-none ed-cut se-straight or-none dv-space co-fine shaped">
+<div class="top"><div class="sheet"><h3>Cut</h3><p class="id">edge: cut</p><p>Cut by hand with scissors: not quite square, laid a little crooked.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="edge:torn">
+<div class="scene bo-none ed-torn se-straight or-none dv-space co-fine shaped">
+<div class="top"><div class="sheet"><h3>Torn</h3><p class="id">edge: torn</p><p>Torn from a pad: a ragged edge all round.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="edge:deckled">
+<div class="scene bo-none ed-deckled se-straight or-none dv-space co-fine shaped">
+<div class="top"><div class="sheet"><h3>Deckled</h3><p class="id">edge: deckled</p><p>Handmade paper: a soft, feathered edge.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Edge between sections</h2>
+<p class="layer-note">Where the section with the sheet meets the band of colour below it.</p>
+<section class="swatch" data-option="section-edge:straight">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Straight</h3><p class="id">section-edge: straight</p><p>One section simply stops where the next begins.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="section-edge:torn">
+<div class="scene bo-none ed-straight se-torn or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Torn</h3><p class="id">section-edge: torn</p><p>The band below is torn across.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V14L44 16L61 11L89 10L107 5L135 6L164 2L180 13L208 10L245 8L261 15L294 13L328 18L353 14L379 11L414 7L431 10L468 11L496 12L516 5L541 15L561 4L578 3L601 11L641 7L667 7L691 14L722 6L740 15L776 15L798 11L841 11L886 5L931 3L958 2L998 13L1043 15L1088 11L1133 14L1158 18L1184 5L1200 9V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="section-edge:wavy">
+<div class="scene bo-none ed-straight se-wavy or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Wavy</h3><p class="id">section-edge: wavy</p><p>A soft wave, like a hill in front of the next band.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V12Q150 0 300 10T600 12T900 8T1200 12V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="section-edge:contour">
+<div class="scene bo-none ed-straight se-contour or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Contour</h3><p class="id">section-edge: contour</p><p>A skyline of land, traced along its top with a fine line.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V16L90 9L170 13L260 4L330 10L420 7L520 15L610 6L700 11L790 2L880 12L960 9L1060 14L1130 6L1200 11V24Z"/><path class="trace" d="M0 16L90 9L170 13L260 4L330 10L420 7L520 15L610 6L700 11L790 2L880 12L960 9L1060 14L1130 6L1200 11"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="section-edge:valance">
+<div class="scene bo-none ed-straight se-valance or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Valance</h3><p class="id">section-edge: valance</p><p>Scallops hang from the section above, like an awning.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="section-edge:band">
+<div class="scene bo-none ed-straight se-band or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Band</h3><p class="id">section-edge: band</p><p>A strip of carved pattern between two fine rules.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Ornament</h2>
+<p class="layer-note">Pieces set on the border. Shown here on a hairline border, since an ornament needs a line to sit on.</p>
+<section class="swatch" data-option="ornament:none">
+<div class="scene bo-hairline ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>None</h3><p class="id">ornament: none</p><p>Nothing on the border.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="ornament:corners">
+<div class="scene bo-hairline ed-straight se-straight or-corners dv-space co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Corners</h3><p class="id">ornament: corners</p><p>A drawn piece in each corner.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="ornament:studs">
+<div class="scene bo-hairline ed-straight se-straight or-studs dv-space co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Studs</h3><p class="id">ornament: studs</p><p>A round stud or rivet in each corner.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="ornament:keystone">
+<div class="scene bo-hairline ed-straight se-straight or-keystone dv-space co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Keystone</h3><p class="id">ornament: keystone</p><p>One jewel set in the middle of the top edge.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="ornament:crop-marks">
+<div class="scene bo-hairline ed-straight se-straight or-crop-marks dv-space co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Crop marks</h3><p class="id">ornament: crop-marks</p><p>Printer's marks just outside each corner.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Dividers</h2>
+<p class="layer-note">What separates the items in the list on the right.</p>
+<section class="swatch" data-option="dividers:space">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Space</h3><p class="id">dividers: space</p><p>Space alone between items.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="dividers:hairline">
+<div class="scene bo-none ed-straight se-straight or-none dv-hairline co-fine">
+<div class="top"><div class="sheet"><h3>Hairline</h3><p class="id">dividers: hairline</p><p>A thin line between items.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="dividers:dashed">
+<div class="scene bo-none ed-straight se-straight or-none dv-dashed co-fine">
+<div class="top"><div class="sheet"><h3>Dashed</h3><p class="id">dividers: dashed</p><p>A dashed line, like a page to cut along.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="dividers:double-rule">
+<div class="scene bo-none ed-straight se-straight or-none dv-double-rule co-fine">
+<div class="top"><div class="sheet"><h3>Double rule</h3><p class="id">dividers: double-rule</p><p>A heavy rule over the list, thin ones between.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="dividers:ornament">
+<div class="scene bo-none ed-straight se-straight or-none dv-ornament co-fine">
+<div class="top"><div class="sheet"><h3>Ornament</h3><p class="id">dividers: ornament</p><p>A printer's mark between items.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Controls</h2>
+<p class="layer-note">The edge of the field and the tick box in the sheet. It must reach 3 to 1 against the sheet, so it is never the decorative line colour.</p>
+<section class="swatch" data-option="controls:fine">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Fine</h3><p class="id">controls: fine</p><p>Fields and tick boxes in a one-pixel line of the soft ink.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="controls:firm">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-firm">
+<div class="top"><div class="sheet"><h3>Firm</h3><p class="id">controls: firm</p><p>Fields and tick boxes in a two-pixel line of the ink.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks; any layer not named is at its default. A few also show stand-ins for other parts, since their look is mostly theirs: card has rounded corners; none, civic and catalogue of glazes have no shadow.</p>
+<section class="swatch" data-option="start:none">
+<div class="scene bo-none ed-straight se-straight or-none dv-ornament co-fine flat">
+<div class="top"><div class="sheet"><h3>None</h3><p class="id">dividers: ornament</p><p>No frames: space, and a printer's mark between items.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:hairline">
+<div class="scene bo-hairline ed-straight se-straight or-none dv-hairline co-fine">
+<div class="top"><div class="sheet"><h3>Hairline</h3><p class="id">border: hairline; dividers: hairline</p><p>Thin lines round sheets and between items.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:card">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine rounded">
+<div class="top"><div class="sheet"><h3>Card</h3><p class="id">every layer at its default</p><p>No line; the card is the light part's shadow and the corners part's radius.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:torn-paper">
+<div class="scene bo-none ed-torn se-torn or-none dv-space co-fine shaped">
+<div class="top"><div class="sheet"><h3>Torn paper</h3><p class="id">edge: torn; section-edge: torn</p><p>Torn sheets, and a torn edge between sections.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V14L44 16L61 11L89 10L107 5L135 6L164 2L180 13L208 10L245 8L261 15L294 13L328 18L353 14L379 11L414 7L431 10L468 11L496 12L516 5L541 15L561 4L578 3L601 11L641 7L667 7L691 14L722 6L740 15L776 15L798 11L841 11L886 5L931 3L958 2L998 13L1043 15L1088 11L1133 14L1158 18L1184 5L1200 9V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:inked-panel">
+<div class="scene bo-inked ed-straight se-straight or-none dv-hairline co-firm">
+<div class="top"><div class="sheet"><h3>Inked panel</h3><p class="id">border: inked; dividers: hairline; controls: firm</p><p>A thick printed line round each panel.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:carved-plate">
+<div class="scene bo-carved-band ed-straight se-band or-corners dv-space co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Carved plate</h3><p class="id">border: carved-band; ornament: corners; section-edge: band</p><p>Framed like a plate: a carved band and corner pieces.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:riveted-metal">
+<div class="scene bo-metal-ring ed-straight se-straight or-studs dv-space co-firm">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Riveted metal</h3><p class="id">border: metal-ring; ornament: studs; controls: firm</p><p>A metal ring with a rivet in each corner.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:wavy-edge">
+<div class="scene bo-none ed-straight se-wavy or-none dv-space co-fine">
+<div class="top"><div class="sheet"><h3>Wavy edge</h3><p class="id">section-edge: wavy</p><p>Plain sheets; a soft wave between sections.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V12Q150 0 300 10T600 12T900 8T1200 12V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:warm">
+<div class="scene bo-none ed-cut se-torn or-none dv-dashed co-fine shaped">
+<div class="top"><div class="sheet"><h3>Warm</h3><p class="id">edge: cut; section-edge: torn; dividers: dashed</p><p>Cut paper, a torn band, dashed lines between.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V14L44 16L61 11L89 10L107 5L135 6L164 2L180 13L208 10L245 8L261 15L294 13L328 18L353 14L379 11L414 7L431 10L468 11L496 12L516 5L541 15L561 4L578 3L601 11L641 7L667 7L691 14L722 6L740 15L776 15L798 11L841 11L886 5L931 3L958 2L998 13L1043 15L1088 11L1133 14L1158 18L1184 5L1200 9V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:artistic">
+<div class="scene bo-pen-line ed-straight se-torn or-none dv-ornament co-fine">
+<div class="top"><div class="sheet"><h3>Artistic</h3><p class="id">border: pen-line; section-edge: torn; dividers: ornament</p><p>A pen-drawn frame round the one thing that matters.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V14L44 16L61 11L89 10L107 5L135 6L164 2L180 13L208 10L245 8L261 15L294 13L328 18L353 14L379 11L414 7L431 10L468 11L496 12L516 5L541 15L561 4L578 3L601 11L641 7L667 7L691 14L722 6L740 15L776 15L798 11L841 11L886 5L931 3L958 2L998 13L1043 15L1088 11L1133 14L1158 18L1184 5L1200 9V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:professional">
+<div class="scene bo-rule ed-straight se-straight or-none dv-hairline co-fine">
+<div class="top"><div class="sheet"><h3>Professional</h3><p class="id">border: rule; dividers: hairline</p><p>Ruled like a ledger: a heavy rule over, thin ones under.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:civic">
+<div class="scene bo-none ed-straight se-straight or-none dv-hairline co-firm flat">
+<div class="top"><div class="sheet"><h3>Civic</h3><p class="id">dividers: hairline; controls: firm</p><p>Almost no frames; fields with a firm, plain edge.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="scene bo-inked ed-torn se-band or-corners dv-ornament co-fine shaped">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Sorcery</h3><p class="id">border: inked; edge: torn; section-edge: band; ornament: corners; dividers: ornament</p><p>Torn parchment inked round, a carved band below.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="scene bo-metal-ring ed-straight se-wavy or-keystone dv-space co-firm">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Gilded dark</h3><p class="id">border: metal-ring; ornament: keystone; section-edge: wavy; controls: firm</p><p>A gilded ring with a jewel, over a rolling land.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V12Q150 0 300 10T600 12T900 8T1200 12V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="scene bo-none ed-straight se-valance or-none dv-dashed co-fine">
+<div class="top"><div class="sheet"><h3>Lantern fair</h3><p class="id">section-edge: valance; dividers: dashed</p><p>An awning's scallops over the stalls.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="scene bo-hairline ed-straight se-contour or-crop-marks dv-double-rule co-fine">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Almanac plate</h3><p class="id">border: hairline; ornament: crop-marks; section-edge: contour; dividers: double-rule</p><p>A printed plate: hairlines, a skyline traced in ink.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V16L90 9L170 13L260 4L330 10L420 7L520 15L610 6L700 11L790 2L880 12L960 9L1060 14L1130 6L1200 11V24Z"/><path class="trace" d="M0 16L90 9L170 13L260 4L330 10L420 7L520 15L610 6L700 11L790 2L880 12L960 9L1060 14L1130 6L1200 11"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes">
+<div class="scene bo-none ed-straight se-straight or-none dv-space co-fine flat">
+<div class="top"><div class="sheet"><h3>Catalogue of glazes</h3><p class="id">every layer at its default</p><p>Nothing drawn at all: space does every job.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<div class="scene bo-none ed-torn se-torn or-none dv-hairline co-fine shaped">
+<div class="top"><div class="sheet"><h3>Field journal</h3><p class="id">edge: torn; section-edge: torn; dividers: hairline</p><p>Torn-out pages, ruled lines in the log.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><svg class="seam" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 24V14L44 16L61 11L89 10L107 5L135 6L164 2L180 13L208 10L245 8L261 15L294 13L328 18L353 14L379 11L414 7L431 10L468 11L496 12L516 5L541 15L561 4L578 3L601 11L641 7L667 7L691 14L722 6L740 15L776 15L798 11L841 11L886 5L931 3L958 2L998 13L1043 15L1088 11L1133 14L1158 18L1184 5L1200 9V24Z"/></svg><p>The next section starts here, on a band of colour.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="scene bo-none ed-cut se-band or-studs dv-dashed co-firm shaped">
+<div class="top"><div class="sheet"><span class="orn" aria-hidden="true"></span><h3>Repair cafe</h3><p class="id">edge: cut; section-edge: band; ornament: studs; dividers: dashed; controls: firm</p><p>Cut card pinned up, a strip of pattern, firm edges to write in.</p><p class="field"><label>Your name <input type="text" autocomplete="off"></label></p><p class="tick"><label><input type="checkbox" checked> Remind me the day before</label></p><button class="btn" type="button">Save a place</button></div><div class="list"><h4>Coming up</h4><ul class="items"><li><b>Tue 14 Oct</b>Bike and kettle repairs, from six</li><li><b>Sat 18 Oct</b>Mending clothes, with tea</li><li><b>Thu 23 Oct</b>Lamps and radios</li></ul></div></div>
+<div class="low"><div class="seam" aria-hidden="true"></div><p>The next section starts here, on a band of colour.</p></div>
+</div>
 </section>
 
 </main>
-
-<script>
-run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
-});
-</script>
+<script>run(swatchTest);</script>
 </body>
 </html>

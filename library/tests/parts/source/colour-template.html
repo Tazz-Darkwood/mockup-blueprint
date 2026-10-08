@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colour: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/colour.py from source/colour-template.html: edit those, then run python3 colour.py ../colour.html
+   in source/. The colour part is the one part that writes raw colours. Its swatches set the shared names themselves
+   (they override tokens.css), so the light/dark pairing of the other books is replaced by the tone: each option is
+   drawn at every tone, and each tone and starting point beside the other look a site would switch to. */
+*, *::before, *::after { box-sizing: border-box; }
+img, svg { display: block; max-width: 100%; height: auto; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 96rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.75rem; font-size: 1.5rem; line-height: 1.2; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.tones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+.twos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr)); column-gap: 1.5rem; }   /* a swatch and its other look, two to a line */
+.twos .tones { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr)); }
+
+/* COLOUR CSS */
+
+/* ---------- every swatch: a small page drawn only with the shared names it has just set ---------- */
+.swatch { margin: 0; padding: 0.75rem 0.75rem 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip;
+  display: flex; flex-direction: column; gap: 0.75rem; }
+.copy { margin: 0; font: 700 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); }
+.sheet { padding: 1rem; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 0.75rem; }
+.sheet hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 0.75rem; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); }
+.btn:hover { background: var(--accent-hover); } .btn:active { background: var(--accent-pressed); }
+.chips { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0.75rem 0 0 !important; font: 0.875rem/1.3 system-ui, sans-serif; }
+.chip { padding: 0.125rem 0.5rem; border: 1px solid currentColor; border-radius: 999px; background: var(--surface); }
+.chip.danger { color: var(--danger); } .chip.success { color: var(--success); } .chip.warning { color: var(--warning); }
+.under { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.ring { padding: 0.25rem 0.625rem; outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 3px;
+  font: 700 0.875rem/1.3 system-ui, sans-serif; color: var(--on-ground); }
+.mark { width: 7rem; fill: none; stroke: var(--mark); stroke-width: 3; stroke-linecap: round; }
+.mark circle { fill: var(--mark); stroke: none; }
+.mats { display: flex; gap: 0.5rem; font: 700 0.875rem/1.3 system-ui, sans-serif; }
+.mats span { padding: 0.375rem 0.75rem; border-radius: 3px; }
+.plate { background: var(--metal); color: var(--on-metal); border: 2px solid var(--metal-deep);
+  box-shadow: inset 0 3px 0 var(--metal-lit), inset 0 -3px 0 color-mix(in oklab, var(--metal-deep) 60%, var(--metal)); }   /* a metal plate: highlight above, shade below */
+.tag { background: var(--earth); color: var(--on-earth); }   /* a kraft tag */
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 -0.75rem; }
+.strip span { padding: 0.75rem 0.5rem; font: 700 0.9375rem/1.2 system-ui, sans-serif; color: var(--on-band); }
+.strip .b1 { background: var(--band-1); } .strip .b2 { background: var(--band-2); } .strip .b3 { background: var(--band-3); }
+.bands-none .strip { visibility: hidden; height: 0.75rem; }
+.bands-none .strip span { display: none; }
+#probe { position: absolute; left: -9999px; top: 0; width: 1px; overflow: hidden; }
+</style>
+</head>
+<body class="mode-light">
+<main>
+<h1>Colour: the layers</h1>
+<p class="intro">Five layers: tone, neutrals, accent, strength and bands. Every option is drawn at all five tones (light, toned, mid, dark, lamplit) with the other layers at their defaults, because tone takes the place of the light and dark pages of the other books. Each tone and each starting point is shown beside the look a site would switch to (its other look: the same picks with the tone changed). The test at the foot works out the contrast of every combination of the layers.</p>
+
+<!-- SWATCHES -->
+
+</main>
+
+<script>
+/* COLOUR DATA */
+const TONES = LAYERS.tone;
+const PARTNER = { light: 'dark', toned: 'dark', mid: 'dark', dark: 'light', lamplit: 'light' };
+const polarity = (t) => (t === 'dark' || t === 'lamplit' ? 'dark' : 'light');
+const classesOf = (picks) => Object.entries(picks).map(([layer, id]) => layer + '-' + id).join(' ');
+function picksFor(option) {
+  const [layer, id] = option.split(':');
+  return layer === 'start' ? { ...DEFAULTS, ...STARTS[id] } : { ...DEFAULTS, [layer]: id };
+}
+
+/* Each swatch is written once; here it is copied, once for each tone, or for its own tone and its other look.
+   Each copy gets a data-mode, so swatches.js leaves it alone and swatchTest() finds a light and a dark one. */
+function copyByTone() {
+  for (const sw of [...document.querySelectorAll('.swatch:not([data-mode])')]) {
+    const layer = sw.dataset.option.split(':')[0];
+    const picks = picksFor(sw.dataset.option);
+    const own = layer === 'tone' || layer === 'start';
+    const tones = own ? [picks.tone, PARTNER[picks.tone]] : TONES;
+    const row = document.createElement('div');
+    row.className = 'tones';
+    if (own) {   // keep a swatch and its other look together, two pairs to a line on a wide screen
+      let twos = sw.previousElementSibling;
+      if (!twos || !twos.classList.contains('twos')) { twos = document.createElement('div'); twos.className = 'twos'; sw.before(twos); }
+      twos.append(row);
+      row.append(sw);
+    } else sw.before(row);
+    tones.forEach((tone, i) => {
+      const el = i === 0 ? sw : sw.cloneNode(true);
+      el.className = 'swatch ' + classesOf({ ...picks, tone });
+      el.dataset.mode = own ? polarity(tone) : tone;
+      el.querySelector('.copy').textContent = own ? (i === 0 ? tone + ', as picked' : 'its other look: ' + tone) : 'tone: ' + tone;
+      if (i) el.setAttribute('aria-label', 'The same picks at tone ' + tone);
+      row.append(el);
+    });
+  }
+}
+
+/* What the browser paints for any CSS colour, as sRGB bytes: drawn on a canvas and read back. */
+const ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true });
+const painted = new Map();
+function rgbOf(css) {
+  if (!painted.has(css)) {
+    ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = '#000'; ctx.fillStyle = css; ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    painted.set(css, [d[0], d[1], d[2]]);
+  }
+  return painted.get(css);
+}
+function lum([r, g, b]) {
+  const f = (x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+/* Whether an oklch() colour is inside sRGB: outside it, browsers cut it back in different ways. */
+function outside(css) {
+  const m = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)/.exec(css);
+  if (!m) return false;
+  const [L, C, h] = m.slice(1).map(Number), a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, mm = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s,
+          -0.0041960863 * l - 0.7034186147 * mm + 1.7076147010 * s].some((x) => x < -0.002 || x > 1.002);
+}
+
+const NAMES = ['ground', 'surface', 'surface-raised', 'ink', 'ink-soft', 'line', 'accent', 'on-accent', 'accent-edge', 'accent-hover', 'accent-pressed', 'mark', 'focus',
+  'danger', 'success', 'warning', 'band-1', 'band-2', 'band-3', 'on-band', 'on-ground',
+  'metal', 'metal-deep', 'metal-lit', 'on-metal', 'earth', 'on-earth'];
+const PAIRS = [['on-ground', 'ground', 4.5], ['ink', 'surface', 4.5], ['ink-soft', 'surface', 4.5], ['ink', 'surface-raised', 4.5],
+  ['on-accent', 'accent', 4.5], ['on-accent', 'accent-hover', 4.5], ['on-accent', 'accent-pressed', 4.5], ['accent', 'ground', 3], ['accent', 'surface', 3], ['on-band', 'band-1', 4.5], ['on-band', 'band-2', 4.5], ['on-band', 'band-3', 4.5],
+  ['focus', 'ground', 3], ['danger', 'surface', 4.5], ['success', 'surface', 4.5], ['warning', 'surface', 4.5],
+  ['on-metal', 'metal', 4.5], ['on-earth', 'earth', 4.5]];
+const probe = document.createElement('div');
+probe.id = 'probe';
+probe.setAttribute('aria-hidden', 'true');
+for (const name of NAMES) { const s = document.createElement('i'); s.style.color = 'var(--' + name + ')'; probe.append(s); }
+const tex = document.createElement('i'); tex.style.backgroundColor = 'rgb(var(--texture-rgb) / 1)'; probe.append(tex);
+
+/* Every shared name a set of picks gives, as written by the browser (oklch) and as painted (sRGB bytes). */
+function colours(cls) {
+  probe.className = cls;
+  const out = {};
+  [...probe.children].slice(0, NAMES.length).forEach((s, i) => { const css = getComputedStyle(s).color; out[NAMES[i]] = { css, rgb: rgbOf(css) }; });
+  out.texture = getComputedStyle(tex).backgroundColor;
+  return out;
+}
+
+/* The page checker reads only rgb() colours, so each drawn swatch is given the colours it already shows, as rgb():
+   the same colours, written so audit can measure them. The sums above are what made them. */
+function pin() {
+  for (const sw of document.querySelectorAll('.swatch')) {
+    const c = colours(sw.className.replace(/\bswatch\b/, ''));
+    for (const name of NAMES) sw.style.setProperty('--' + name, 'rgb(' + c[name].rgb.join(' ') + ')');
+  }
+}
+
+function contrastGrid() {
+  const combos = [[]];
+  for (const layer of Object.keys(LAYERS)) {
+    const next = [];
+    for (const c of combos) for (const id of LAYERS[layer]) next.push([...c, layer + '-' + id]);
+    combos.splice(0, combos.length, ...next);
+  }
+  const misses = [], gamut = new Set(), worst = {};
+  let noTexture = 0;
+  for (const c of combos) {
+    const col = colours(c.join(' '));
+    for (const name of NAMES) if (outside(col[name].css)) gamut.add(name + ' at ' + c.join(' '));
+    if (!/^color\(srgb|^rgb/.test(col.texture)) noTexture++;
+    for (const [fg, bg, need] of PAIRS) {
+      /* a control stands off what it sits on by its fill or by its edge, so the accent takes the better of the two */
+      const r = fg === 'accent' ? Math.max(ratio(col.accent.rgb, col[bg].rgb), ratio(col['accent-edge'].rgb, col[bg].rgb))
+        : ratio(col[fg].rgb, col[bg].rgb), key = fg + '/' + bg;
+      if (!worst[key] || r < worst[key][0]) worst[key] = [r, c.join(' ')];
+      if (r < need) misses.push(key + ' ' + r.toFixed(2) + ' at ' + c.join(' '));
+    }
+  }
+  const low = Object.entries(worst).map(([k, [r]]) => k + ' ' + r.toFixed(2)).join(', ');
+  return { pass: !misses.length && !gamut.size && !noTexture,
+           detail: combos.length + ' combinations of the layers checked, ' + combos.length * PAIRS.length + ' pairs; lowest: ' + low
+             + (misses.length ? '; UNDER THE MINIMUM (' + misses.length + '): ' + misses.slice(0, 6).join('; ') : '')
+             + (gamut.size ? '; OUTSIDE sRGB (' + gamut.size + '): ' + [...gamut].slice(0, 4).join('; ') : '')
+             + (noTexture ? '; --texture-rgb did not resolve in ' + noTexture : '') };
+}
+
+copyByTone();
+document.body.append(probe);
+pin();
+run(async () => {
+  const shown = await swatchTest();
+  const grid = contrastGrid();
+  return { pass: shown.pass && grid.pass, detail: shown.detail + '. ' + grid.detail };
+});
+</script>
+</body>
+</html>

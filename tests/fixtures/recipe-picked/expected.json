@@ -1,0 +1,14 @@
+{
+  "about": "A recipe: its picks and personality come from the recipe file, the site's own parts change one layer of a part (light's sky) or set two options in one layer (pencil and a stamp), a changed layer that suits another personality is named, and style lists the recipes.",
+  "steps": [
+    {
+      "run": ["check", ".", "--no-render"],
+      "must": ["follows the recipe \"field-journal\"", "with its own picks for light, lettering", "sky dusk", "marks pencil and stamp",
+               "light sky \"dusk\" suits a calm or dramatic site, and this one is friendly", "uses Colour (a part guide)", "uses Field journal (a recipe)",
+               "built from 10 parts and no feel guide (from a recipe)"],
+      "must_not": ["says no personality", "recipe-missing", "come out plain"]
+    },
+    {"run": ["style"], "must": ["Recipes (a whole look as part picks", "field-journal", "sorcery", "gilded-dark"]},
+    {"run": ["style", "check", "field-journal"], "must": ["style-recipe-field-journal.md: nothing missing"], "must_not": ["Traceback", "stopped with an error"]}
+  ]
+}

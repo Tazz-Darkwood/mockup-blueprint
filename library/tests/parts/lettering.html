@@ -3,212 +3,536 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lettering: the options</title>
+<title>Lettering: the layers</title>
+<link rel="stylesheet" href="tokens.css">
 <script src="../harness.js"></script>
+<script src="swatches.js"></script>
 <style>
-/* Every face here is a file in fonts/, under the SIL Open Font License (licence files beside them). Nothing is fetched. */
-@font-face { font-family: 'Newsreader'; src: url('fonts/newsreader-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+/* Built by source/lettering.py from source/lettering-template.html: edit those, then run python3 lettering.py ../lettering.html
+   in source/. Every colour is a shared colour name (tokens.css). Every face is a file in fonts/, under the SIL Open Font
+   License; where each came from is in fonts/SOURCES.txt. Nothing is fetched from outside. */
 @font-face { font-family: 'Source Sans 3'; src: url('fonts/source-sans-3-latin-wght-normal.woff2') format('woff2'); font-weight: 200 900; font-display: swap; }
-@font-face { font-family: 'Young Serif'; src: url('fonts/young-serif-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'Karla'; src: url('fonts/karla-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
-@font-face { font-family: 'Bricolage Grotesque'; src: url('fonts/bricolage-grotesque-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Karla'; src: url('fonts/karla-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
 @font-face { font-family: 'Figtree'; src: url('fonts/figtree-latin-wght-normal.woff2') format('woff2'); font-weight: 300 900; font-display: swap; }
-@font-face { font-family: 'Caprasimo'; src: url('fonts/caprasimo-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Alegreya'; src: url('fonts/alegreya-latin-wght-normal.woff2') format('woff2'); font-weight: 400 900; font-display: swap; }
 @font-face { font-family: 'Atkinson Hyperlegible Next'; src: url('fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
-@font-face { font-family: 'Pirata One'; src: url('fonts/pirata-one-latin.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'Alegreya'; src: url('fonts/alegreya-latin.woff2') format('woff2'); font-weight: 400 900; font-display: swap; }
-@font-face { font-family: 'Cinzel Decorative'; src: url('fonts/CinzelDecorative-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-face { font-family: 'Signika'; src: url('fonts/Signika.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
-@font-face { font-family: 'Caveat'; src: url('fonts/caveat-wght-normal.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: 'Newsreader'; src: url('fonts/newsreader-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/fraunces-latin-full-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/fraunces-latin-italic-soft100-opsz144.woff2') format('woff2'); font-weight: 300 500; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('fonts/bricolage-grotesque-latin-wght-normal.woff2') format('woff2'); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: 'Caprasimo'; src: url('fonts/caprasimo-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'League Gothic'; src: url('fonts/league-gothic-latin-wdth-normal.woff2') format('woff2'); font-weight: 400; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: 'Pirata One'; src: url('fonts/pirata-one-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Cinzel Decorative'; src: url('fonts/cinzel-decorative-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Caveat'; src: url('fonts/caveat-latin-wght-normal.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
 
 *, *::before, *::after { box-sizing: border-box; }
-svg { display: block; max-width: 100%; }
-:root { --page-ground: #f2f0eb; --page-ink: #1d1f22; --page-soft: #4f545b; }
-@media (prefers-color-scheme: dark) { :root { --page-ground: #17181a; --page-ink: #eceae5; --page-soft: #b9b6ae; } }
-body { margin: 0; background: var(--page-ground); color: var(--page-ink); font: 1.0625rem/1.5 system-ui, sans-serif; overflow-wrap: break-word; }
-.page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-.page > h1 { font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.15; margin: 0 0 0.5rem; }
-.page > p { margin: 0 0 1.5rem; max-width: 62ch; color: var(--page-soft); }
-.book { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 56rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.swatch { margin: 0; border-radius: 6px; overflow: clip; display: grid; grid-template-rows: auto 1fr; }
-.swatch > header { padding: 0.5rem 1rem; background: #2a2c30; color: #f4f2ee; font: 600 0.9375rem/1.4 system-ui, sans-serif; display: flex; flex-wrap: wrap; gap: 0 0.75rem; justify-content: space-between; }
-.swatch > header h2 { font: inherit; margin: 0; }
-.swatch > header code { font: 0.875rem/1.4 ui-monospace, monospace; color: #d6d3cc; }
-.show { padding: 1.5rem 1.25rem; min-height: 15rem; }
-.show p { margin: 0.75rem 0 0; max-width: 44ch; }
-.show .faces { margin-top: 1rem; font-size: 1rem; }
-.show button { margin-top: 1rem; min-height: 2.75rem; padding: 0.5rem 1.25rem; cursor: pointer; }
-.show h2, .show h3 { margin: 0; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 54ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 54ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* ---------- sober pair */
-.o-sober { --ground: #ffffff; --ink: #1c2321; --soft: #4d5754; --accent: #1f6b45; --mark: #f6dd73;
-  background: var(--ground); color: var(--ink); font: 1.125rem/1.55 'Source Sans 3', 'Segoe UI', sans-serif; }
-.o-sober h3 { font: 600 clamp(2rem, 1.5rem + 1.6vw, 2.75rem)/1.1 'Newsreader', Georgia, serif; text-wrap: balance; }
-.o-sober h3 em { font-style: normal; background: linear-gradient(transparent 62%, var(--mark) 62%); }
-.o-sober .fact { margin-top: 1rem; padding-top: 0.5rem; border-top: 3px solid var(--ink); display: flex; gap: 0.75rem; align-items: baseline; flex-wrap: wrap; }
-.o-sober .fact b { font: 600 2rem/1.1 'Newsreader', Georgia, serif; }
-.o-sober .faces { color: var(--soft); }
-.o-sober button { font: 600 1.0625rem 'Source Sans 3', sans-serif; background: var(--accent); color: #fff; border: 0; border-radius: 6px; }
+/* ---------- stand-ins for values other parts hand over ----------
+   The light part's direction (top left, so offsets are easy to see) and shade; and --dark, 1 on a dark page, which the
+   colour part does not hand over yet (see the guide's "Not covered yet"): lettering thins reading text by it. */
+.swatch { --lx: 0.5; --ly: 1; --shade: rgb(var(--shadow-rgb)); }
+.swatch.mode-dark { --dark: 1; }   /* until tokens.css carries the colour part's --dark */
 
-/* ---------- soft serif */
-.o-soft { --ground: #2e4f39; --ink: #f7f1e3; --soft: #d9d2bf; --accent: #b4471f;
-  background: var(--ground); color: var(--ink); font: 1.125rem/1.5 'Karla', system-ui, sans-serif; }
-.o-soft h3 { font: 400 clamp(2.25rem, 1.6rem + 2vw, 3.25rem)/1.06 'Young Serif', Georgia, serif; letter-spacing: -0.01em; text-wrap: balance; }
-.o-soft .faces { color: var(--soft); }
-.o-soft button { font: 600 1.0625rem 'Karla', sans-serif; background: var(--accent); color: #fff; border: 0; border-radius: 10px; }
+/* ---------- the book's frame round each swatch: a ground, words on it, and a sheet ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.ground { position: relative; min-height: 20rem; padding: 1.5rem 1.25rem 1.75rem; background: var(--ground); color: var(--on-ground); }
+.tag { margin: 0 0 1rem; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet { position: relative; margin-top: 1.25rem; padding: 1.25rem; border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 34rem; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; margin-top: 1rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  background: var(--accent); color: var(--on-accent); cursor: pointer; font: 700 1.0625rem/1 var(--font-body); }
 
-/* ---------- lively grotesque */
-.o-lively { --ground: #eef4e8; --ink: #1d2a1f; --soft: #4a584c; --accent: #f2b33d;
-  background: var(--ground); color: var(--ink); font: 1.125rem/1.55 'Figtree', 'Segoe UI', sans-serif; }
-.o-lively .label { font: 700 0.875rem/1 'Figtree', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); }
+/* ---------- what lettering hands to every page: the faces, the scale, the measure ---------- */
+.lt { --font-body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; --font-display: var(--font-body);
+  --measure: 62ch; --read-weight: calc(400 - 30 * var(--dark, 0)); font-family: var(--font-body); font-weight: var(--read-weight); }
+.lt .label { margin: 0; font: 700 var(--text-s)/1.3 var(--font-body); color: var(--ink-soft); }
+.lt .ground > .label { color: var(--on-ground); }
+.lt .title { margin: 0.25rem 0 0; font-family: var(--font-display); font-size: var(--text-xxl); line-height: 1.05; text-wrap: balance; }
+.lt .sub { margin: 0; font: 600 var(--text-l)/1.2 var(--font-display); text-wrap: balance; }
+.lt .read { margin: 0.5rem 0 0; max-width: var(--measure); font-size: var(--text-m); line-height: 1.5; text-wrap: pretty; }
+.lt .fact { margin: 0.75rem 0 0; font-size: var(--text-s); color: var(--ink-soft); }
+.lt .fig { font: 600 var(--text-l)/1 var(--font-display); color: var(--ink); margin-right: 0.15em; }
+.lt .ladder { display: grid; gap: 0.35rem; margin-top: 0.5rem; }
+.lt .ladder p { margin: 0; line-height: 1.1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.75rem; }
+.lt .ladder small { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); font-weight: 400; letter-spacing: 0; text-transform: none; }
 
-.o-lively h3 { font: 800 clamp(2.25rem, 1.6rem + 2vw, 3.25rem)/1.05 'Bricolage Grotesque', 'Trebuchet MS', sans-serif; letter-spacing: -0.02em; margin-top: 0.5rem; }
-.o-lively .faces { color: var(--soft); }
-.o-lively button { font: 700 1.0625rem 'Figtree', sans-serif; background: var(--accent); color: var(--ink); border: 1px solid #8a6414; border-radius: 8px; }
+/* ---------- scale: three modular scales, each fluid from a phone (320px) to a wide window (1240px) ---------- */
+.scale-gentle { --text-s: 0.875rem; --text-m: clamp(1.0625rem, 1.019rem + 0.217vw, 1.1875rem); --text-l: clamp(1.5312rem, 1.4182rem + 0.565vw, 1.8562rem); --text-xl: clamp(1.8375rem, 1.6701rem + 0.837vw, 2.3188rem); --text-xxl: clamp(2.6437rem, 2.3024rem + 1.707vw, 3.625rem); }
+.scale-classic { --text-s: 0.875rem; --text-m: clamp(1.0625rem, 1.019rem + 0.217vw, 1.1875rem); --text-l: clamp(1.5312rem, 1.3291rem + 1.011vw, 2.1125rem); --text-xl: clamp(1.8375rem, 1.4984rem + 1.696vw, 2.8125rem); --text-xxl: clamp(2.6437rem, 1.8242rem + 4.098vw, 5rem); }
+.scale-dramatic { --text-s: 0.875rem; --text-m: clamp(1.0625rem, 1.019rem + 0.217vw, 1.1875rem); --text-l: clamp(1.5312rem, 1.2378rem + 1.467vw, 2.375rem); --text-xl: clamp(1.8375rem, 1.3092rem + 2.641vw, 3.3563rem); --text-xxl: clamp(3.175rem, 0.9772rem + 10.989vw, 9.4938rem); }
+.lt .r-xxl { font-size: var(--text-xxl); } .lt .r-xl { font-size: var(--text-xl); } .lt .r-l { font-size: var(--text-l); } .lt .r-m { font-size: var(--text-m); } .lt .r-s { font-size: var(--text-s); }
 
-/* ---------- poster face */
-.o-poster { --sun: #ffc83a; --felt: #1e3f8f; --red: #c9321e; --paper: #fffaf0; --ink: #1a2142;
-  --cut: polygon(0.6% 1.4%, 99.5% 0, 100% 98.8%, 0 100%);
-  background: var(--sun); color: var(--ink); font: 1.125rem/1.5 'Atkinson Hyperlegible Next', system-ui, sans-serif; }
-.o-poster h3 { font: 400 1rem/1 'Caprasimo', Georgia, serif; }
-.o-poster .block { position: relative; z-index: 0; display: block; width: fit-content; padding: 0.06em 0.2em 0.12em;
-  font-size: clamp(3rem, 2rem + 4vw, 4.75rem); line-height: 1; color: var(--paper); rotate: -2.5deg; }
-.o-poster .block::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--felt); clip-path: var(--cut); }
-.o-poster .block + .block { margin: -0.07em 0 0 0.55em; rotate: 1.5deg; }
-.o-poster .block + .block::before { background: var(--red); clip-path: polygon(0 0, 100% 2.5%, 99.2% 100%, 0.8% 97%); }
-.o-poster button { font: 400 1.25rem 'Caprasimo', Georgia, serif; background: var(--red); color: #fff; border: 0; border-radius: 4px; }
+/* ---------- body: the reading face ---------- */
+.body-humanist-sans { --font-body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; }
+.body-grotesque { --font-body: 'Karla', 'Helvetica Neue', Arial, sans-serif; }
+.body-geometric-sans { --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif; }
+.body-book-serif { --font-body: 'Alegreya', Georgia, serif; }
+.body-hyperlegible { --font-body: 'Atkinson Hyperlegible Next', Verdana, sans-serif; }
 
-/* ---------- bladed letters */
-.o-bladed { --ground: #1e0f14; --letter: #c9a25a; --text: #f0e2c2; --soft: #d2c2a2; --pen: #000; --button: #ffcf5a;
-  background: var(--ground); color: var(--text); font: 1.125rem/1.5 'Alegreya', Georgia, serif; }
-.o-bladed .mark { font: 400 1.5rem/1.1 'Pirata One', 'Palatino Linotype', serif; color: var(--letter); text-shadow: 2px 2px 0 var(--pen); }
-.o-bladed h3 { margin-top: 0.5rem; font: 400 clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem)/0.98 'Pirata One', 'Palatino Linotype', serif; letter-spacing: 0.01em; text-shadow: 3px 3px 0 var(--pen); }
-.o-bladed .faces { color: var(--soft); }
-.o-bladed button { font: 700 1.0625rem 'Alegreya', Georgia, serif; background: var(--button); color: #1e0f14; border: 0; border-radius: 2px; }
+/* ---------- display: the heading face, and what is done to it ---------- */
+.display-one-family .title { font-weight: 750; letter-spacing: -0.02em; line-height: 1.02; }
+.display-one-family .sub, .display-one-family .fig { font-weight: 700; }
+.body-book-serif.display-one-family .title { font-weight: 800; letter-spacing: -0.01em; }
 
-/* ---------- chiselled metal */
-.o-metal { --sky: #2f6fb6; --metal: #ffd76a; --metal-hi: #fff2b8; --metal-lo: #8a5c14; --metal-edge: #3a2405; --text: #ffffff; --panel: rgb(20 12 8 / 0.88);
-  background: linear-gradient(#2a64a8, #4f8fd0 60%, #6aa86a 60%, #4c8c4c); color: var(--text); font: 1.125rem/1.5 'Signika', 'Trebuchet MS', sans-serif; text-align: center; }
-.o-metal .title { font: 700 clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem)/1 'Cinzel Decorative', Georgia, serif; color: var(--metal);
-  text-shadow: 0 -1px 0 var(--metal-hi),
-    2px 2px 0 var(--metal-edge), -2px 2px 0 var(--metal-edge), 2px -2px 0 var(--metal-edge), -2px -2px 0 var(--metal-edge),
-    0 4px 0 var(--metal-lo), 0 7px 0 var(--metal-edge), 0 12px 18px rgb(0 0 0 / 0.55); }
-.o-metal .words { margin: 1.25rem auto 0; max-width: 30rem; padding: 0.75rem 1rem 1rem; background: var(--panel); border: 3px solid #e2ad3b; border-radius: 10px; }
-.o-metal .words p { margin: 0 auto; }
-.o-metal .words .faces { margin-top: 0.75rem; color: #e9dfcc; }
-.o-metal button { font: 700 1.125rem 'Signika', sans-serif; background: linear-gradient(#ffe48f, #ffc93a 60%); color: #2a1604; border: 2px solid var(--metal-edge); border-radius: 8px; }
+.display-book-serif { --font-display: 'Newsreader', Georgia, serif; }
+.display-book-serif .title { font-weight: 600; letter-spacing: -0.01em; line-height: 1.04; }
 
-/* ---------- hand marks */
-.o-hand { --paper: #f6efe0; --ink: #23201b; --soft: #575046; --felt: #2e5a8a; --green: #2f5a3b; --stamp: #8a1f1f;
-  background: var(--paper); color: var(--ink); font: 1.125rem/1.5 'Karla', system-ui, sans-serif; }
-.o-hand h3 { font: 400 clamp(2rem, 1.5rem + 1.8vw, 2.875rem)/1.1 'Young Serif', Georgia, serif; }
-.o-hand .rest { position: relative; display: inline-block; padding-bottom: 0.3em; }
-.o-hand .squiggle { position: absolute; left: 0; bottom: 0; width: 100%; height: 0.3em; }
-.o-hand .squiggle path { fill: none; stroke: var(--felt); stroke-width: 4; stroke-linecap: round; }
-.o-hand .row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 1rem; }
-.o-hand .stamp { display: inline-block; padding: 2px 0.5rem; border: 3px double var(--stamp); color: var(--stamp); background: #efe2c6;
-  font: 700 0.875rem/1.2 'Karla', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; rotate: -6deg; }
-.o-hand .note { display: inline-flex; align-items: center; gap: 0.5rem; font: 600 1.5rem/1.15 'Caveat', 'Segoe Print', cursive; color: var(--green); }
-.o-hand .note svg { width: 3.5rem; height: 1.75rem; }
-.o-hand .note path { fill: none; stroke: var(--green); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.o-hand .faces { color: var(--soft); }
-.o-hand button { font: 700 1.0625rem 'Karla', sans-serif; background: var(--green); color: #fff; border: 0; border-radius: 8px; }
+.display-soft-serif { --font-display: 'Fraunces', Georgia, serif; }
+.display-soft-serif .title, .display-soft-serif .sub, .display-soft-serif .fig {
+  font-optical-sizing: auto; font-variation-settings: 'SOFT' 100, 'WONK' 0; }
+.display-soft-serif .title { font-weight: 420; letter-spacing: -0.015em; line-height: 1.02; }
+.display-soft-serif .sub, .display-soft-serif .fig { font-weight: 500; }
+
+.display-quirky-grotesque { --font-display: 'Bricolage Grotesque', 'Trebuchet MS', sans-serif; }
+.display-quirky-grotesque .title { font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; }
+.display-quirky-grotesque .sub, .display-quirky-grotesque .fig { font-weight: 700; letter-spacing: -0.01em; }
+
+.display-fat-poster { --font-display: 'Caprasimo', Georgia, serif; --cut: polygon(0.6% 2%, 99.4% 0, 100% 97%, 0 100%); }
+.display-fat-poster .title, .display-fat-poster .sub, .display-fat-poster .fig { font-weight: 400; font-synthesis: none; }
+.display-fat-poster .title { line-height: 1; margin-top: 0.5rem; font-size: min(var(--text-xxl), 17cqi); }   /* every block fits its width */
+.display-fat-poster .title .w { position: relative; z-index: 0; display: block; width: fit-content; padding: 0.04em 0.2em 0.12em;
+  color: var(--on-band); rotate: -2deg; }
+.display-fat-poster .title .w::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--band-1); clip-path: var(--cut);
+  filter: drop-shadow(calc(var(--lx) * 2px) calc(var(--ly) * 3px) 0 color-mix(in oklab, var(--shade) 35%, transparent)); }
+.display-fat-poster .title .w + .w { margin: -0.06em 0 0 0.5em; rotate: 1.5deg; }
+.display-fat-poster .title .w + .w::before { background: var(--band-2); }
+
+.display-condensed-gothic { --font-display: 'League Gothic', 'Arial Narrow', Impact, sans-serif; }
+.display-condensed-gothic .title, .display-condensed-gothic .sub, .display-condensed-gothic .fig { font-weight: 400; font-synthesis: none; text-transform: uppercase; letter-spacing: 0.015em; }
+.display-condensed-gothic .title { font-size: min(var(--text-xxl) * 1.3, 30cqi); line-height: 0.88; }
+.display-condensed-gothic .title .w + .w { color: var(--mark); }
+.display-condensed-gothic .sub, .display-condensed-gothic .fig { font-size: calc(var(--text-l) * 1.2); letter-spacing: 0.03em; }
+
+.display-bladed { --font-display: 'Pirata One', 'Palatino Linotype', serif; }
+.display-bladed .title { font-weight: 400; font-synthesis: none; }
+.display-bladed .sub, .display-bladed .fig { font-family: var(--font-body); font-weight: 700; }   /* blades for the name only: subheadings and figures are read */
+.display-bladed .title { line-height: 0.98; letter-spacing: 0.01em; color: light-dark(var(--on-ground), var(--metal, var(--mark)));
+  text-shadow: calc(var(--lx) * 3px) calc(var(--ly) * 3px) 0 light-dark(color-mix(in oklab, var(--metal-deep, var(--mark)) 55%, transparent), var(--shade)); }
+
+.display-chiselled { --font-display: 'Cinzel Decorative', 'Trajan Pro', Georgia, serif;
+  --chisel-edge: light-dark(var(--ink), var(--shade)); }
+.display-chiselled .title, .display-chiselled .sub, .display-chiselled .fig { font-weight: 700; font-synthesis: none; font-variant-ligatures: no-common-ligatures; }   /* its OO and TH ligatures misread */
+.display-chiselled .title { font-size: min(var(--text-xxl) * 0.82, 13cqi); padding-left: 0.22em; line-height: 1.02; letter-spacing: 0.02em;
+  color: light-dark(color-mix(in oklab, var(--metal, var(--mark)) 45%, var(--metal-deep, var(--ink))), var(--metal, var(--mark)));   /* old gold on a light page: bright gold is 2.4:1 on cream */
+  text-shadow: 0 -1px 0 var(--metal-lit, light-dark(var(--surface-raised), var(--ink))),
+    1px 1px 0 var(--chisel-edge), -1px 1px 0 var(--chisel-edge), 1px -1px 0 var(--chisel-edge), -1px -1px 0 var(--chisel-edge),
+    calc(var(--lx) * 3px) calc(var(--ly) * 3px) 0 var(--metal-deep, color-mix(in oklab, var(--mark) 45%, var(--shade))),
+    calc(var(--lx) * 6px) calc(var(--ly) * 8px) 12px color-mix(in oklab, var(--shade) 55%, transparent); }
+.display-chiselled .sub { color: var(--ink); }
+
+/* ---------- voice: case and spacing ---------- */
+.voice-tracked-capitals .label { text-transform: uppercase; letter-spacing: 0.1em; }
+.voice-capital-headings .title, .voice-capital-headings .sub { text-transform: uppercase; letter-spacing: 0.06em; }
+.voice-capital-headings .title { font-size: calc(var(--text-xxl) * 0.8); line-height: 1.04; }
+.voice-italic-accents .title em, .voice-italic-accents .sub em { font-style: italic; font-weight: 340; font-synthesis: none; }
+.lt:not(.voice-italic-accents) .title em, .lt:not(.voice-italic-accents) .sub em { font-style: normal; }
+
+/* ---------- marks: drawn on words, never typed ---------- */
+.lt .ring, .lt .wave { position: relative; display: inline-block; }
+.lt .ring > svg, .lt .wave > svg, .lt .arrow { display: none; }
+.marks-pencil .ring > svg { display: block; position: absolute; inset: -0.16em -0.2em -0.1em; width: calc(100% + 0.4em); height: calc(100% + 0.26em);
+  color: var(--mark); fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; overflow: visible; pointer-events: none; }
+.marks-pencil .wave { padding-bottom: 0.1em; }
+.marks-pencil .title .ring { margin-left: 0.12em; }
+.marks-pencil .wave > svg { display: block; position: absolute; left: 0; bottom: -0.12em; width: 100%; height: 0.28em;
+  color: var(--mark); fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; overflow: visible; }
+.marks-highlighter .hl { padding: 0 0.15em; margin: 0 -0.15em; border-radius: 0.3em 0.15em 0.35em 0.2em; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  /* light page: a pale pencil-brown band behind the letters, text stays ink. Dark page: a glowing band, the mark
+     lifted towards the ink, with the letters turned dark on it (like a marker under a lamp) */
+  --hl: light-dark(color-mix(in oklab, var(--mark) 34%, transparent), color-mix(in oklab, var(--mark) 72%, var(--ink)));
+  color: light-dark(var(--ink), var(--ground));
+  background: linear-gradient(178deg, transparent 0 3%, var(--hl) 5% 95%, transparent 97%); }
+.lt .stamp { display: none; }
+.marks-stamp .stamp { display: inline-block; position: absolute; right: 1rem; top: -0.9rem; padding: 0.1rem 0.5rem; border: 3px double var(--mark); border-radius: 3px;
+  background: var(--surface); color: var(--mark); font: 800 1.125rem/1.3 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; rotate: 8deg; }
+.lt .hand { display: none; }
+.marks-handwriting .hand { display: flex; align-items: flex-end; gap: 0.25rem; margin: 0.5rem 0 -0.25rem 0.5rem; width: fit-content;
+  font: 600 1.625rem/1.1 'Caveat', 'Segoe Print', cursive; color: var(--mark); rotate: -3deg; }
+.marks-handwriting .arrow { display: block; width: 2.5rem; height: 1.75rem; color: var(--mark); fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- the axis probes the test measures (off screen) ---------- */
+.probes { position: absolute; left: -9999px; top: 0; white-space: nowrap; }
+.probes span { display: inline-block; }
 </style>
 </head>
 <body>
-<main class="page">
-  <h1>Lettering: the options</h1>
-  <p>Each box is one option from <code>style-part-lettering.md</code>, set in the faces a mockup really used. Colours are only there to show the lettering in a setting it suits; they are not part of the option.</p>
+<main>
+<h1>Lettering: the layers</h1>
+<p class="intro">Every option of every layer, then every starting point, each on a light page and on a dark one. Each swatch holds the same things: a label, a heading set in the display face, a sheet with a paragraph in the reading face, a figure, and a button, so the one layer is the only thing that changes. The line at the top of each names the faces. On the dark page the reading text is set a little lighter (400 down to 370), because light letters on a dark ground look heavier.</p>
+<svg class="defs" aria-hidden="true" focusable="false">
+  <symbol id="mk-ring" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="M58 3C25 1 3 12 4 26c1 15 31 21 56 19 23-2 38-11 36-23C94 9 70 2 42 6"/></symbol>
+  <symbol id="mk-wave" viewBox="0 0 300 12" preserveAspectRatio="none"><path d="M3 7c20-7 30 5 50 0s30-7 50-1 30 5 50 0 30-6 50-1 30 4 46 0 30-5 46-1"/></symbol>
+  <symbol id="mk-arrow" viewBox="0 0 40 28"><path d="M37 4C26 3 13 8 8 22M8 22l-1-9M8 22l8-5"/></symbol>
+</svg>
+<h2 class="layer">Body</h2>
+<p class="layer-note">The reading face. Each is shown under the heading face it is usually paired with, named in the top line.</p>
+<section class="swatch" data-option="body:humanist-sans">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">body: humanist-sans · Newsreader 600 over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="body:grotesque">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">body: grotesque · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="body:geometric-sans">
+<div class="lt ground body-geometric-sans display-quirky-grotesque scale-classic voice-sentence-case marks-none">
+<p class="tag">body: geometric-sans · Bricolage Grotesque 800 over Figtree</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="body:book-serif">
+<div class="lt ground body-book-serif display-one-family scale-classic voice-sentence-case marks-none">
+<p class="tag">body: book-serif · Alegreya, heavy over Alegreya</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="body:hyperlegible">
+<div class="lt ground body-hyperlegible display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">body: hyperlegible · Newsreader 600 over Atkinson Hyperlegible Next</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<h2 class="layer">Display</h2>
+<p class="layer-note">The heading face and what is done to it. Each is shown over the reading face it is usually paired with.</p>
+<section class="swatch" data-option="display:one-family">
+<div class="lt ground body-humanist-sans display-one-family scale-classic voice-sentence-case marks-none">
+<p class="tag">display: one-family · Source Sans 3, heavy over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:book-serif">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">display: book-serif · Newsreader 600 over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:soft-serif">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">display: soft-serif · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:quirky-grotesque">
+<div class="lt ground body-geometric-sans display-quirky-grotesque scale-classic voice-sentence-case marks-none">
+<p class="tag">display: quirky-grotesque · Bricolage Grotesque 800 over Figtree</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:fat-poster">
+<div class="lt ground body-hyperlegible display-fat-poster scale-dramatic voice-sentence-case marks-none">
+<p class="tag">display: fat-poster · Caprasimo on cut blocks over Atkinson Hyperlegible Next</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:condensed-gothic">
+<div class="lt ground body-grotesque display-condensed-gothic scale-dramatic voice-sentence-case marks-none">
+<p class="tag">display: condensed-gothic · League Gothic, capitals over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:bladed">
+<div class="lt ground body-book-serif display-bladed scale-classic voice-sentence-case marks-none">
+<p class="tag">display: bladed · Pirata One over Alegreya</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="display:chiselled">
+<div class="lt ground body-humanist-sans display-chiselled scale-classic voice-tracked-capitals marks-none">
+<p class="tag">display: chiselled · Cinzel Decorative, carved over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<h2 class="layer">Scale</h2>
+<p class="layer-note">The sizes, as a ladder. The numbers are the size on a phone (320px) and on a wide window (1240px); between them they grow smoothly. Seen here at the window's width.</p>
+<section class="swatch" data-option="scale:gentle">
+<div class="lt ground body-humanist-sans display-book-serif scale-gentle voice-sentence-case marks-none">
+<p class="tag">scale: gentle · Newsreader 600 over Source Sans 3</p><div class="ladder"><p class="title r-xxl">Plums <small>42 to 58px</small></p><p class="sub r-xl">Section <small>29 to 37px</small></p><p class="sub r-l">Subheading <small>24 to 30px</small></p><p class="r-m">Reading text <small>17 to 19px</small></p><p class="label r-s">A label <small>14 to 14px</small></p></div><div class="sheet"><p class="read r-m">The biggest words on the first screen take the top step; section headings the next; reading text never goes under 16 pixels.</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="scale:classic">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">scale: classic · Newsreader 600 over Source Sans 3</p><div class="ladder"><p class="title r-xxl">Plums <small>42 to 80px</small></p><p class="sub r-xl">Section <small>29 to 45px</small></p><p class="sub r-l">Subheading <small>24 to 34px</small></p><p class="r-m">Reading text <small>17 to 19px</small></p><p class="label r-s">A label <small>14 to 14px</small></p></div><div class="sheet"><p class="read r-m">The biggest words on the first screen take the top step; section headings the next; reading text never goes under 16 pixels.</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="scale:dramatic">
+<div class="lt ground body-humanist-sans display-book-serif scale-dramatic voice-sentence-case marks-none">
+<p class="tag">scale: dramatic · Newsreader 600 over Source Sans 3</p><div class="ladder"><p class="title r-xxl">Plums <small>51 to 152px</small></p><p class="sub r-xl">Section <small>29 to 54px</small></p><p class="sub r-l">Subheading <small>24 to 38px</small></p><p class="r-m">Reading text <small>17 to 19px</small></p><p class="label r-s">A label <small>14 to 14px</small></p></div><div class="sheet"><p class="read r-m">The biggest words on the first screen take the top step; section headings the next; reading text never goes under 16 pixels.</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<h2 class="layer">Voice</h2>
+<p class="layer-note">Case and spacing on labels and headings.</p>
+<section class="swatch" data-option="voice:sentence-case">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">voice: sentence-case · Newsreader 600 over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="voice:tracked-capitals">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-tracked-capitals marks-none">
+<p class="tag">voice: tracked-capitals · Newsreader 600 over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="voice:capital-headings">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-capital-headings marks-none">
+<p class="tag">voice: capital-headings · Newsreader 600 over Source Sans 3</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="voice:italic-accents">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-italic-accents marks-none">
+<p class="tag">voice: italic-accents · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<h2 class="layer">Marks</h2>
+<p class="layer-note">What is drawn on the words. All shown over the soft serif and a grotesque; each works with any faces.</p>
+<section class="swatch" data-option="marks:none">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">marks: none · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins. Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="marks:pencil">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-pencil">
+<p class="tag">marks: pencil · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins. Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="marks:highlighter">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-highlighter">
+<p class="tag">marks: highlighter · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins. Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="marks:stamp">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-stamp">
+<p class="tag">marks: stamp · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins. Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="marks:handwriting">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-handwriting">
+<p class="tag">marks: handwriting · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins. Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks; any layer not named is at its default (humanist sans under a book serif, classic scale, sentence case, no marks).</p>
+<section class="swatch" data-option="start:sober-pair">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">start: sober-pair · Newsreader 600 over Source Sans 3</p><p class="label">Biology tutoring, Leeds</p>
+<h3 class="title"><span class="w">AP Biology,</span> <span class="w"><span class="ring">one to one<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Lessons in your kitchen <span class="wave">or online<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">I taught biology for eleven years.</span> Most students come to me eight weeks before the exam; the ones who come in September sleep better.</p><p class="fact"><b class="fig">£38</b> an hour, first lesson free</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Book a first lesson</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:professional">
+<div class="lt ground body-humanist-sans display-book-serif scale-gentle voice-sentence-case marks-none">
+<p class="tag">start: professional · Newsreader 600 over Source Sans 3</p><p class="label">Accountants in Harrogate</p>
+<h3 class="title"><span class="w">Your accounts,</span> <span class="w"><span class="ring">done on time<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">For sole traders and <span class="wave">small firms<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">We file your return, answer your questions in plain words, and tell you what you owe a month before you owe it.</span></p><p class="fact"><b class="fig">£45</b> a month, fixed</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Book a call</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:civic">
+<div class="lt ground body-hyperlegible display-one-family scale-gentle voice-sentence-case marks-none">
+<p class="tag">start: civic · Atkinson Hyperlegible Next, heavy over Atkinson Hyperlegible Next</p><p class="label">Bins and recycling</p>
+<h3 class="title"><span class="w">Check your</span> <span class="w"><span class="ring">bin day<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Collections over the <span class="wave">holidays<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Enter your postcode to see which bins are collected and when.</span> Collections move by one day in the week after a bank holiday.</p><p class="fact"><b class="fig">1</b> day later after a bank holiday</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Check your bin day</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="lt ground body-humanist-sans display-book-serif scale-classic voice-tracked-capitals marks-none">
+<p class="tag">start: almanac-plate · Newsreader 600 over Source Sans 3</p><p class="label">Tonight over Kielder</p>
+<h3 class="title"><span class="w">Saturn rises</span> <span class="w"><span class="ring">at 21:40<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">A clear night, <span class="wave">little moon<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">The dome opens at nine.</span> Bring warm clothes; the telescope room is kept at the outside temperature so the mirror stays still.</p><p class="fact"><b class="fig">21:40</b> Saturn above the trees</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Book the telescope</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:soft-serif">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-none">
+<p class="tag">start: soft-serif · Fraunces, SOFT 100 over Karla</p><p class="label">Made in small batches</p>
+<h3 class="title"><span class="w">Soap from</span> <span class="w"><span class="ring">the garden<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Nettle, oat <span class="wave">and marigold<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Every bar is cut by hand and cured for six weeks on the shelf by the back door.</span></p><p class="fact"><b class="fig">£6</b> a bar, or three for £16</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See this week's soap</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-italic-accents marks-none">
+<p class="tag">start: catalogue-of-glazes · Fraunces, SOFT 100 over Karla</p><p class="label">Autumn firing</p>
+<h3 class="title"><span class="w">Glazes,</span> <span class="w"><em>slowly</em></span></h3>
+<div class="sheet"><p class="sub">Nine pots from the <em>wood kiln</em></p><p class="read"><span class="hl">Each pot sat three days in the kiln.</span> The ash fell where it wanted; the glaze is what it left.</p><p class="fact"><b class="fig">9</b> pots, one of each</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the pots</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:hand-marks">
+<div class="lt ground body-grotesque display-soft-serif scale-classic voice-sentence-case marks-pencil">
+<p class="tag">start: hand-marks · Fraunces, SOFT 100 over Karla</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<div class="lt ground body-hyperlegible display-book-serif scale-classic voice-sentence-case marks-pencil marks-stamp">
+<p class="tag">start: field-journal · Newsreader 600 over Atkinson Hyperlegible Next</p><p class="label">Walks this month</p>
+<h3 class="title"><span class="w">The heron</span> <span class="w"><span class="ring">walk<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Round the reservoir, <span class="wave">slowly<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Slow, free walks round Millbrook's reservoir, marsh and woods.</span> The dawn walk is full; the evening one has room.</p><p class="fact"><b class="fig">6</b> of 12 places left</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Save a place</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:lively-grotesque">
+<div class="lt ground body-geometric-sans display-quirky-grotesque scale-classic voice-tracked-capitals marks-none">
+<p class="tag">start: lively-grotesque · Bricolage Grotesque 800 over Figtree</p><p class="label">Season two</p>
+<h3 class="title"><span class="w">Grow a farm</span> <span class="w"><span class="ring">with friends<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Plant, trade, <span class="wave">harvest<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Each player tends a few rows; the farm is shared, and so is the weather.</span></p><p class="fact"><b class="fig">12</b> players on a farm</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Start a farm</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:artistic">
+<div class="lt ground body-book-serif display-one-family scale-dramatic voice-sentence-case marks-none">
+<p class="tag">start: artistic · Alegreya, heavy over Alegreya</p><p class="label">Spring exhibition</p>
+<h3 class="title"><span class="w">Salt</span> <span class="w"><span class="ring">& ash<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Twenty-two prints by <span class="wave">Mira Holt<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Prints made with seawater and the ash of the old pier, shown together for the first time.</span></p><p class="fact"><b class="fig">22</b> prints, until 30 May</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Plan a visit</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:poster-face">
+<div class="lt ground body-hyperlegible display-fat-poster scale-dramatic voice-sentence-case marks-none">
+<p class="tag">start: poster-face · Caprasimo on cut blocks over Atkinson Hyperlegible Next</p><p class="label">Volunteers wanted</p>
+<h3 class="title"><span class="w">Lend a</span> <span class="w"><span class="ring">hand<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Saturday mornings <span class="wave">at the hall<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Sort the donations, make the tea, chat to whoever comes in.</span> No experience needed and you can leave at any time.</p><p class="fact"><b class="fig">3</b> hours, once a month</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Sign up for a shift</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:warm">
+<div class="lt ground body-hyperlegible display-fat-poster scale-dramatic voice-sentence-case marks-pencil">
+<p class="tag">start: warm · Caprasimo on cut blocks over Atkinson Hyperlegible Next</p><p class="label">Everyone welcome</p>
+<h3 class="title"><span class="w">Bring a</span> <span class="w"><span class="ring">dish<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">The street supper, <span class="wave">14 June<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Tables down the middle of Clay Lane from four o'clock.</span> Bring something to share and a chair if you have one.</p><p class="fact"><b class="fig">1</b> long table, the whole street</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Say you are coming</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="lt ground body-hyperlegible display-fat-poster scale-dramatic voice-tracked-capitals marks-none">
+<p class="tag">start: lantern-fair · Caprasimo on cut blocks over Atkinson Hyperlegible Next</p><p class="label">This Saturday</p>
+<h3 class="title"><span class="w">Night</span> <span class="w"><span class="ring">market<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Forty stalls, <em><span class="wave">one car park<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></em></p><p class="read">Stalls open at six under strings of lamps, and the hatch at the bakery van stays up till the bread is gone. Bring a bag; <span class="hl">most stalls take cards</span>, a few take only coins.</p><p class="fact"><b class="fig">£2</b> a pitch, paid on the night</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stalls</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="lt ground body-hyperlegible display-fat-poster scale-dramatic voice-tracked-capitals marks-stamp">
+<p class="tag">start: repair-cafe · Caprasimo on cut blocks over Atkinson Hyperlegible Next</p><p class="label">Last Saturday of the month</p>
+<h3 class="title"><span class="w">Toss it?</span> <span class="w"><span class="ring">No way!<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><span class="stamp" aria-hidden="true">Full</span><p class="sub">Bring it in <span class="wave">broken<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Kettles, lamps, jeans and bikes: our fixers show you how, and the tea is free.</span> Saturday is full; Sunday still has room.</p><p class="fact"><b class="fig">31</b> things fixed last time</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Book a repair</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:bladed-letters">
+<div class="lt ground body-book-serif display-bladed scale-classic voice-sentence-case marks-none">
+<p class="tag">start: bladed-letters · Pirata One over Alegreya</p><p class="label">The guild of small wands</p>
+<h3 class="title"><span class="w">Wands &</span> <span class="w"><span class="ring">Curios<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Every wand <span class="wave">tested<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Results vary.</span> Each piece is turned from fallen wood and comes with a note of what it has done so far.</p><p class="fact"><b class="fig">9</b> wands left this season</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">See the stall</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="lt ground body-book-serif display-bladed scale-dramatic voice-sentence-case marks-none">
+<p class="tag">start: sorcery · Pirata One over Alegreya</p><p class="label">Enrolment is open</p>
+<h3 class="title"><span class="w">Quit tech</span> <span class="w"><span class="ring">for magic<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Leave your inbox <span class="wave">at the door<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">The tower takes twelve apprentices a year.</span> You will lose your phone and gain a familiar; most think it a fair trade.</p><p class="fact"><b class="fig">12</b> places, one cat each</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Take the oath</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:chiselled-metal">
+<div class="lt ground body-humanist-sans display-chiselled scale-classic voice-tracked-capitals marks-none">
+<p class="tag">start: chiselled-metal · Cinzel Decorative, carved over Source Sans 3</p><p class="label">Choose your side</p>
+<h3 class="title"><span class="w">Energy</span> <span class="w"><span class="ring">Eternal<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">Your reward <span class="wave">awaits<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Pick a side, claim a title, and come back tomorrow to see who is winning the argument.</span></p><p class="fact"><b class="fig">2</b> sides, no truce</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Accept quest</button></div>
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="lt ground body-humanist-sans display-chiselled scale-dramatic voice-tracked-capitals marks-none">
+<p class="tag">start: gilded-dark · Cinzel Decorative, carved over Source Sans 3</p><p class="label">New quest</p>
+<h3 class="title"><span class="w">Choose</span> <span class="w"><span class="ring">your class<svg aria-hidden="true" focusable="false"><use href="#mk-ring"/></svg></span></span></h3>
+<div class="sheet"><p class="sub">The guild is <span class="wave">recruiting<svg aria-hidden="true" focusable="false"><use href="#mk-wave"/></svg></span></p><p class="read"><span class="hl">Tanks at the front, healers behind, and someone has to carry the snacks.</span></p><p class="fact"><b class="fig">40</b> players in the guild</p><p class="hand"><svg class="arrow" aria-hidden="true" focusable="false"><use href="#mk-arrow"/></svg>bring a torch!</p><button class="btn" type="button">Join the guild</button></div>
+</div>
+</section>
 
-  <div class="book">
-    <section class="swatch" data-option="sober-pair">
-      <header><h2>Sober pair</h2><code>sober-pair</code></header>
-      <div class="show o-sober">
-        <h3>One-on-one <em>biology</em> tutoring, in town and online.</h3>
-        <div class="fact"><b>12 years</b><span>teaching biology</span></div>
-        <p>A few students at a time, for as long as it helps. Lessons follow the school's own course.</p>
-        <button type="button">Get in touch</button>
-        <p class="faces">Newsreader over Source Sans 3</p>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="soft-serif">
-      <header><h2>Soft serif</h2><code>soft-serif</code></header>
-      <div class="show o-soft">
-        <h3>Soap made slowly, with herbs you can name.</h3>
-        <p>I make every bar myself: olive oil, a handful of herbs, and four weeks on the drying rack.</p>
-        <button type="button">Shop the soaps</button>
-        <p class="faces">Young Serif over Karla</p>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="lively-grotesque">
-      <header><h2>Lively grotesque</h2><code>lively-grotesque</code></header>
-      <div class="show o-lively">
-        <span class="label">Season two</span>
-        <h3>Dig a nest that outlasts the winter.</h3>
-        <p>Pick a colony, claim a corner of the farm and keep it fed. Everyone plays in the same farm.</p>
-        <button type="button">Choose a colony</button>
-        <p class="faces">Bricolage Grotesque over Figtree</p>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="poster-face">
-      <header><h2>Poster face</h2><code>poster-face</code></header>
-      <div class="show o-poster">
-        <h3><span class="block">Lend a</span><span class="block">hand</span></h3>
-        <p>Our events only happen because members and neighbours pitch in. Pick one and we'll send the details.</p>
-        <button type="button">Sign me up</button>
-        <p class="faces">Caprasimo over Atkinson Hyperlegible Next</p>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="bladed-letters">
-      <header><h2>Bladed letters</h2><code>bladed-letters</code></header>
-      <div class="show o-bladed">
-        <span class="mark">The Copper Kettle</span>
-        <h3>Carved by hand, sold at the fair.</h3>
-        <p>Walking sticks, lanterns and leather-bound notebooks, made by five of us for the autumn fair.</p>
-        <button type="button">See what's on the bench</button>
-        <p class="faces">Pirata One over Alegreya</p>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="chiselled-metal">
-      <header><h2>Chiselled metal</h2><code>chiselled-metal</code></header>
-      <div class="show o-metal">
-        <h3 class="title">Sunstone Keep</h3>
-        <div class="words">
-          <p>The gates open at dawn. Bring a friend and a full flask.</p>
-          <button type="button">Accept the quest</button>
-          <p class="faces">Cinzel Decorative over Signika</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="hand-marks">
-      <header><h2>Hand marks</h2><code>hand-marks</code></header>
-      <div class="show o-hand">
-        <h3>Help at <span class="rest">the spring fair<svg class="squiggle" viewBox="0 0 300 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8c20-8 30 6 50 0s30-8 50-1 30 6 50 0 30-7 50-1 30 5 46 0 30-6 46-1"/></svg></span></h3>
-        <div class="row">
-          <span class="stamp" aria-hidden="true">Full</span><span>Cake stall: all 6 places taken.</span>
-        </div>
-        <div class="row">
-          <span class="note" aria-hidden="true">this week's bars <svg viewBox="0 0 56 28"><path d="M2 20c12-14 30-16 46-6M42 6l7 8-9 4"/></svg></span>
-        </div>
-        <button type="button">Pick another stall</button>
-        <p class="faces">Drawn squiggle and stamp; Caveat for the note, only where the site allows a third face</p>
-      </div>
-    </section>
-  </div>
+<div class="probes" aria-hidden="true">
+  <span id="p-soft0" style="font: 400 60px Fraunces; font-variation-settings: 'SOFT' 0, 'WONK' 0, 'opsz' 144">Soft handmade pots</span>
+  <span id="p-soft100" style="font: 400 60px Fraunces; font-variation-settings: 'SOFT' 100, 'WONK' 0, 'opsz' 144">Soft handmade pots</span>
+  <span id="p-opsz-small" style="font: 400 16px Fraunces; font-optical-sizing: auto; font-variation-settings: 'SOFT' 0, 'WONK' 0">Soft handmade pots</span>
+  <span id="p-opsz-big" style="font: 400 144px Fraunces; font-optical-sizing: auto; font-variation-settings: 'SOFT' 0, 'WONK' 0">Soft handmade pots</span>
+  <span id="p-it0" style="font: italic 400 60px Fraunces; font-variation-settings: 'SOFT' 0">Soft handmade pots</span>
+  <span id="p-it100" style="font: italic 400 60px Fraunces; font-variation-settings: 'SOFT' 100">Soft handmade pots</span>
+  <span id="p-w4" style="font: 400 60px Newsreader">Soft handmade pots</span>
+  <span id="p-w7" style="font: 700 60px Newsreader">Soft handmade pots</span>
+  <span id="p-wd75" style="font: 400 60px 'League Gothic'; font-stretch: 75%">Soft handmade pots</span>
+  <span id="p-wd100" style="font: 400 60px 'League Gothic'; font-stretch: 100%">Soft handmade pots</span>
+</div>
 </main>
-
 <script>
+/* The page's own test, beside swatchTest(): every face loaded from fonts/, the variable axes really change the letters
+   (the reason for the larger Fraunces file), reading text at 16px or more, and the heading rule at a wide window. */
+async function letteringTest() {
+  await document.fonts.ready;
+  for (const f of document.fonts) if (f.status === 'unloaded') f.load().catch(() => {});
+  await document.fonts.ready;
+  const faces = [...document.fonts];
+  const failed = faces.filter((f) => f.status !== 'loaded').map((f) => f.family + (f.style === 'italic' ? ' italic' : ''));
+  const w = (id) => document.getElementById(id).getBoundingClientRect().width;
+  const differ = (a, b) => Math.abs(w(a) - w(b)) / w(a) > 0.01;
+  const axes = {
+    'Fraunces SOFT': differ('p-soft0', 'p-soft100'),
+    'Fraunces opsz': Math.abs(w('p-opsz-small') / 16 - w('p-opsz-big') / 144) / (w('p-opsz-big') / 144) > 0.03,
+    'Newsreader wght': differ('p-w4', 'p-w7'),
+    'League Gothic wdth': differ('p-wd75', 'p-wd100'),
+  };
+  const pinned = !differ('p-it0', 'p-it100');   // the italic is pinned at SOFT 100 on purpose: it must NOT change
+  const wrongAxes = Object.entries(axes).filter(([, ok]) => !ok).map(([k]) => k);
+  const small = [...document.querySelectorAll('.swatch .read')].filter((p) => parseFloat(getComputedStyle(p).fontSize) < 16).length;
+  const ratios = [];
+  let ratioWrong = [];
+  for (const sw of document.querySelectorAll('.swatch[data-mode="light"][data-option^="scale:"]')) {
+    const px = (sel) => parseFloat(getComputedStyle(sw.querySelector(sel)).fontSize);
+    const top = px('.r-xxl') / px('.r-m'), sec = px('.r-xl') / px('.r-m');
+    ratios.push(sw.dataset.option.slice(6) + ' ' + top.toFixed(2) + 'x/' + sec.toFixed(2) + 'x');
+    if (sec >= 3 || (innerWidth >= 1240 && top < 3)) ratioWrong.push(sw.dataset.option);
+  }
+  return { pass: !failed.length && !wrongAxes.length && pinned && !small && !ratioWrong.length,
+    detail: (faces.length - failed.length) + ' of ' + faces.length + ' faces loaded from fonts/' + (failed.length ? ' (NOT: ' + failed.join(', ') + ')' : '')
+      + '; axes that change the letters: ' + Object.keys(axes).filter((k) => axes[k]).join(', ') + (wrongAxes.length ? ' (NOT: ' + wrongAxes.join(', ') + ')' : '')
+      + (pinned ? '; the italic stays pinned' : '; the italic changed with SOFT, which it should not')
+      + '; reading text under 16px: ' + small
+      + '; biggest/section heading against body at ' + innerWidth + 'px: ' + ratios.join(', ') + (ratioWrong.length ? ' (WRONG: ' + ratioWrong.join(', ') + ')' : '') };
+}
 run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
+  const shown = await swatchTest();
+  const own = await letteringTest();
+  return { pass: shown.pass && own.pass, detail: shown.detail + '. ' + own.detail };
 });
 </script>
 </body>

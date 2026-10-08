@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Picture style: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/pictures.py from source/pictures-template.html: edit those, then run python3 pictures.py ../pictures.html
+   in source/. Every colour below is a shared colour name (tokens.css) or a mix of two. The drawings are symbols in one
+   <defs> at the top of the page, outside the swatches; their colours reach into each <use> through the classes below
+   (plain class selectors only: a selector with an ancestor in it does not reach inside a <use>) and through custom
+   properties, which inherit into it. Each swatch is drawn twice, on a light page and a dark one, from the same CSS. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 60ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 60ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+.credit { max-width: 60ch; margin-top: 3rem; font-size: 1rem; color: var(--ink-soft); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- other parts' values, as the swatch book's stand-ins (the light part sets these on a real site) ---------- */
+.swatch { --shade: rgb(var(--shadow-rgb));
+  --drop-low: drop-shadow(calc(var(--lx, 0.5) * 2px) calc(var(--ly, 1) * 2px) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.6) * 100%), transparent)); }
+:root { --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.4 0 0 0 -0.95'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* ---------- every swatch: the picture(s), and a sheet naming the option ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.ground { display: grid; gap: 1.25rem; align-items: center; padding: 1.5rem 1.25rem; background: var(--ground); color: var(--on-ground);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.ground.pics-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ground.pics-2 > .sheet { grid-column: 1 / -1; }
+.ground.one { grid-template-columns: minmax(0, 1fr); }
+.ground.start { align-items: start; }
+@container (max-width: 34rem) { .ground, .ground.pics-2 { grid-template-columns: minmax(0, 1fr); } }
+figure { margin: 0; }
+.pic-fig figcaption { margin-top: 0.375rem; font-size: 0.875rem; line-height: 1.4; color: var(--on-ground); }
+.sheet { padding: 1.125rem 1.25rem; border-radius: 6px; background: var(--surface-raised); color: var(--ink); --icon-ground: var(--surface-raised); }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 1rem/1.45 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 0.75rem; }
+.sheet > :last-child { margin-bottom: 0; }
+.words-only { font-size: 0.875rem; color: var(--ink-soft); }
+.btn { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 1.125rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); --icon-ground: var(--accent); }
+
+/* ---------- a picture: a box of one shape, so nothing moves when it loads (width and height on every img too) ---------- */
+.pic { position: relative; isolation: isolate; overflow: clip; aspect-ratio: 16 / 11; border-radius: 3px; }
+.pic > img, .pic > svg, .pic .ht > *, .pic .ink > * { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pic::before, .pic::after { position: absolute; inset: 0; pointer-events: none; }
+.pic.small { width: min(100%, 13rem); margin: 0 0 0.75rem; }
+.pic-fig.small { width: min(100%, 13rem); margin: 0 0 0.75rem; }
+
+/* ---------- technique: the colours of each drawing (deep bands and their pale stay put on a dark page;
+   page ink and paper turn over) ---------- */
+.c-sky { fill: color-mix(in oklab, var(--on-band) 86%, var(--mark)); }
+.c-sun { fill: color-mix(in oklab, var(--mark) 50%, var(--on-band)); }
+.c-hill { fill: color-mix(in oklab, var(--band-2) 30%, var(--on-band)); }
+.c-table { fill: color-mix(in oklab, var(--mark) 72%, var(--shade)); }
+.c-table-line { fill: none; stroke: color-mix(in oklab, var(--mark) 72%, var(--shade)); stroke-width: 5; stroke-linecap: round; }
+.c-glaze { fill: var(--band-2); }
+.c-glaze-line { fill: none; stroke: var(--band-2); stroke-width: 9; stroke-linecap: round; }
+.c-clay { fill: color-mix(in oklab, var(--mark) 55%, var(--on-band)); }
+.c-cup { fill: var(--band-1); }
+.c-cup-line { fill: none; stroke: var(--band-1); stroke-width: 6; stroke-linecap: round; }
+.c-leaf { fill: color-mix(in oklab, var(--band-2) 62%, var(--on-band)); }
+.c-stem { fill: none; stroke: var(--band-2); stroke-width: 3; stroke-linecap: round; }
+.c-stem-fill { fill: var(--band-2); }
+.c-band-1 { fill: var(--band-1); } .c-band-2 { fill: var(--band-2); } .c-band-3 { fill: var(--band-3); }
+.cut { filter: url(#torn) var(--drop-low, drop-shadow(1px 2px 1px color-mix(in oklab, rgb(var(--shadow-rgb)) 30%, transparent))); }
+.core { fill: var(--on-band); stroke: var(--on-band); stroke-width: 3.5; stroke-linejoin: round; filter: url(#core); }   /* the pale core of torn paper */
+.c-hill-far { fill: color-mix(in oklab, var(--band-3) 22%, var(--on-band)); }
+.paper-grain { fill: color-mix(in oklab, rgb(var(--shadow-rgb)) 55%, transparent); opacity: 0.35; }
+/* line techniques: drawn in the page's own ink on its paper */
+.c-paper { fill: var(--surface); }
+.swatch { --wash-base: light-dark(var(--surface), color-mix(in oklab, var(--ink-soft) 50%, var(--surface))); }   /* washes stay visible under pale lines on a dark page */
+.c-sun-wash { fill: color-mix(in oklab, var(--mark) 45%, var(--wash-base)); }
+.c-glaze-wash { fill: color-mix(in oklab, var(--band-2) 42%, var(--wash-base)); }
+.c-cup-wash { fill: color-mix(in oklab, var(--band-1) 42%, var(--wash-base)); }
+.c-leaf-wash { fill: color-mix(in oklab, var(--band-2) 30%, var(--wash-base)); }
+.c-clay-wash { fill: color-mix(in oklab, var(--mark) 38%, var(--wash-base)); }
+.c-table-wash { fill: color-mix(in oklab, var(--mark) 26%, var(--wash-base)); }
+.ink { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.wash { opacity: 0.9; }
+.graphite { fill: none; stroke: var(--ink-soft); stroke-width: 1.4; stroke-linecap: round; }
+.again { opacity: 0.5; }
+.light { stroke-width: 0.9; opacity: 0.7; }
+.ring { fill: none; stroke: var(--mark); stroke-width: 2.6; stroke-linecap: round; }
+.mist { fill: color-mix(in oklab, var(--ink) 13%, transparent); }
+.far { fill: color-mix(in oklab, var(--ink) 7%, transparent); }
+.seal { fill: color-mix(in oklab, var(--band-1) 70%, var(--mark)); }
+.sumi { fill: var(--ink); }
+.sumi-wash { fill: color-mix(in oklab, var(--ink) 12%, transparent); }
+.sumi-bleed { fill: color-mix(in oklab, var(--ink) 30%, transparent); }
+.wash-1 { fill: color-mix(in oklab, var(--ink) 9%, transparent); }       /* the first, pale wash */
+.wash-2 { fill: color-mix(in oklab, var(--ink) 14%, transparent); }      /* the second, darker, on the shaded side */
+.wet-edge { fill: none; stroke: color-mix(in oklab, var(--ink) 26%, transparent); stroke-width: 6; }   /* a wash dries darker at its edge */
+.pool { fill: color-mix(in oklab, var(--ink) 20%, transparent); }        /* ink runs down and pools at the foot */
+.dry { opacity: 0.85; }
+/* painted: big shapes in three values, light from the upper left */
+.p-sky-low { fill: color-mix(in oklab, var(--on-band) 78%, var(--mark)); }
+.p-sky-light { fill: none; stroke: color-mix(in oklab, var(--on-band) 85%, var(--band-3)); stroke-linecap: round; opacity: 0.8; }
+.p-sky-warm { fill: none; stroke: color-mix(in oklab, var(--on-band) 62%, var(--mark)); stroke-linecap: round; opacity: 0.7; }
+.p-halo { fill: color-mix(in oklab, var(--mark) 22%, var(--on-band)); }
+.p-hill-dab { fill: none; stroke: color-mix(in oklab, var(--band-2) 45%, var(--on-band)); stroke-linecap: round; }
+.p-dark { fill: none; stroke: color-mix(in oklab, var(--band-2) 60%, var(--shade)); stroke-linecap: round; }
+.p-glint { fill: none; stroke: color-mix(in oklab, var(--on-band) 85%, transparent); stroke-linecap: round; }
+.p-clay-dark { fill: color-mix(in oklab, var(--mark) 75%, var(--shade)); opacity: 0.55; }
+.p-sun { fill: color-mix(in oklab, var(--mark) 40%, var(--on-band)); }
+.p-table-stroke { fill: none; stroke: color-mix(in oklab, var(--mark) 55%, var(--on-band)); stroke-linecap: round; opacity: 0.4; }
+.p-cast { fill: color-mix(in oklab, var(--shade) 40%, transparent); }
+.p-shade { fill: color-mix(in oklab, var(--shade) 45%, transparent); }
+.p-lit { fill: none; stroke: color-mix(in oklab, var(--band-2) 45%, var(--on-band)); stroke-linecap: round; opacity: 0.75; }
+.p-leaf-lit { fill: color-mix(in oklab, var(--on-band) 30%, transparent); }
+/* engraved: lines only, tone by spacing */
+.e-fine { fill: none; stroke: var(--ink); stroke-width: 0.5; opacity: 0.6; }
+.e-line { fill: none; stroke: var(--ink); stroke-width: 0.8; }
+.e-out { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- figures: skin in a range of tones mixed from the mark, so people are many on either page ---------- */
+.f-skin-1 { fill: color-mix(in oklab, var(--mark) 22%, var(--on-band)); }
+.f-skin-2 { fill: color-mix(in oklab, var(--mark) 58%, var(--on-band)); }
+.f-skin-3 { fill: color-mix(in oklab, var(--mark) 68%, var(--shade)); }
+.f-hair-1 { fill: color-mix(in oklab, var(--mark) 22%, var(--shade)); }
+.f-hair-2 { fill: color-mix(in oklab, var(--on-band) 72%, var(--shade)); }
+.f-hair-3 { fill: color-mix(in oklab, var(--on-band) 52%, var(--mark)); }
+.f-feature { fill: color-mix(in oklab, var(--mark) 22%, var(--shade)); }
+.f-smile { fill: none; stroke: color-mix(in oklab, var(--mark) 22%, var(--shade)); stroke-width: 2; stroke-linecap: round; }
+.f-line { fill: none; stroke: color-mix(in oklab, var(--mark) 22%, var(--shade)); stroke-width: 1.6; stroke-linecap: round; }
+.f-fold { fill: none; stroke: color-mix(in oklab, var(--shade) 45%, transparent); stroke-width: 1.5; stroke-linecap: round; }
+.f-shade { fill: color-mix(in oklab, var(--shade) 24%, transparent); }
+.f-strand { fill: none; stroke: color-mix(in oklab, var(--on-band) 35%, transparent); stroke-width: 1.2; stroke-linecap: round; }
+.f-sil { fill: color-mix(in oklab, var(--band-3) 65%, var(--shade)); stroke: color-mix(in oklab, var(--band-3) 65%, var(--shade)); stroke-linecap: round; }
+
+/* ---------- icons: one geometry; the icons layer sets how it is filled, the stroke layer its weight ---------- */
+.icons { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.icons li { display: inline-flex; align-items: center; gap: 0.375rem; font: 600 0.9375rem/1.2 system-ui, sans-serif; }
+.ic { width: 1.5rem; height: 1.5rem; flex: none; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.b, .k, .o { fill: none; stroke: currentColor; stroke-width: var(--sw, 2); vector-effect: var(--ve, none); filter: var(--ifilter, none); }
+.b { fill: var(--bfill, none); }
+.k { stroke: var(--kstroke, currentColor); }
+.ic-filled { --bfill: currentColor; --kstroke: var(--icon-ground); }
+.ic-duotone { --bfill: color-mix(in oklab, currentColor 24%, transparent); }
+.ic-hand-drawn { --ifilter: url(#pen-ic); }
+.ic-hand-drawn .icons li:nth-child(odd) .ic { rotate: -4deg; }
+.ic-hand-drawn .icons li:nth-child(even) .ic { rotate: 3deg; }
+.ic-none .ic { display: none; }
+.st-hairline { --sw: 1; --ve: non-scaling-stroke; }
+.st-regular { --sw: 2; }
+.st-bold { --sw: 3; }
+.st-brush { --sw: 2.4; --ifilter: url(#pen-ic); }
+/* the jug as a line drawing, at the stroke layer's weight (about one CSS pixel per unit here) */
+.line-art { fill: none; stroke: var(--ink); stroke-width: calc(var(--sw, 2) * 1.1); stroke-linecap: round; stroke-linejoin: round; }
+#jug-lines path, #jug-lines circle { vector-effect: var(--ve, none); }
+.st-brush .line-art { fill: var(--ink); stroke: none; }
+.plain { background: var(--surface); }
+
+/* ---------- treatment: CSS over the picture, in the shared colours ---------- */
+.pic { --duo-dark: var(--band-3, color-mix(in oklab, var(--accent) 55%, rgb(var(--shadow-rgb)))); --duo-light: var(--on-band, light-dark(var(--surface), var(--ink))); }   /* a site with bands: none still has two inks */
+.tr-duotone { background: var(--duo-light); }
+.tr-duotone > * { filter: grayscale(1) contrast(1.1); mix-blend-mode: multiply; }
+.tr-duotone::after { content: ""; background: var(--duo-dark); mix-blend-mode: lighten; }
+.tr-grain::after { content: ""; background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 2.4); mask: var(--grain) 0 0 / 200px 200px; }
+.tr-halftone { background: var(--duo-light); }
+.tr-halftone .ht { position: absolute; inset: 0; filter: contrast(18); mix-blend-mode: multiply; }
+.tr-halftone .ht > * { filter: grayscale(1); }
+.tr-halftone .ht::after { content: ""; position: absolute; inset: 0; opacity: 0.5;   /* half picture, half dot screen: past the threshold, a dot grows with the dark */
+  background: radial-gradient(circle closest-corner, black, white) 0 0 / 5px 5px; }
+.tr-halftone::after { content: ""; background: var(--duo-dark); mix-blend-mode: lighten; }
+.tr-riso { background: var(--duo-light); }
+.tr-riso .ink { position: absolute; inset: 0; mix-blend-mode: multiply; }
+.tr-riso .ink::before { content: ""; position: absolute; inset: 0; background: var(--riso-ink); }
+.tr-riso .ink > * { position: relative; mix-blend-mode: screen; }
+.tr-riso .ink-a { --riso-ink: color-mix(in oklab, var(--duo-dark) 80%, var(--duo-light)); }
+.tr-riso .ink-a > * { filter: grayscale(1) brightness(1.45) contrast(2.6); }
+.tr-riso .ink-b { --riso-ink: color-mix(in oklab, var(--band-1, var(--accent)) 55%, var(--mark)); translate: 3px 2px; }
+.tr-riso .ink-b > * { filter: grayscale(1) brightness(1.1) contrast(1.5); }
+.tr-riso::after { content: ""; background: var(--duo-light); opacity: 0.55; mask: var(--grain) 0 0 / 200px 200px; }
+.tr-aged > * { filter: saturate(0.35) contrast(0.86) brightness(1.06); }
+.tr-aged::before { content: ""; z-index: 1; mix-blend-mode: multiply;
+  background: radial-gradient(ellipse at 50% 45%, transparent 50%, color-mix(in oklab, var(--mark) 60%, transparent)), color-mix(in oklab, var(--mark) 32%, var(--on-band)); }
+.tr-aged::after { content: ""; z-index: 2; background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 3); mask: var(--grain) 0 0 / 200px 200px; }
+
+/* ---------- stand-in: the brief box ---------- */
+.brief { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.375rem; aspect-ratio: 3 / 2; padding: 1rem 1.25rem;
+  border: 2px dashed var(--ink-soft); border-radius: 3px; color: var(--ink-soft); font: 0.875rem/1.4 system-ui, sans-serif;
+  background: var(--surface) repeating-linear-gradient(135deg, transparent 0 14px, color-mix(in oklab, var(--line) 45%, transparent) 14px 15px); }
+.brief b { color: var(--ink); font-size: 0.9375rem; }
+.brief .ic { width: 2rem; height: 2rem; stroke-width: 1.6; }
+.pic-fig.small .brief { aspect-ratio: auto; padding: 0.75rem; }
+</style>
+</head>
+<body class="mode-light">
+
+<!-- every drawing, filter and clip, drawn once here, outside the swatches -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false"><defs>
+
+<filter id="pen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="4" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="torn" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="9" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="pencil" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" result="g"/>
+  <feColorMatrix in="g" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="gaps"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="5" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+  <feComposite in="d" in2="gaps" operator="in"/></filter>
+<filter id="pencil-b" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="8" result="g"/>
+  <feColorMatrix in="g" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="gaps"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="12" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+  <feComposite in="d" in2="gaps" operator="in"/></filter>
+<filter id="wash" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.6" result="b"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="2" result="n"/>
+  <feDisplacementMap in="b" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="mist" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+<filter id="brush" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.06 0.12" numOctaves="3" seed="13" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="pen-ic" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="21" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="2.8" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="core" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="31" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="n"/>
+  <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  2.4 0 0 0 -0.95" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
+<filter id="gran" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="4" result="n"/>
+  <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.6 0 0 0 1.55" result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/></filter>
+<filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.2"/></filter>
+<filter id="dry" x="-5%" y="-20%" width="110%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.55" numOctaves="2" seed="6" result="s"/>
+  <feColorMatrix in="s" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.2 2.2" result="streaks"/>
+  <feComposite in="SourceGraphic" in2="streaks" operator="in"/></filter>
+<clipPath id="cl-jug"><path d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/></clipPath>
+<clipPath id="cl-cup"><path d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/></clipPath>
+<clipPath id="cl-clay"><path d="M80 150C100 144 116 156 136 150S170 144 200 152V200H80Z"/></clipPath>
+<clipPath id="cl-pic"><rect width="320" height="220"/></clipPath>
+<symbol id="t-flat-shapes" viewBox="0 0 320 220">
+<rect class="c-sky" width="320" height="188"/><circle class="c-sun" cx="252" cy="58" r="26"/>
+<rect class="c-table" y="186" width="320" height="34"/>
+<path class="c-stem" d="M140 72C136 52 144 36 150 16"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)"/>
+<path class="c-glaze-line" d="M157 100C190 92 204 120 182 146"/><path class="c-glaze" d="M122 70L105 61C109 70 115 77 123 81Z"/><path class="c-glaze" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/>
+<path class="c-clay" d="M80 150C100 144 116 156 136 150S170 144 200 152V200H80Z" clip-path="url(#cl-jug)"/>
+<path class="c-cup-line" d="M253 156C268 155 268 175 250 176"/><path class="c-cup" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/></symbol>
+<symbol id="t-cut-paper" viewBox="0 0 320 220">
+<rect class="c-sky" width="320" height="220"/>
+<g class="cut"><path class="core" d="M226 58a26 26 0 1 0 52 0a26 26 0 1 0 -52 0Z"/><path class="c-sun" d="M226 58a26 26 0 1 0 52 0a26 26 0 1 0 -52 0Z"/></g>
+<g class="cut"><path class="core" d="M-10 150C40 120 80 136 120 126S200 112 240 124S300 130 330 120V200H-10Z"/><path class="c-hill-far" d="M-10 150C40 120 80 136 120 126S200 112 240 124S300 130 330 120V200H-10Z"/></g>
+<g class="cut"><path class="core" d="M-10 188C40 152 90 168 130 160S230 142 330 170V200H-10Z"/><path class="c-hill" d="M-10 188C40 152 90 168 130 160S230 142 330 170V200H-10Z"/></g>
+<g class="cut"><path class="core" d="M-8 183L328 189V228H-8Z"/><path class="c-table" d="M-8 183L328 189V228H-8Z"/></g>
+<g class="cut"><path class="core" d="M138 76C134 52 142 34 148 14L152 15C146 36 140 54 143 76Z"/><path class="c-stem-fill" d="M138 76C134 52 142 34 148 14L152 15C146 36 140 54 143 76Z"/></g><g class="cut"><g class="core"><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)"/></g><g class="c-leaf"><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)"/><path d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)"/></g></g>
+<g class="cut" transform="rotate(-2 140 130)"><path class="core" d="M157 98C194 86 210 122 184 152L176 146C196 122 186 102 158 108Z"/><path class="c-glaze" d="M157 98C194 86 210 122 184 152L176 146C196 122 186 102 158 108Z"/></g><g class="cut" transform="rotate(-2 140 130)"><path class="core" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70ZM122 70L105 61C109 70 115 77 123 81Z"/><path class="c-glaze" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70ZM122 70L105 61C109 70 115 77 123 81Z"/></g>
+<g transform="rotate(-2 140 130)"><g clip-path="url(#cl-jug)"><g class="cut"><path class="core" d="M70 152C100 142 116 158 136 151S172 143 210 154V210H70Z"/><path class="c-clay" d="M70 152C100 142 116 158 136 151S172 143 210 154V210H70Z"/></g></g></g>
+<g class="cut" transform="rotate(3 232 168)"><path class="core" d="M252 154C272 152 273 179 249 179L250 172C263 172 263 160 252 160Z"/><path class="c-cup" d="M252 154C272 152 273 179 249 179L250 172C263 172 263 160 252 160Z"/></g><g class="cut" transform="rotate(3 232 168)"><path class="core" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/><path class="c-cup" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/></g>
+<rect class="paper-grain" width="320" height="220" filter="url(#grainf)"/></symbol>
+<symbol id="t-ink-line" viewBox="0 0 320 220">
+<rect class="c-paper" width="320" height="220"/>
+<g transform="translate(5 4)"><circle class="c-sun-wash" cx="252" cy="58" r="23"/>
+  <path class="c-glaze-wash" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/><path class="c-cup-wash" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/><path class="c-leaf-wash" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="c-leaf-wash" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="c-leaf-wash" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="c-leaf-wash" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="c-leaf-wash" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)"/></g>
+<path class="c-clay-wash" d="M80 150C100 144 116 156 136 150S170 144 200 152V200H80Z" clip-path="url(#cl-jug)"/>
+<g class="ink" filter="url(#pen)"><path d="M124 94C94 106 84 140 96 166C102 178 108 184 114 186"/><path d="M156 94C186 106 196 140 184 166C178 178 172 184 166 186"/><path d="M112 186L168 186"/><path d="M118 70L162 70"/><path d="M120 70C122 80 126 86 124 94"/><path d="M160 70C158 80 154 86 156 94"/><path d="M120 71L105 62C109 70 115 77 123 81"/><path d="M157 100C190 92 204 120 182 146"/><path d="M93 150C104 146 118 155 136 150C150 146 170 145 188 151"/><path d="M212 150L254 150"/><path d="M212 150C212 168 217 183 225 186L241 186C249 183 254 168 254 150"/><path d="M253 156C268 155 268 175 250 176"/><path d="M8 188C100 186 220 189 312 187"/><path d="M140 72C136 52 144 36 150 16"/><circle cx="252" cy="58" r="26"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(149 19) rotate(-100) scale(0.7)"/>
+  <path d="M100 120l6 -3M98 132l7 -2M176 128l5 4M178 140l5 3"/></g></symbol>
+<symbol id="t-pencil" viewBox="0 0 320 220">
+<rect class="c-paper" width="320" height="220"/>
+<g class="wash" filter="url(#wash)"><circle class="c-sun-wash" cx="252" cy="58" r="28"/>
+  <path class="c-glaze-wash" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/><path class="c-cup-wash" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/><path class="c-table-wash" d="M0 188H320V220H0Z"/></g>
+<g class="graphite" filter="url(#pencil)"><path d="M124 94C94 106 84 140 96 166C102 178 108 184 114 186"/><path d="M156 94C186 106 196 140 184 166C178 178 172 184 166 186"/><path d="M112 186L168 186"/><path d="M118 70L162 70"/><path d="M120 70C122 80 126 86 124 94"/><path d="M160 70C158 80 154 86 156 94"/><path d="M120 71L105 62C109 70 115 77 123 81"/><path d="M157 100C190 92 204 120 182 146"/><path d="M93 150C104 146 118 155 136 150C150 146 170 145 188 151"/><path d="M212 150L254 150"/><path d="M212 150C212 168 217 183 225 186L241 186C249 183 254 168 254 150"/><path d="M253 156C268 155 268 175 250 176"/><path d="M8 188C100 186 220 189 312 187"/><path d="M140 72C136 52 144 36 150 16"/><circle cx="252" cy="58" r="26"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(149 19) rotate(-100) scale(0.7)"/></g>
+<g class="graphite again" filter="url(#pencil-b)" transform="translate(0.8 -0.6)"><path d="M124 94C94 106 84 140 96 166C102 178 108 184 114 186"/><path d="M156 94C186 106 196 140 184 166C178 178 172 184 166 186"/><path d="M112 186L168 186"/><path d="M118 70L162 70"/></g>
+<g class="graphite light" filter="url(#pencil)"><g clip-path="url(#cl-jug)"><path class="" d="M196 71.5L245 162M193 73.6L241 164M189 75.7L237 166M185 77.8L233 168M181 79.6L230 170M178 81.7L226 172M174 82.6L222 174M170 85.1L219 176M167 87.7L215 178M163 89.3L211 180M159 91.6L208 182M155 92.6L204 184M152 95.0L200 186M148 96.7L196 188M144 99.0L193 190M141 101.0L189 192M137 102.3L185 194M133 104.6L182 196M130 106.6L178 198M126 109.3L174 200M122 111.1L170 202M118 112.4L167 204M115 115.1L163 206M111 116.3L159 208M107 118.8L156 210"/></g>
+  <g clip-path="url(#cl-cup)"><path class="" d="M255 140.3L274 176M252 141.9L271 178M249 144.6L268 180M246 145.5L265 181M243 147.2L262 183M239 149.8L258 185M236 151.4L255 186M233 152.4L252 188M230 154.9L249 190M227 156.0L246 192M224 157.9L242 193M220 159.0L239 195"/></g>
+  <path d="M168 194l30 2M176 199l34 1M186 204l26 1"/></g>
+<path class="ring" filter="url(#pen)" d="M262 160C270 140 236 132 214 138C192 146 198 184 222 192C248 199 276 186 268 158C265 150 256 144 246 142"/></symbol>
+<path id="iw-marks" d="M124 94L115 96L107 102L100 108L95 116L91 124L88 132L87 141L87 150L89 159L92 168L94 172L96 175L98 178L100 180L102 182L105 184L107 185L109 186L111 187L114 186L114 186L113 183L112 182L110 181L109 179L108 177L106 175L105 173L103 170L102 167L100 164L97 157L96 149L95 141L96 134L97 126L100 118L105 112L110 105L117 100L124 94ZM156 94L164 99L171 105L176 111L181 118L184 125L186 133L187 141L186 149L185 157L182 165L180 168L178 171L177 174L175 176L173 178L172 180L170 182L169 183L167 184L166 186L166 186L168 186L170 186L172 184L174 183L177 181L178 179L180 176L182 174L185 171L186 167L189 159L191 150L191 141L190 132L188 124L184 116L179 109L173 102L165 97L156 94ZM117 70L123 72L128 72L134 73L140 73L146 73L151 73L157 72L163 71L163 71L157 69L152 69L146 68L140 68L134 68L129 68L123 69L117 70ZM111 187L118 188L126 188L133 188L140 188L147 187L155 187L162 186L169 185L169 185L162 184L154 184L147 184L140 184L133 185L125 185L118 186L111 187ZM121 72L121 75L121 77L122 80L122 82L123 84L123 86L123 88L124 90L124 92L124 94L124 94L125 92L126 90L126 88L126 86L125 83L125 81L124 79L123 77L122 74L121 72ZM159 72L158 74L157 77L156 79L155 81L155 83L154 86L154 88L154 90L155 92L156 94L156 94L156 92L156 90L157 88L157 86L157 84L158 82L158 80L159 77L159 75L159 72ZM157 100L166 100L174 101L180 104L184 107L188 112L189 117L190 123L189 130L186 137L182 146L182 146L189 139L193 131L195 123L195 116L193 109L188 103L182 99L175 97L166 97L157 100ZM212 150L211 155L212 160L212 165L213 170L214 174L216 178L217 181L219 184L222 186L224 188L227 188L229 188L231 188L233 188L235 188L237 188L239 188L241 188L244 186L247 184L249 181L250 178L252 174L253 170L254 165L254 160L255 155L254 150L254 150L253 155L253 160L252 165L250 169L249 173L248 177L246 179L244 182L242 183L241 184L239 184L237 184L235 184L233 184L231 184L229 184L227 184L226 184L224 183L222 182L220 180L218 177L217 173L216 169L214 165L214 160L213 155L212 150ZM253 156L257 157L260 158L261 160L262 163L263 165L262 168L260 170L258 172L255 174L250 176L250 176L255 176L259 174L262 172L264 169L265 165L265 162L263 159L261 157L257 156L253 156ZM140 72L140 66L140 60L141 55L142 50L143 44L144 39L146 34L147 28L149 22L150 16L150 16L147 22L145 27L143 33L141 38L139 44L139 49L138 55L138 60L138 66L140 72Z"/><symbol id="t-ink-wash" viewBox="0 0 320 220">
+<rect class="c-paper" width="320" height="220"/>
+<g filter="url(#gran)"><path class="mist far" filter="url(#mist)" d="M-20 128C30 96 64 104 96 92C130 80 150 104 180 100C210 96 250 112 340 104V146C250 150 120 150 -20 146Z"/>
+<path class="mist" filter="url(#mist)" d="M180 150C220 126 252 134 280 124C300 118 320 124 340 122V166C290 170 230 170 180 166Z"/></g>
+<circle class="seal" filter="url(#pen)" cx="252" cy="58" r="18"/>
+<g filter="url(#gran)"><path class="wash-1" filter="url(#wash)" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z" transform="translate(-4 3)"/>
+ <g clip-path="url(#cl-jug)"><path class="wash-2" filter="url(#wash)" d="M146 80C186 100 200 150 186 200H230V80Z"/>
+  <path class="wet-edge" filter="url(#soft)" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/><ellipse class="pool" filter="url(#soft)" cx="146" cy="184" rx="44" ry="11"/></g>
+ <path class="wash-1" filter="url(#wash)" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z" transform="translate(-2 2)"/>
+ <g clip-path="url(#cl-cup)"><path class="wet-edge" filter="url(#soft)" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/><ellipse class="pool" filter="url(#soft)" cx="234" cy="186" rx="20" ry="6"/></g></g>
+<use href="#iw-marks" class="sumi-bleed" filter="url(#wash)"/>
+<use href="#iw-marks" class="sumi" filter="url(#pen)"/><path class="sumi" filter="url(#pen)" d="M138 58L137 55L135 53L133 51L131 50L129 49L127 48L124 48L121 48L121 49L122 51L124 53L126 55L127 57L130 57L132 58L135 59L138 58ZM143 47L146 47L148 48L151 47L153 47L155 46L156 44L158 42L159 40L159 39L157 39L154 39L152 39L150 40L148 41L146 43L144 45L143 47ZM141 36L140 33L139 32L138 30L136 29L134 28L132 27L130 26L128 26L127 27L128 29L130 31L131 33L132 34L134 35L136 36L138 36L141 36ZM147 28L149 28L151 28L153 27L155 27L157 26L158 24L159 23L160 21L160 20L158 20L156 20L154 21L152 21L151 23L149 24L148 26L147 28ZM149 19L150 17L150 16L151 14L150 12L150 11L149 9L148 8L147 7L147 7L146 8L146 10L145 12L145 13L146 15L146 16L148 18L149 19Z"/>
+<path class="sumi dry" filter="url(#dry)" d="M18 196L41 197L65 197L92 196L120 197L149 196L178 196L209 196L239 196L270 194L300 191L300 189L270 188L239 187L209 188L178 188L148 188L120 188L92 189L65 189L41 190L18 194ZM60 203L78 204L95 204L112 205L128 204L145 204L162 205L178 205L195 204L212 203L230 201L230 201L212 199L195 199L178 199L162 198L145 199L128 199L112 199L95 199L78 200L60 203Z"/></symbol>
+<symbol id="t-painted" viewBox="0 0 320 220">
+<rect class="c-sky" width="320" height="188"/>
+<g filter="url(#brush)"><path class="p-sky-low" d="M-10 96H330V190H-10Z"/><path class="p-sky-light" d="M198 17q21 -2 41 -1" stroke-width="6.2"/><path class="p-sky-light" d="M230 57q10 -2 21 -1" stroke-width="8.4"/><path class="p-sky-light" d="M221 74q27 2 53 2" stroke-width="8.0"/><path class="p-sky-light" d="M50 77q20 2 39 0" stroke-width="6.1"/><path class="p-sky-light" d="M83 42q16 -3 33 1" stroke-width="8.0"/><path class="p-sky-light" d="M276 64q21 2 42 -1" stroke-width="7.4"/><path class="p-sky-light" d="M107 21q14 0 28 -1" stroke-width="6.3"/><path class="p-sky-light" d="M158 39q13 -0 25 -1" stroke-width="5.2"/><path class="p-sky-light" d="M30 37q11 1 23 2" stroke-width="5.9"/><path class="p-sky-light" d="M193 84q11 -3 22 1" stroke-width="8.2"/><path class="p-sky-light" d="M168 19q18 3 37 2" stroke-width="8.0"/><path class="p-sky-light" d="M33 78q17 2 35 -1" stroke-width="8.9"/><path class="p-sky-warm" d="M169 135q14 1 28 0" stroke-width="7.0"/><path class="p-sky-warm" d="M89 135q17 -2 34 -1" stroke-width="7.4"/><path class="p-sky-warm" d="M7 108q11 1 23 0" stroke-width="6.7"/><path class="p-sky-warm" d="M-17 120q17 -3 34 -2" stroke-width="9.0"/><path class="p-sky-warm" d="M10 112q15 1 31 -2" stroke-width="6.3"/><path class="p-sky-warm" d="M91 141q10 -1 20 -0" stroke-width="8.8"/><path class="p-sky-warm" d="M141 122q23 -2 47 -2" stroke-width="6.5"/><path class="p-sky-warm" d="M270 136q15 1 30 1" stroke-width="5.3"/><path class="p-sky-warm" d="M164 115q15 -2 30 -1" stroke-width="5.8"/><path class="p-sky-warm" d="M-17 117q12 2 23 0" stroke-width="4.0"/>
+<circle class="p-halo" cx="252" cy="58" r="36"/><circle class="p-sun" cx="252" cy="58" r="26"/>
+<path class="c-hill" d="M-10 190C40 152 90 170 130 162S230 146 330 172V200H-10Z"/><path class="p-hill-dab" d="M245 164q12 0 25 -1" stroke-width="3.9"/><path class="p-hill-dab" d="M134 163q16 -3 33 1" stroke-width="3.7"/><path class="p-hill-dab" d="M90 169q7 -3 15 -1" stroke-width="4.3"/><path class="p-hill-dab" d="M279 182q7 0 15 -1" stroke-width="5.4"/><path class="p-hill-dab" d="M96 180q13 -3 26 -2" stroke-width="3.7"/><path class="p-hill-dab" d="M276 163q12 -1 25 -1" stroke-width="5.4"/><path class="p-hill-dab" d="M61 176q14 3 29 0" stroke-width="5.8"/><path class="p-hill-dab" d="M135 173q14 3 28 2" stroke-width="3.3"/>
+<rect class="c-table" y="186" width="320" height="34"/><path class="p-table-stroke" d="M24 204q44 0 89 -1" stroke-width="4.9"/><path class="p-table-stroke" d="M75 192q22 -1 43 1" stroke-width="2.3"/><path class="p-table-stroke" d="M209 213q50 1 100 -0" stroke-width="3.9"/><path class="p-table-stroke" d="M247 209q29 1 57 -2" stroke-width="2.9"/><path class="p-table-stroke" d="M299 202q28 1 56 -0" stroke-width="2.0"/><path class="p-table-stroke" d="M-11 197q30 1 60 -1" stroke-width="4.6"/><path class="p-table-stroke" d="M253 201q50 1 100 -0" stroke-width="2.8"/><path class="p-table-stroke" d="M128 213q36 -1 72 -0" stroke-width="3.4"/><path class="p-table-stroke" d="M41 205q21 1 42 -1" stroke-width="2.3"/><path class="p-table-stroke" d="M168 198q47 -0 93 0" stroke-width="4.5"/><path class="p-table-stroke" d="M49 209q39 -0 79 2" stroke-width="2.1"/><path class="p-table-stroke" d="M256 194q45 -1 90 -2" stroke-width="3.5"/>
+<path class="p-cast" d="M168 186C204 178 244 180 270 189L168 190Z"/><path class="p-cast" d="M252 186C266 182 284 184 294 189L252 190Z"/>
+<path class="c-stem" d="M140 72C136 52 144 36 150 16"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="c-leaf" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)"/><path class="p-leaf-lit" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(138 58) rotate(-150) scale(1.1)" style="translate: -1.5px -1px; scale: 0.8"/><path class="p-leaf-lit" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(143 47) rotate(-25) scale(1.0)" style="translate: -1.5px -1px; scale: 0.8"/><path class="p-leaf-lit" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(141 36) rotate(-145) scale(0.9)" style="translate: -1.5px -1px; scale: 0.8"/><path class="p-leaf-lit" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(147 28) rotate(-30) scale(0.85)" style="translate: -1.5px -1px; scale: 0.8"/><path class="p-leaf-lit" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0Z" transform="translate(149 19) rotate(-100) scale(0.7)" style="translate: -1.5px -1px; scale: 0.8"/>
+<path class="c-glaze-line" d="M157 100C190 92 204 120 182 146"/><path class="p-dark" d="M176 100C196 106 200 124 186 144" stroke-width="3"/><path class="c-glaze" d="M122 70L105 61C109 70 115 77 123 81Z"/><path class="c-glaze" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/>
+<g clip-path="url(#cl-jug)"><path class="p-shade" d="M156 60C196 92 206 150 180 200H230V60Z"/><path class="p-dark" d="M170 106C184 124 184 146 172 172" stroke-width="4.7"/><path class="p-dark" d="M174 109C187 124 186 146 175 169" stroke-width="4.9"/><path class="p-dark" d="M178 112C190 124 188 146 178 166" stroke-width="4.6"/><path class="p-dark" d="M182 115C193 124 190 146 181 163" stroke-width="4.9"/><path class="p-lit" d="M102 104C94 124 96 146 106 164" stroke-width="4.8"/><path class="p-lit" d="M107 106C99 125 101 145 111 162" stroke-width="6.1"/><path class="p-lit" d="M112 108C104 126 106 144 116 160" stroke-width="6.1"/><path class="p-lit" d="M117 110C109 127 111 143 121 158" stroke-width="6.5"/><path class="c-clay" d="M80 150C100 144 116 156 136 150S170 144 200 152V200H80Z"/>
+  <path class="p-clay-dark" d="M150 146C194 150 194 182 172 200H230V140Z"/><path class="p-lit" d="M100 158C104 172 110 180 118 184" stroke-width="5"/>
+  <path class="p-glint" d="M112 112C108 120 108 128 110 134" stroke-width="4"/><path class="p-lit" d="M126 74L126 90" stroke-width="3"/></g>
+<path class="c-cup-line" d="M253 156C268 155 268 175 250 176"/><path class="c-cup" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/>
+<g clip-path="url(#cl-cup)"><path class="p-shade" d="M236 140C254 160 252 176 244 200H270V140Z"/><path class="p-lit" d="M218 156C218 166 220 174 224 180" stroke-width="4"/></g></g></symbol>
+<symbol id="t-engraved" viewBox="0 0 320 220">
+<rect class="c-paper" width="320" height="220"/>
+<path class="e-fine" d="M0 4H320M0 8H320M0 12H320M0 16H320M0 20H320M0 24H320M0 28H320M0 32H320M0 36H320M0 40H320M0 44H320M0 48H320M0 52H320M0 56H320M0 60H320M0 64H320M0 68H320M0 72H320M0 76H320M0 80H320M0 84H320M0 88H320M0 92H320M0 96H320M0 100H320M0 104H320M0 108H320M0 112H320M0 116H320M0 120H320M0 124H320M0 128H320M0 132H320M0 136H320M0 140H320M0 144H320M0 148H320M0 152H320M0 156H320M0 160H320M0 164H320M0 168H320M0 172H320M0 176H320M0 180H320M0 184H320"/>
+<circle class="c-paper" cx="252" cy="58" r="31"/>
+<path class="e-fine" d="M287.0 58.0L295.0 58.0M285.8 67.1L293.5 69.1M282.3 75.5L289.2 79.5M276.7 82.7L282.4 88.4M269.5 88.3L273.5 95.2M261.1 91.8L263.1 99.5M252.0 93.0L252.0 101.0M242.9 91.8L240.9 99.5M234.5 88.3L230.5 95.2M227.3 82.7L221.6 88.4M221.7 75.5L214.8 79.5M218.2 67.1L210.5 69.1M217.0 58.0L209.0 58.0M218.2 48.9L210.5 46.9M221.7 40.5L214.8 36.5M227.3 33.3L221.6 27.6M234.5 27.7L230.5 20.8M242.9 24.2L240.9 16.5M252.0 23.0L252.0 15.0M261.1 24.2L263.1 16.5M269.5 27.7L273.5 20.8M276.7 33.3L282.4 27.6M282.3 40.5L289.2 36.5M285.8 48.9L293.5 46.9"/>
+<path class="c-paper" d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z"/><path class="c-paper" d="M212 150H254C254 168 249 183 241 186H225C217 183 212 168 212 150Z"/><path class="c-paper" d="M0 186H320V220H0Z"/>
+<path class="e-line" d="M0 188.0H320M0 190.6H320M0 193.2H320M0 195.8H320M0 198.4H320M0 201.0H320M0 203.6H320M0 206.2H320M0 208.8H320M0 211.4H320M0 214.0H320M0 216.6H320"/>
+<g clip-path="url(#cl-jug)"><path class="e-line" d="M80 98Q140 107 200 98M80 102Q140 111 200 102M80 106Q140 115 200 106M80 110Q140 119 200 110M80 114Q140 123 200 114M80 118Q140 127 200 118M80 122Q140 131 200 122M80 126Q140 135 200 126M80 130Q140 139 200 130M80 134Q140 143 200 134M80 138Q140 147 200 138M80 142Q140 151 200 142M80 146Q140 155 200 146M80 150Q140 159 200 150M80 154Q140 163 200 154M80 158Q140 167 200 158M80 162Q140 171 200 162M80 166Q140 175 200 166M80 170Q140 179 200 170M80 174Q140 183 200 174M80 178Q140 187 200 178M80 182Q140 191 200 182M80 186Q140 195 200 186"/><g class="e-line"><path class="" d="M98 127.5L189 64M100 130.3L190 67M102 133.0L192 70M104 135.2L194 72M106 138.1L196 75M108 140.7L198 77M109 143.3L200 80M111 145.6L201 83M113 148.2L203 85M115 151.0L205 88M117 153.9L207 91M119 156.2L209 93M120 158.9L211 96M122 161.5L212 98M124 164.4L214 101M126 167.1L216 104M128 169.4L218 106M130 172.4L220 109M131 174.4L222 112M133 177.5L223 114M135 180.1L225 117M137 182.3L227 119M139 185.3L229 122M141 187.8L231 125M142 190.7L233 127M144 192.8L234 130M146 195.7L236 133M148 198.5L238 135M150 201.0L240 138M152 203.4L242 140M153 205.9L244 143M155 209.0L245 146M157 211.4L247 148M159 214.3L249 151M161 216.4L251 154"/></g>
+  <g clip-path="url(#cl-clay)" class="e-line"><path class="" d="M124 74.7L231 149M123 76.8L229 151M121 79.0L228 153M120 80.6L226 155M118 82.9L225 158M117 84.9L223 160M115 87.4L222 162M114 89.3L220 164M112 91.8L219 166M111 93.6L217 168M109 95.9L216 170M108 98.1L214 172M106 99.9L213 175M105 102.2L211 177M103 104.6L210 179M102 106.4L208 181M100 108.5L207 183M99 110.5L205 185M97 113.0L204 187M96 114.8L202 190M94 117.1L201 192M93 119.2L199 194M91 121.4L198 196M90 123.2L196 198M88 125.7L195 200M87 128.0L193 202M85 129.7L192 204M84 131.9L190 207M82 134.4L189 209M81 136.3L187 211M79 138.2L186 213M78 140.2L184 215M76 142.8L183 217M75 144.7L181 219M73 146.9L180 221M72 148.9L178 224M70 151.2L177 226M69 153.4L175 228M67 155.3L174 230M66 157.3L172 232M64 160.0L171 234M63 162.0L169 236M61 163.6L168 238M60 166.1L166 241M58 168.3L165 243M57 170.3L163 245M55 172.6L162 247M54 174.8L160 249M52 176.8L159 251M51 178.8L157 253"/></g></g>
+<g clip-path="url(#cl-cup)"><path class="e-line" d="M206 152.0Q233 158.0 260 152.0M206 155.5Q233 161.5 260 155.5M206 159.0Q233 165.0 260 159.0M206 162.5Q233 168.5 260 162.5M206 166.0Q233 172.0 260 166.0M206 169.5Q233 175.5 260 169.5M206 173.0Q233 179.0 260 173.0M206 176.5Q233 182.5 260 176.5M206 180.0Q233 186.0 260 180.0M206 183.5Q233 189.5 260 183.5M206 187.0Q233 193.0 260 187.0"/><g class="e-line"><path class="" d="M215 163.2L253 137M217 165.7L254 139M218 168.1L256 142M220 170.5L258 144M222 173.0L260 147M224 175.8L261 149M225 178.1L263 152M227 180.7L265 154M229 183.3L266 157M230 185.7L268 159M232 187.7L270 162M234 190.6L272 164M236 192.6L273 166M237 195.5L275 169M239 198.0L277 171M241 200.3L278 174"/></g></g>
+<g class="e-out"><path d="M124 94C94 106 84 140 96 166C102 178 108 184 114 186"/><path d="M156 94C186 106 196 140 184 166C178 178 172 184 166 186"/><path d="M112 186L168 186"/><path d="M118 70L162 70"/><path d="M120 70C122 80 126 86 124 94"/><path d="M160 70C158 80 154 86 156 94"/><path d="M120 71L105 62C109 70 115 77 123 81"/><path d="M157 100C190 92 204 120 182 146"/><path d="M93 150C104 146 118 155 136 150C150 146 170 145 188 151"/><path d="M212 150L254 150"/><path d="M212 150C212 168 217 183 225 186L241 186C249 183 254 168 254 150"/><path d="M253 156C268 155 268 175 250 176"/><path d="M8 188C100 186 220 189 312 187"/><path d="M140 72C136 52 144 36 150 16"/><circle cx="252" cy="58" r="26"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(149 19) rotate(-100) scale(0.7)"/></g></symbol>
+<symbol id="jug-lines" viewBox="0 0 320 220"><path d="M124 94C94 106 84 140 96 166C102 178 108 184 114 186"/><path d="M156 94C186 106 196 140 184 166C178 178 172 184 166 186"/><path d="M112 186L168 186"/><path d="M118 70L162 70"/><path d="M120 70C122 80 126 86 124 94"/><path d="M160 70C158 80 154 86 156 94"/><path d="M120 71L105 62C109 70 115 77 123 81"/><path d="M157 100C190 92 204 120 182 146"/><path d="M93 150C104 146 118 155 136 150C150 146 170 145 188 151"/><path d="M212 150L254 150"/><path d="M212 150C212 168 217 183 225 186L241 186C249 183 254 168 254 150"/><path d="M253 156C268 155 268 175 250 176"/><path d="M8 188C100 186 220 189 312 187"/><path d="M140 72C136 52 144 36 150 16"/><circle cx="252" cy="58" r="26"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(138 58) rotate(-150) scale(1.1)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(143 47) rotate(-25) scale(1.0)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(141 36) rotate(-145) scale(0.9)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(147 28) rotate(-30) scale(0.85)"/><path class="" d="M0 0C5 -6 14 -6 19 0C14 6 5 6 0 0ZM2 0H17" transform="translate(149 19) rotate(-100) scale(0.7)"/></symbol>
+<symbol id="jug-brush" viewBox="0 0 320 220"><path d="M124 94L115 97L107 102L101 109L96 116L92 124L89 132L89 141L89 150L90 159L93 167L95 171L97 174L99 177L101 179L103 181L105 183L107 185L110 186L112 186L114 186L114 186L113 184L111 183L110 181L108 180L107 178L105 176L103 174L102 171L100 168L99 165L96 157L94 149L94 141L95 133L97 126L100 118L104 111L110 105L116 99L124 94ZM156 94L164 99L170 105L176 111L180 118L183 126L185 133L186 141L186 149L184 157L182 165L180 168L178 171L176 174L175 176L173 178L172 180L170 182L169 183L167 184L166 186L166 186L168 186L170 186L172 184L175 183L177 181L179 179L181 177L183 174L185 171L186 167L190 159L192 150L192 141L190 132L188 124L184 116L179 109L173 102L165 97L156 94ZM112 186L119 187L126 188L133 188L140 188L147 188L154 188L161 187L168 186L168 186L161 185L154 184L147 184L140 184L133 184L126 184L119 185L112 186ZM118 70L124 71L129 72L134 72L140 72L146 72L151 72L156 71L162 70L162 70L156 69L151 68L146 68L140 68L134 68L129 68L124 69L118 70ZM120 70L119 73L120 76L120 79L121 81L121 83L122 85L122 87L123 89L123 91L124 94L124 94L126 92L126 89L126 87L126 85L126 82L125 80L124 77L123 75L122 73L120 70ZM160 70L158 73L157 75L156 78L155 80L154 82L154 85L153 87L154 89L154 92L156 94L156 94L157 92L157 89L158 87L158 85L159 83L159 81L160 79L160 76L161 73L160 70ZM120 71L119 69L117 68L115 66L113 65L112 64L110 62L108 61L103 61L104 66L106 68L107 70L109 72L111 74L113 76L115 78L118 79L120 81L123 81L123 81L121 79L119 77L117 75L116 74L114 72L113 70L111 68L109 66L108 63L107 63L106 65L108 66L110 67L112 68L113 69L116 70L118 71L120 71ZM157 100L166 100L174 101L180 103L185 107L188 111L190 117L190 123L189 130L186 138L182 146L182 146L189 139L193 131L195 123L194 116L192 109L188 104L182 100L175 97L166 97L157 100ZM93 150L97 150L100 150L104 151L107 152L112 152L116 153L121 153L126 154L131 153L136 152L141 151L145 150L150 149L155 149L160 148L166 149L171 149L177 149L182 150L188 151L188 151L183 148L177 147L172 146L166 145L161 145L155 145L150 145L145 146L140 147L136 148L130 149L126 149L121 150L117 149L112 149L108 148L104 148L100 148L96 148L93 150ZM212 150L217 151L222 152L228 152L233 152L238 152L244 152L249 151L254 150L254 150L249 149L244 148L238 148L233 148L228 148L222 148L217 149L212 150ZM212 150L211 155L212 160L212 165L213 170L214 174L215 178L217 181L219 184L221 186L224 188L227 188L229 188L231 188L233 188L235 188L237 188L239 188L242 188L245 187L247 184L249 181L250 178L252 174L253 170L254 165L254 160L255 155L254 150L254 150L253 155L252 160L252 165L250 169L249 173L248 177L246 179L244 182L242 183L240 184L239 184L237 184L235 184L233 184L231 184L229 184L227 184L226 184L224 183L222 181L220 179L219 176L217 173L216 169L215 165L214 160L213 155L212 150ZM253 156L257 157L259 159L261 161L262 163L261 165L261 167L260 170L258 172L254 174L250 176L250 176L255 177L259 175L263 172L265 169L266 165L266 162L264 159L261 156L257 155L253 156ZM8 188L36 189L66 189L97 189L128 189L160 190L192 190L223 190L254 189L284 189L312 187L312 187L284 186L254 186L223 186L192 186L160 185L128 185L97 185L66 186L36 186L8 188ZM140 72L141 66L141 60L141 55L142 50L144 45L145 39L146 34L148 28L149 22L150 16L150 16L147 22L145 27L143 33L141 38L139 43L138 49L137 55L137 60L138 66L140 72ZM226 58L228 49L233 42L238 37L245 34L252 33L259 34L266 37L271 42L274 49L275 58L275 66L271 71L267 76L261 79L255 81L248 81L242 80L236 77L232 72L228 66L228 66L230 73L235 79L241 83L248 85L256 85L263 83L270 80L275 74L279 67L281 58L279 48L274 39L268 33L260 30L252 29L244 30L236 34L230 40L226 48L226 58ZM138 58L137 55L135 53L134 51L132 49L129 49L127 48L124 48L121 48L121 49L122 51L124 53L126 55L127 57L130 58L132 58L135 58L138 58ZM143 47L146 48L148 48L151 47L153 46L154 45L156 44L158 42L159 40L159 39L157 39L154 39L152 40L150 40L148 41L146 43L144 45L143 47ZM141 36L140 33L139 32L138 30L136 29L134 28L132 27L130 27L128 26L128 27L129 29L130 31L131 32L133 34L134 35L136 36L138 36L141 36ZM147 28L149 28L152 28L153 28L155 27L157 26L158 24L159 23L160 21L160 20L158 20L156 20L154 21L152 22L151 23L149 24L148 26L147 28ZM149 19L150 17L150 16L151 14L150 12L150 11L149 9L148 8L147 7L147 7L146 8L146 10L145 12L146 13L146 15L147 16L148 18L149 19Z"/></symbol>
+<symbol id="f-none" viewBox="0 0 320 220"><rect class="c-sky" width="320" height="220"/>
+<rect class="c-table" x="20" y="158" width="280" height="12" rx="2"/><path class="c-table-line" d="M44 170L34 218M276 170L286 218M60 170L66 218M260 170L254 218"/>
+<path class="c-glaze" d="M98 158C94 132 104 118 116 114C128 118 138 132 134 158Z"/><path class="c-clay" d="M96 146C108 142 120 150 136 146L134 158H98Z"/>
+<path class="c-cup" d="M170 140H200C200 150 196 157 190 158H180C174 157 170 150 170 140Z"/>
+<path class="c-cup" d="M224 158L230 118H268L274 158Z"/><path class="c-sun" d="M232 128H266L264 138H234Z"/>
+<path class="c-stem" d="M116 114C114 98 120 88 124 76"/></symbol>
+<symbol id="f-silhouettes" viewBox="0 0 320 220"><rect class="c-sky" width="320" height="220"/>
+<circle class="c-sun" cx="162" cy="112" r="62"/><path class="c-hill" d="M-10 150C60 136 120 144 170 138S260 132 330 142V220H-10Z"/>
+<g class="f-sil"><circle cx="108" cy="96" r="15"/><path d="M102 106h12v12h-12z"/><path d="M74 170C74 128 84 118 108 118C132 118 142 128 142 170Z"/><circle cx="96" cy="86" r="8"/><circle cx="214" cy="92" r="15"/><path d="M208 102h12v12h-12z"/><path d="M180 170C180 124 190 114 214 114C238 114 248 124 248 170Z"/><path d="M196 90C196 72 232 72 232 90ZM228 88h14v4h-14z"/><path d="M120 70H160C158 80 154 86 156 94C186 106 196 140 184 166C178 178 172 184 166 186H114C108 184 102 178 96 166C84 140 94 106 124 94C126 86 122 80 120 70Z" transform="translate(119 100) scale(0.3)"/>
+<rect x="20" y="156" width="280" height="12" rx="2"/><path d="M44 166L34 218M276 166L286 218" stroke-width="5"/></g></symbol>
+<symbol id="f-simple" viewBox="0 0 320 220"><rect class="c-sky" width="320" height="220"/><circle class="f-skin-3" cx="92" cy="96" r="21"/><path class="f-hair-1" d="M71 94C68 70 112 66 113 92C104 80 82 80 71 94Z"/><circle class="f-feature" cx="85" cy="97" r="2.4"/><circle class="f-feature" cx="99" cy="97" r="2.4"/><path class="f-smile" d="M86 106q6 5 12 0"/><path class="c-band-2" d="M60 186C59 142 70 124 92 124C114 124 125 142 124 186Z"/><circle class="f-skin-1" cx="160" cy="96" r="21"/><path class="f-hair-2" d="M139 98C134 66 186 66 181 98C178 84 166 78 160 79C152 78 142 84 139 98ZM150 74a10 10 0 1 1 20 0z"/><circle class="f-feature" cx="153" cy="97" r="2.4"/><circle class="f-feature" cx="167" cy="97" r="2.4"/><path class="f-smile" d="M154 106q6 5 12 0"/><path class="c-band-1" d="M128 186C127 142 138 124 160 124C182 124 193 142 192 186Z"/><g class="f-smile"><circle cx="153" cy="97" r="5.5"/><circle cx="167" cy="97" r="5.5"/><path d="M158.5 97h3"/></g><circle class="f-skin-2" cx="228" cy="96" r="21"/><path class="f-hair-1" d="M207 92C206 74 222 70 236 74L250 70L248 90C236 82 220 82 207 92Z"/><circle class="f-feature" cx="221" cy="97" r="2.4"/><circle class="f-feature" cx="235" cy="97" r="2.4"/><path class="f-smile" d="M222 106q6 5 12 0"/><path class="c-band-3" d="M196 186C195 142 206 124 228 124C250 124 261 142 260 186Z"/><rect class="c-table" x="20" y="158" width="280" height="12" rx="2"/><path class="c-table-line" d="M44 170L34 218M276 170L286 218M60 170L66 218M260 170L254 218"/><path class="c-glaze" d="M150 158C148 146 154 138 160 136C166 138 172 146 170 158Z"/></symbol>
+<symbol id="f-detailed" viewBox="48 54 232 160"><rect class="c-sky" width="320" height="220"/>
+<path class="f-skin-2" d="M99 112h14v16h-14z"/>
+<path class="c-band-3" d="M69 216L70 188C68 146 80 126 106 125C132 126 144 146 142 188L143 216Z"/>
+<path class="f-fold" d="M100 126L106 140L112 126M86 150C84 162 86 174 90 186M126 150C128 162 126 174 122 186"/>
+<path class="f-shade" d="M118 128C136 134 144 150 142 188H126C130 160 126 140 118 128Z"/>
+<ellipse class="f-skin-2" cx="106" cy="94" rx="17" ry="21"/>
+<path class="f-shade" d="M114 76C126 84 126 104 114 114C120 102 121 88 114 76Z"/>
+<ellipse class="f-skin-2" cx="123" cy="96" rx="3.5" ry="5.5"/>
+<path class="f-line" d="M99 89q4 -2 7 0M111 89q4 -2 7 0M108 96l-2 7h4M103 108q5 3 10 0"/>
+<circle class="f-feature" cx="103" cy="94" r="1.8"/><circle class="f-feature" cx="114" cy="94" r="1.8"/><path class="f-hair-1" d="M87 94C84 66 128 62 125 92C128 110 130 126 122 136C122 118 120 100 118 84C108 80 98 82 92 90C91 110 94 124 88 134C80 120 84 104 87 94Z"/><path class="f-strand" d="M96 74C102 70 112 70 118 76M92 80C100 74 112 74 120 82"/><path class="c-band-3" d="M76 150C72 156 80 164 96 160L110 158L108 150Z"/><ellipse class="f-skin-2" cx="114" cy="155" rx="8" ry="5"/>
+<path class="f-skin-3" d="M207 112h14v16h-14z"/>
+<path class="c-band-2" d="M177 216L178 188C176 146 188 126 214 125C240 126 252 146 250 188L251 216Z"/>
+<path class="f-fold" d="M208 126L214 140L220 126M194 150C192 162 194 174 198 186M234 150C236 162 234 174 230 186"/>
+<path class="f-shade" d="M226 128C244 134 252 150 250 188H234C238 160 234 140 226 128Z"/>
+<ellipse class="f-skin-3" cx="214" cy="94" rx="17" ry="21"/>
+<path class="f-shade" d="M222 76C234 84 234 104 222 114C228 102 229 88 222 76Z"/>
+<ellipse class="f-skin-3" cx="231" cy="96" rx="3.5" ry="5.5"/>
+<path class="f-line" d="M203 89q4 -2 7 0M215 89q4 -2 7 0M212 96l-2 7h4M207 108q5 3 10 0"/>
+<circle class="f-feature" cx="207" cy="94" r="1.8"/><circle class="f-feature" cx="218" cy="94" r="1.8"/><path class="f-hair-3" d="M196 90C194 70 210 66 218 70C230 68 236 80 231 90C226 80 216 78 208 80C202 82 199 86 196 90Z"/><path class="f-strand" d="M202 76c6 -3 12 -3 18 0M206 72c6 -2 12 -1 16 2"/><path class="c-band-2" d="M184 150C180 156 188 164 204 160L218 158L216 150Z"/><ellipse class="f-skin-3" cx="222" cy="155" rx="8" ry="5"/><rect class="c-table" x="20" y="158" width="280" height="12" rx="2"/><path class="c-table-line" d="M44 170L34 218M276 170L286 218M60 170L66 218M260 170L254 218"/><path class="c-glaze" d="M150 158C148 146 154 138 160 136C166 138 172 146 170 158Z"/><path class="f-line" d="M152 140h16"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path class="b" d="M4 11L12 4L20 11V20H4Z"/><path class="k" d="M10 20V14H14V20"/></symbol>
+<symbol id="i-find" viewBox="0 0 24 24"><circle class="b" cx="10.5" cy="10.5" r="6.5"/><path class="o" d="M15.5 15.5L20.5 20.5"/><path class="k" d="M7.5 9a3.5 3.5 0 0 1 3 -2.5"/></symbol>
+<symbol id="i-basket" viewBox="0 0 24 24"><path class="b" d="M3.5 9.5H20.5L18.5 20H5.5Z"/><path class="o" d="M8 9.5L11 4M16 9.5L13 4"/><path class="k" d="M9 13V17M12 13V17M15 13V17"/></symbol>
+<symbol id="i-dates" viewBox="0 0 24 24"><path class="b" d="M4 6H20V20H4Z"/><path class="k" d="M4 10.5H20M8 14H10M14 14H16M8 17H10"/><path class="o" d="M8 3V7.5M16 3V7.5"/></symbol>
+<symbol id="i-write" viewBox="0 0 24 24"><path class="b" d="M5 19L5.8 15L15.5 5.3L18.7 8.5L9 18.2Z"/><path class="k" d="M13.6 7.2L16.8 10.4"/><path class="o" d="M13 19.5H20"/></symbol>
+
+</defs></svg>
+
+<main>
+<h1>Picture style: the layers</h1>
+<p class="intro">Six layers, each switched on its own: how pictures are made, what is done to them after, how icons are drawn, how heavy every drawn line is, how people are shown, and what fills a photograph's place in a mockup. Every option is shown on a light page (left) and the same CSS on a dark page (right), with the other layers at their defaults; the starting points at the end are saved sets of picks. The drawings were made by the script that builds this page, from the shared colour names only.</p>
+
+<h2 class="layer">Technique</h2>
+<p class="layer-note">How the pictures are made. The same jug, cup, sprig and sun in each, so only the technique changes. Drawings made from the band colours stay the same picture on a dark page; drawings made in the page's own ink and paper turn over, like chalk on a board.</p>
+<section class="swatch" data-option="technique:flat-shapes">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></figure><div class="sheet"><h3>Flat shapes</h3><p class="id">technique: flat-shapes</p><p>Clean flat shapes in a few colours, no outlines and no shading.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:cut-paper">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Cut-paper picture of a dipped jug and a red cup on a table, a sprig in the jug and the sun behind" focusable="false"><use href="#t-cut-paper"/></svg></figure><div class="sheet"><h3>Cut paper</h3><p class="id">technique: cut-paper</p><p>Shapes cut from coloured paper and laid on each other; uneven edges, a little shadow.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:ink-line">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Ink drawing of a jug and a cup on a table, a sprig in the jug and the sun behind, with loose colour under the lines" focusable="false"><use href="#t-ink-line"/></svg></figure><div class="sheet"><h3>Ink line</h3><p class="id">technique: ink-line</p><p>A pen outline with loose flat colour under it, slightly off the line.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:pencil">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Pencil sketch of a jug and a cup on a table, washed with colour, the cup ringed in pencil" focusable="false"><use href="#t-pencil"/></svg></figure><div class="sheet"><h3>Pencil</h3><p class="id">technique: pencil</p><p>A graphite sketch with a light wash: drawn on the spot. One thing ringed.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:ink-wash">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Brush-and-ink painting of a jug with a sprig, a cup, misty hills and a red sun" focusable="false"><use href="#t-ink-wash"/></svg></figure><div class="sheet"><h3>Ink wash</h3><p class="id">technique: ink-wash</p><p>Brush and ink: dry strokes, soft grey washes, a lot left empty.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:painted">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Painting of a green jug and a red cup on a table in the light from the left, the sun behind" focusable="false"><use href="#t-painted"/></svg></figure><div class="sheet"><h3>Painted</h3><p class="id">technique: painted</p><p>Opaque paint in big shapes: light from one side, shade on the other, brush marks.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:engraved">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Engraving of a jug and a cup on a table under a ruled sky, shaded in fine lines" focusable="false"><use href="#t-engraved"/></svg></figure><div class="sheet"><h3>Engraved</h3><p class="id">technique: engraved</p><p>Black lines only: tone made by ruled hatching, as on an old printed plate.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="technique:photograph">
+<div class="ground pics-1">
+<figure class="pic tr-none"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></figure><div class="sheet"><h3>Photograph</h3><p class="id">technique: photograph</p><p>A real photograph of the real thing. Here: free to use, credited below.</p></div>
+</div>
+</section>
+<h2 class="layer">Treatment</h2>
+<p class="layer-note">What is done to a picture after it is made: the photograph and one drawing, each with the same treatment. All of it is CSS over the picture, in the shared colours.</p>
+<section class="swatch" data-option="treatment:none">
+<div class="ground pics-2">
+<div class="pic tr-none"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><div class="sheet"><h3>None</h3><p class="id">treatment: none</p><p>The picture as it is.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="treatment:duotone">
+<div class="ground pics-2">
+<div class="pic tr-duotone"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><div class="pic tr-duotone"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><div class="sheet"><h3>Duotone</h3><p class="id">treatment: duotone</p><p>Two colours from the page: the darks in a band colour, the lights in the pale on it.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="treatment:grain">
+<div class="ground pics-2">
+<div class="pic tr-grain"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><div class="pic tr-grain"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><div class="sheet"><h3>Grain</h3><p class="id">treatment: grain</p><p>A fine speckle over the picture, so it sits in a made page.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="treatment:halftone">
+<div class="ground pics-2">
+<div class="pic tr-halftone"><div class="ht"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div></div><div class="pic tr-halftone"><div class="ht"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div></div><div class="sheet"><h3>Halftone</h3><p class="id">treatment: halftone</p><p>Printed in dots: big dots in the shadows, none in the lights.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="treatment:riso">
+<div class="ground pics-2">
+<div class="pic tr-riso"><div class="ink ink-a"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><div class="ink ink-b" aria-hidden="true"><img src="source/pictures.jpg" width="600" height="400" alt="" loading="lazy" decoding="async"></div></div><div class="pic tr-riso"><div class="ink ink-a"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><div class="ink ink-b" aria-hidden="true"><svg class="art" viewBox="0 0 320 220" aria-hidden="true" data-r="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div></div><div class="sheet"><h3>Riso</h3><p class="id">treatment: riso</p><p>Two inks printed one over the other, slightly out of register.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="treatment:aged">
+<div class="ground pics-2">
+<div class="pic tr-aged"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><div class="pic tr-aged"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><div class="sheet"><h3>Aged</h3><p class="id">treatment: aged</p><p>Faded and warmed, softer at the edges, with grain: an old print.</p></div>
+</div>
+</section>
+<h2 class="layer">Icons</h2>
+<p class="layer-note">How small signs are drawn. The same five icons in each, always with their words. The weight is the stroke layer's.</p>
+<section class="swatch" data-option="icons:outline">
+<div class="ground ic-outline st-regular one">
+<div class="sheet"><h3>Outline</h3><p class="id">icons: outline</p><p>Open shapes drawn in one even line.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul><button class="btn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg>Add to basket</button></div>
+</div>
+</section>
+<section class="swatch" data-option="icons:filled">
+<div class="ground ic-filled st-regular one">
+<div class="sheet"><h3>Filled</h3><p class="id">icons: filled</p><p>Solid shapes; details cut out of them.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul><button class="btn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg>Add to basket</button></div>
+</div>
+</section>
+<section class="swatch" data-option="icons:duotone">
+<div class="ground ic-duotone st-regular one">
+<div class="sheet"><h3>Duotone</h3><p class="id">icons: duotone</p><p>An outline with a pale fill of the same colour.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul><button class="btn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg>Add to basket</button></div>
+</div>
+</section>
+<section class="swatch" data-option="icons:hand-drawn">
+<div class="ground ic-hand-drawn st-regular one">
+<div class="sheet"><h3>Hand-drawn</h3><p class="id">icons: hand-drawn</p><p>The same shapes drawn by a hand: the line wavers.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul><button class="btn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg>Add to basket</button></div>
+</div>
+</section>
+<section class="swatch" data-option="icons:none">
+<div class="ground ic-none st-regular one">
+<div class="sheet"><h3>None</h3><p class="id">icons: none</p><p>No icons: words carry the menu.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul><button class="btn" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg>Add to basket</button></div>
+</div>
+</section>
+<h2 class="layer">Stroke</h2>
+<p class="layer-note">The weight of every drawn line: the icons, and the jug drawn as a line drawing.</p>
+<section class="swatch" data-option="stroke:hairline">
+<div class="ground ic-outline st-hairline pics-1">
+<figure class="pic plain"><svg class="art line-art" viewBox="0 0 320 220" role="img" aria-label="Line drawing of a jug and a cup, a sprig and the sun" focusable="false"><use href="#jug-lines"/></svg></figure><div class="sheet"><h3>Hairline</h3><p class="id">stroke: hairline</p><p>One pixel at every size: fine and exact.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="stroke:regular">
+<div class="ground ic-outline st-regular pics-1">
+<figure class="pic plain"><svg class="art line-art" viewBox="0 0 320 220" role="img" aria-label="Line drawing of a jug and a cup, a sprig and the sun" focusable="false"><use href="#jug-lines"/></svg></figure><div class="sheet"><h3>Regular</h3><p class="id">stroke: regular</p><p>Two pixels at 24: the common weight.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="stroke:bold">
+<div class="ground ic-outline st-bold pics-1">
+<figure class="pic plain"><svg class="art line-art" viewBox="0 0 320 220" role="img" aria-label="Line drawing of a jug and a cup, a sprig and the sun" focusable="false"><use href="#jug-lines"/></svg></figure><div class="sheet"><h3>Bold</h3><p class="id">stroke: bold</p><p>Three pixels at 24: chunky, reads from across a room.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="stroke:brush">
+<div class="ground ic-outline st-brush pics-1">
+<figure class="pic plain"><svg class="art line-art" viewBox="0 0 320 220" role="img" aria-label="Line drawing of a jug and a cup, a sprig and the sun" focusable="false"><use href="#jug-brush"/></svg></figure><div class="sheet"><h3>Brush</h3><p class="id">stroke: brush</p><p>Lines that swell and taper, as a brush makes them.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<h2 class="layer">Figures</h2>
+<p class="layer-note">How people are shown in the pictures. The same scene: people at a table with a jug.</p>
+<section class="swatch" data-option="figures:none">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a table with a jug, a cup and a jar on it; nobody there" focusable="false"><use href="#f-none"/></svg></figure><div class="sheet"><h3>None</h3><p class="id">figures: none</p><p>No people in the pictures: things and places only.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="figures:silhouettes">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Two people against a low sun, drawn as dark shapes with no faces" focusable="false"><use href="#f-silhouettes"/></svg></figure><div class="sheet"><h3>Silhouettes</h3><p class="id">figures: silhouettes</p><p>People as dark shapes against the light: no faces.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="figures:simple">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of three people at a table with a jug, each with a round face, dot eyes and a smile" focusable="false"><use href="#f-simple"/></svg></figure><div class="sheet"><h3>Simple</h3><p class="id">figures: simple</p><p>Round heads, dot eyes, a few shapes: friendly, and anyone.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="figures:detailed">
+<div class="ground pics-1">
+<figure class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of two people at a table, one with long hair looking down, the other with short grey hair, a jug between them" focusable="false"><use href="#f-detailed"/></svg></figure><div class="sheet"><h3>Detailed</h3><p class="id">figures: detailed</p><p>Faces, hair, folds and shade: particular people.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="figures:photographed">
+<div class="ground pics-1">
+<figure class="pic tr-none"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></figure><div class="sheet"><h3>Photographed</h3><p class="id">figures: photographed</p><p>Real people, photographed, named, and asked first.</p></div>
+</div>
+</section>
+<h2 class="layer">Stand-in</h2>
+<p class="layer-note">What fills a photograph's place in a mockup until the real one exists.</p>
+<section class="swatch" data-option="stand-in:none">
+<div class="ground pics-1">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a dipped jug and a cup on a table" focusable="false"><use href="#t-flat-shapes"/></svg></div><figcaption>The studio table in the morning.</figcaption></figure><div class="sheet"><h3>None</h3><p class="id">stand-in: none</p><p>Nothing stands in: the drawing is the real picture of the site.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="stand-in:brief-box">
+<div class="ground pics-1">
+<figure class="pic-fig"><div class="brief" role="img" aria-label="Space for a photograph, not taken yet: hands at the wheel, from above"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><b>Photo: hands at the wheel, from above</b><span>Daylight from the left. Clay on the hands; no faces needed. 3:2, 1800 by 1200 or larger.</span></div></figure><div class="sheet"><h3>Brief box</h3><p class="id">stand-in: brief-box</p><p>A box the size of the photograph, saying what it must show.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="stand-in:captioned">
+<div class="ground pics-1">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a dipped jug and a cup on a table, standing in for a photograph of the studio table" focusable="false"><use href="#t-flat-shapes"/></svg></div><figcaption>Drawn for now: a photograph of the studio table goes here.</figcaption></figure><div class="sheet"><h3>Captioned</h3><p class="id">stand-in: captioned</p><p>A drawing in the site's own style, with a caption that says a photograph goes here.</p></div>
+</div>
+</section>
+<section class="swatch" data-option="stand-in:quiet">
+<div class="ground pics-1">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a dipped jug and a cup on a table, standing in for a photograph of the studio table" focusable="false"><use href="#t-flat-shapes"/></svg></div><figcaption>Jug and cup, ash glaze.</figcaption></figure><div class="sheet"><h3>Quiet</h3><p class="id">stand-in: quiet</p><p>A drawing with an ordinary caption; the alt text and the blueprint say it stands in.</p></div>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks, any layer not named at its default. Each shows its picture in its technique and treatment, its people, its icons at its line weight, and how a missing photograph is shown.</p>
+<section class="swatch" data-option="start:warm">
+<div class="ground ic-hand-drawn st-bold pics-1 start">
+<figure class="pic-fig"><div class="pic tr-grain"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Cut-paper picture of a dipped jug and a red cup on a table, a sprig in the jug and the sun behind" focusable="false"><use href="#t-cut-paper"/></svg></div><figcaption>Drawn for now: a photograph of the studio table goes here.</figcaption></figure><div class="sheet"><h3>Warm</h3><p class="id">technique: cut-paper; treatment: grain; icons: hand-drawn; stroke: bold; figures: simple; stand-in: captioned</p><p>Cut paper with grain, simple friendly people, drawn icons; a caption says the real photograph is coming.</p><div class="pic tr-none small"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of three people at a table with a jug, each with a round face, dot eyes and a smile" focusable="false"><use href="#f-simple"/></svg></div><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:artistic">
+<div class="ground ic-none st-brush pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Brush-and-ink painting of a jug with a sprig, a cup, misty hills and a red sun" focusable="false"><use href="#t-ink-wash"/></svg></div><figcaption>Jug and cup, ash glaze.</figcaption></figure><div class="sheet"><h3>Artistic</h3><p class="id">technique: ink-wash; icons: none; stroke: brush; stand-in: quiet</p><p>One made picture in brush and ink, a lot left empty; words, not icons.</p><p class="words-only">Home · Find · Basket · Dates · Write</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:professional">
+<div class="ground ic-outline st-regular pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><img src="source/pictures.jpg" width="600" height="400" alt="Clay-covered hands shaping a pot on a wheel, from above" loading="lazy" decoding="async"></div><figcaption>Ruth at the wheel, Tuesday class.</figcaption></figure><div class="sheet"><h3>Professional</h3><p class="id">technique: photograph; stroke: regular; figures: photographed; stand-in: brief-box</p><p>Real, named people, photographed; until then, a box saying what to shoot. Plain outline icons.</p><figure class="pic-fig small"><div class="brief" role="img" aria-label="Space for a photograph, not taken yet: hands at the wheel, from above"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><b>Photo: hands at the wheel, from above</b><span>Daylight from the left. Clay on the hands; no faces needed. 3:2, 1800 by 1200 or larger.</span></div></figure><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:civic">
+<div class="ground ic-filled st-bold pics-1 start">
+<figure class="pic-fig"><div class="brief" role="img" aria-label="Space for a photograph, not taken yet: hands at the wheel, from above"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><b>Photo: hands at the wheel, from above</b><span>Daylight from the left. Clay on the hands; no faces needed. 3:2, 1800 by 1200 or larger.</span></div></figure><div class="sheet"><h3>Civic</h3><p class="id">technique: flat-shapes; icons: filled; stroke: bold; stand-in: brief-box</p><p>Few pictures, each carrying information; boxes for photographs; solid icons with words.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="ground ic-hand-drawn st-brush pics-1 start">
+<figure class="pic-fig"><div class="pic tr-aged"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Painting of a green jug and a red cup on a table in the light from the left, the sun behind" focusable="false"><use href="#t-painted"/></svg></div><figcaption>Jug and cup, ash glaze.</figcaption></figure><div class="sheet"><h3>Sorcery</h3><p class="id">technique: painted; treatment: aged; icons: hand-drawn; stroke: brush; figures: detailed; stand-in: quiet</p><p>Painted, then aged; particular people; brush lines and drawn icons.</p><div class="pic tr-none small"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of two people at a table, one with long hair looking down, the other with short grey hair, a jug between them" focusable="false"><use href="#f-detailed"/></svg></div><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="ground ic-filled st-bold pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Painting of a green jug and a red cup on a table in the light from the left, the sun behind" focusable="false"><use href="#t-painted"/></svg></div><figcaption>Jug and cup, ash glaze.</figcaption></figure><div class="sheet"><h3>Gilded dark</h3><p class="id">technique: painted; icons: filled; stroke: bold; figures: silhouettes; stand-in: quiet</p><p>Painted; people as dark shapes against the light; chunky solid icons.</p><div class="pic tr-none small"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Two people against a low sun, drawn as dark shapes with no faces" focusable="false"><use href="#f-silhouettes"/></svg></div><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="ground ic-hand-drawn st-regular pics-1 start">
+<figure class="pic-fig"><div class="pic tr-grain"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Cut-paper picture of a dipped jug and a red cup on a table, a sprig in the jug and the sun behind" focusable="false"><use href="#t-cut-paper"/></svg></div><figcaption>The studio table in the morning.</figcaption></figure><div class="sheet"><h3>Lantern fair</h3><p class="id">technique: cut-paper; treatment: grain; icons: hand-drawn; stand-in: none</p><p>Cut paper with grain and drawn icons, no people: how its lantern and dishes are drawn.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="ground ic-outline st-hairline pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Engraving of a jug and a cup on a table under a ruled sky, shaded in fine lines" focusable="false"><use href="#t-engraved"/></svg></div><figcaption>The studio table in the morning.</figcaption></figure><div class="sheet"><h3>Almanac plate</h3><p class="id">technique: engraved; stroke: hairline; stand-in: none</p><p>Fine ruled lines, like a printed star chart; hairline icons.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes">
+<div class="ground ic-none st-hairline pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of a jug dipped in green glaze and a red cup on a table, a sprig in the jug and the sun behind, in flat shapes" focusable="false"><use href="#t-flat-shapes"/></svg></div><figcaption>Jug and cup, ash glaze.</figcaption></figure><div class="sheet"><h3>Catalogue of glazes</h3><p class="id">technique: flat-shapes; icons: none; stroke: hairline; stand-in: quiet</p><p>Each piece drawn flat in its own glaze; no icons; the drawing quietly stands in.</p><p class="words-only">Home · Find · Basket · Dates · Write</p></div>
+</div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<div class="ground ic-hand-drawn st-regular pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Pencil sketch of a jug and a cup on a table, washed with colour, the cup ringed in pencil" focusable="false"><use href="#t-pencil"/></svg></div><figcaption>The studio table in the morning.</figcaption></figure><div class="sheet"><h3>Field journal</h3><p class="id">technique: pencil; icons: hand-drawn; stand-in: none</p><p>A pencil sketch with a wash, one thing ringed; drawn icons.</p><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="ground ic-hand-drawn st-bold pics-1 start">
+<figure class="pic-fig"><div class="pic tr-none"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Ink drawing of a jug and a cup on a table, a sprig in the jug and the sun behind, with loose colour under the lines" focusable="false"><use href="#t-ink-line"/></svg></div><figcaption>Drawn for now: a photograph of the studio table goes here.</figcaption></figure><div class="sheet"><h3>Repair cafe</h3><p class="id">technique: ink-line; icons: hand-drawn; stroke: bold; figures: simple; stand-in: captioned</p><p>Marker drawings with flat colour, friendly people, bold drawn icons.</p><div class="pic tr-none small"><svg class="art" viewBox="0 0 320 220" role="img" aria-label="Drawing of three people at a table with a jug, each with a round face, dot eyes and a smile" focusable="false"><use href="#f-simple"/></svg></div><ul class="icons"><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-find"/></svg><span>Find</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-basket"/></svg><span>Basket</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-dates"/></svg><span>Dates</span></li><li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-write"/></svg><span>Write</span></li></ul></div>
+</div>
+</section>
+
+
+<p class="credit">Photograph: "Making pottery" by Jared Sluyter, from Unsplash, via Wikimedia Commons (commons.wikimedia.org/wiki/File:Making_pottery_(Unsplash).jpg), CC0 1.0 (no rights reserved). Kept in the skill at 600 by 400 as <code>tests/parts/source/pictures.jpg</code>.</p>
+</main>
+
+<script>run(swatchTest);</script>
+</body>
+</html>

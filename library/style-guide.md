@@ -13,7 +13,7 @@ The general layer of the style stack. A site's look is decided by up to four lay
 
 1. **This guide**, and `style-mobile.md` beside it, which says how any page must work on a phone. True of any site.
 2. **Stacked guides**, chosen in the design brief. Three shelves: what the site is *for* (`style-purpose-...`, such as sales), how it should *feel* (`style-feel-...`: artistic, professional or warm), and what *field* it is in (`style-field-...`, such as education). Guides are made to be mixed. A site may take any number, from any shelf, two of the same kind included: warm with artistic, sales with a booking guide. That is how two sites for the same trade end up looking nothing alike. Not every site needs all three shelves. The brief names the guides, puts the lead first, and says which parts of the site each one governs; in the blueprint, `project.style.guides` lists them in that order. How they combine is under "When guides are stacked" below. The shelves hold the guides that come with the skill and the ones the user has made, which are kept in their own folder outside the skill; `blueprint.py style` lists both. Where a field guide and a feel guide disagree, the field guide wins, because it knows what that trade's visitors expect.
-   **Parts** sit beside the shelves: one guide for each part of a page (background, density, frames and edges, materials, lettering, light), each offering a few named options. A site picks an option for a part on its own, with any guides: "warm, but with the detailed ground and busy". The pick goes in the site's own guide and in the blueprint as `project.style.parts` (`{"background": "detailed-ground", "density": "busy"}`), and it wins over the stacked guides for that part only. Each part has a swatch book, `tests/parts/<part>.html`, that shows every option so the owner can choose by looking. The owner's reason for them: "instead of making each style from scratch you can grab stuff for each part that applies ... I really like the detail in the background of [one guide] but I don't want to have to use that style just to get that background."
+   **Parts** sit beside the shelves: one guide for each part of a page (colour, background, light, materials, frames and edges, corners and shapes, lettering, density, picture style, motion), each made of layers with a few named options, and starting points that set every layer at once. A site picks an option for a part on its own, with any guides: "warm, but with the detailed ground and busy". The pick goes in the site's own guide and in the blueprint as `project.style.parts` (`{"background": "detailed-ground", "density": "busy"}`), and it wins over the stacked guides for that part only. A part with layers can be picked by one layer: the detailed ground without its drawings is `{"background": {"start": "detailed-ground", "drawings": "none"}}`. How parts are built and how they agree is under "Parts, layers and the shared colour names" below. Each part has a swatch book, `tests/parts/<part>.html`, that shows every option so the owner can choose by looking. The owner's reason for them: "instead of making each style from scratch you can grab stuff for each part that applies ... I really like the detail in the background of [one guide] but I don't want to have to use that style just to get that background."
 3. **The site's own guide**, kept in the site's folder beside its blueprint (`<name>.style.md`). It holds the brief, the tokens, and every decision that only makes sense for that site.
 
 When they disagree, the more specific wins: the site's guide over the stacked guides, the stacked guides over this one. Between stacked guides, see "When guides are stacked". Mixing is for the look only. The tools a site is built with are not mixed this way: they are a build decision recorded in the blueprint, and the library's notes on a tool apply whenever that tool is used. The one exception: the accessibility minimums in this guide (text contrast, minimum text size, tap target size) are never overridden.
@@ -48,6 +48,126 @@ Some sites have a second look the visitor can switch to: a dark theme that is de
 - **Each look is checked on its own.** The template test, the test of which guide leads, and the counts of typefaces and colours apply to each look by itself. `audit --after <steps>` checks the page after the steps that reach a look, before any context exists; once it does, list those steps in `project.check_states` so `check` looks at it every time.
 - **Pictures of both, side by side,** when the owner is shown the look.
 
+## Parts, layers and the shared colour names
+
+A look made of parts holds together only if the parts share a language and never fight over the same decision. Real design systems work the same way (Material, Carbon, Atlassian, Radix, shadcn; see Sources): a few separate foundations, a small set of colour names whose values change between light and dark, and themes made of a few choices that can be changed one at a time.
+
+**The colour part sets every name.** It is picked from a few choices (tone, the hue in the greys, an accent, strength, bands), written in `oklch()` so any combination stays readable; its swatch book checks every combination. A site's dark look is the same picks with the tone changed. `check` and `audit` measure `oklch()` colours like any other.
+
+**Choose the personality first.** One word for the whole site, before any part: serious, calm, friendly, playful or dramatic. Corners, typefaces and colour together decide how serious or playful a page feels, so picking them one by one without this lands on a page that argues with itself. It goes in the brief and in the blueprint as `project.style.personality`. Every option and starting point in a layered part says which personalities it suits; `check` flags a pick that pulls against the site's (`style/personality-clash`), and the site guide says why if it stays.
+
+**A part is made of layers.** Each layer is one decision with a few options and a default, and switches on its own. The background, for example, is texture, pattern, drawings and things to find: "grain, no drawings" is a pick, not a new guide. A **starting point** is a saved set of layer picks with a name ("detailed ground" is mottled texture, lots of drawings, finds on); a site picks it whole or changes one layer: `{"start": "detailed-ground", "drawings": "none"}`. Where two options of one layer work together, a site lists them (`"marks": ["pencil", "stamp"]`) and a starting point writes `marks: pencil + stamp`.
+
+**Every part draws with the shared colour names, never raw colours.** The colour part sets them for the site; every other part uses only these, so each layer works on a light page and a dark one without being rewritten:
+
+| Name | What it is for |
+|---|---|
+| `--ground` | the page behind everything |
+| `--surface` | sheets, panels and cards: where words sit |
+| `--surface-raised` | things lifted above a surface: menus, popovers, a card in focus |
+| `--ink` | main text, on surfaces |
+| `--on-ground` | words straight on the ground. The same as `--ink` on most pages; different when the ground and the sheets are far apart, such as a dark room with words on pale parchment |
+| `--ink-soft` | secondary text and captions (still 4.5 to 1) |
+| `--line` | dividers and decorative borders. It is not 3 to 1: the edge of a control (a field, a checkbox) uses `--ink-soft` |
+| `--accent` | the one colour for things you can press |
+| `--on-accent` | text and icons on the accent |
+| `--accent-edge` | the edge of a button or control in the accent: the accent itself, or a darker edge when a bright fill (gold, yellow) cannot stand 3 to 1 off the page. Every part that draws an accent control gives it a border in this |
+| `--mark` | drawn decoration: signs, pencil marks, specks. Never used for meaning |
+| `--focus` | the keyboard focus ring |
+| `--danger`, `--success`, `--warning` | errors, success and caution only, never decoration |
+| `--scrim` | the dim layer behind a dialog |
+| `--band-1`, `--band-2`, `--band-3`, `--on-band` | up to three strong grounds for whole bands of the page, and the words on them (4.5 to 1 on each) |
+| `--accent-hover`, `--accent-pressed` | the accent one step lighter or darker for a control being pointed at or pressed (text on them still 4.5 to 1) |
+| `--metal`, `--metal-deep`, `--metal-lit`, `--on-metal` | metal and gilt: rings, studs, plates, chiselled letters (gold, brass, silver or iron, picked in the colour part), its shade and highlight, and words on it |
+| `--earth`, `--on-earth` | one warm brown at each tone, whatever the neutrals: kraft, card, cork, wood, leather; and words on it |
+
+So there are three tiers: raw values live only in the colour part; the shared names above; and a part's own custom properties, made from the shared names. `style check` flags a raw colour in a layered part's CSS. A few values travel with the names because they differ between light and dark: `--shadow-rgb` (shadows take the page's hue, never pure black), set by the colour part, and `--shadow-strength`, set by the light part; `--texture-rgb`, the colour of grain, mottling and specks, darker than a light ground and lighter than a dark one, so texture never vanishes; and `--texture-strength`, how strongly it shows. Written as `rgb(var(--texture-rgb) / var(--texture-strength))`.
+
+`--dark` is 1 on a dark or lamplit tone and 0 otherwise, for the few things that change by number rather than by colour (reading text a little thinner on a dark page).
+
+**The light part hands every page a few more values,** so other parts draw shadows and lit edges that agree: `--lx` and `--ly` (which way shadows fall: every offset is a multiple of them), `--hx` and `--hy` (the edge that catches the light), `--light-at` (where the light is, for gradients), `--shadow-low`, `--shadow-mid` and `--shadow-high` (what raised things cast at three heights), `--drop-low` and `--drop-rim` (the low shadow and the lit rim as a `filter`, for torn, clipped or taped shapes, which `box-shadow` would draw as a rectangle), `--edge-lit` (a one-pixel lit edge, seen on dark pages) `--shade` (the colour of shadows), and `--lamp` with its numbers `--lamp-lch` (the colour of light things give off: tungsten gold by default, turned by the sky; a site that wants its light in its own colour sets `--lamp: var(--accent)`). Paper lying on paper takes the low shadow, as `box-shadow` for plain rectangles and `filter: var(--drop-low)` for any other shape, never both. Colours of light are written as numbers inside `oklch(var(...))`. A page that goes dark at night is the colour part's tone switching, driven by the light part's clock.
+
+**The other parts hand on values the same way,** so no part guesses at another's decisions:
+
+| Values | Set by | For |
+|---|---|---|
+| `--radius-small`, `--radius`, `--radius-large`, `--radius-check` (never over 5px), `--radius-control`, `--radius-field`, `--corner-shape` | corners and shapes | every rounded thing: labels, buttons and sheets, panels, tick boxes, the main button, fields; `round` or `bevel` |
+| `--space-1` to `--space-9`, `--gap-inside`, `--gap-items`, `--gap-groups`, `--gap-sections`, `--pad`, `--gutter`, `--page`, `--edge` | density | spacing by use (each gap at least 1.5 times the one inside it), a sheet's padding (a thick frame adds its own width to it), page width and side margin |
+| `--measure` | lettering | the longest line of reading text |
+| `--dur-short`, `--dur-medium`, `--dur-long`, `--dur-step`, `--ease-out`, `--ease-in`, `--ease-in-out`, `--ease-spring` | motion | every transition and animation; all zero unless the visitor's device allows motion |
+
+**Decorations come in tiers.** Every decoration a part draws (background drawings, frame ornaments, lettering marks) carries `data-deco="few"`, `"more"` or `"most"`; density's fill decides which tiers show, and a phone drops one. The background decides what drawings exist; the fill decides how many of them show.
+
+**Goes with** lines in a layered guide name another part's option by layer: `density: fill open`, `light: glow lamp`; a part with plain options is named `part: option`.
+
+**On a dark page, shadows hardly show.** Raised things get a lighter `--surface-raised` instead, and texture is tuned separately: grain set for a light page looks muddy on a dark one. Every layered option has a "Light and dark" line saying what changes, and its swatch book shows it on both.
+
+**Each decision has one owner.** Where two parts reach for the same thing, the owner wins, whatever the order:
+
+| Decision | Owner |
+|---|---|
+| Page colour, text colours, accent | colour |
+| Shadows, glow, where light falls | light |
+| Every drawn line and edge: borders, ornaments on them, dividers, torn or wavy edges of sheets and between sections | frames (the colours are `--line`, `--ink-soft` for a control's edge, `--accent-edge`, from colour) |
+| Corner radius (`--radius`) and the silhouettes of small things: buttons, fields, tags, badges, picture masks | corners and shapes (`shapes`) |
+| Spacing, how full the page is (how many of the other parts' decorations show: each is tagged `data-deco="few|more|most"`), page width, columns and gutters | density |
+| What surfaces seem made of: their texture and how they are laid on | materials |
+| What lies behind the sections | background |
+| Typefaces, sizes, weights, the type scale and the reading measure (`--measure`) | lettering |
+| How pictures and icons are drawn, and stand-in art | picture style (`pictures`) |
+| What moves, and how | motion |
+
+So a fine-paper sheet under "no frames" has no border, and when torn paper and paper-and-tape give different shadows, the light part's shadow is used. A site guide that settles a clash some other way says why.
+
+**A layered part guide** has, in order: `## Choosing`; `## Layers`, each layer a `### ` heading with `- Layer:`, `- Owns:` and `- Default:` lines, then its options as `#### ` headings with `- Id`, `- Status`, `- Looks like`, `- Made with`, `- Careful`, `- Light and dark`, `- Personality`, `- Goes with` and `- Used on`; `## Starting points`, each with `- Id`, `- Picks` (`texture: grain; drawings: lots`), `- Personality`, `- Looks like` and `- Used on`; `## Swatch book`; `## Not covered yet`. Its swatch book loads `tokens.css` and `swatches.js` from `tests/parts/`, marks each option `data-option="<layer>:<id>"` and each starting point `data-option="start:<id>"`, and is tested with `swatchTest()`, which draws everything on a light page and a dark one. `style check <part>` checks all of this. Two things the pilot found: a tile drawn as an SVG data URI cannot read CSS custom properties, so draw texture tiles as a `mask-image` over a background colour from the shared names (a list of masks starts with a transparent layer, or an all-`none` pick paints a solid sheet over everything); and `swatches.js` copies each swatch for the dark page and strips ids inside it, so shared SVG symbols and filters (`<symbol>`, `#pen`) sit outside the swatches.
+
+## Writing a part's code to be lifted out
+
+`blueprint.py style css` writes a site's starter stylesheet from its picks (`style css <mockup folder>`, or `style css --recipe <name> --out <file>`): it takes each picked option's code from its part guide, in the owners' order (colour, light, density, shapes, lettering, background, materials, frames, pictures, motion), adds the recipe's tuned values, copies the fonts it loads, and lists anything it could not find. For that to work, every option in a layered part carries its code in a block fenced as ` ```css assemble `, written so it can be lifted out alone:
+
+- **`&` is the page root.** `& { --ground: ...; }` becomes `:root { ... }`. Values go there.
+- **Style only the shared hooks, plain elements and your own classes.** The hooks are the page's pieces, the same on every site: `.page` (the wrapper inside `<body>`), `.band` (a section of the page), `.sheet` (a surface with words), `.panel` (a raised box: a dialog, a menu), `.btn` and `.btn-main` (buttons, and the one main one), `.field`, `.tag` and `.badge` (labels), `.label`, `.lead`, `.picture` (a picture and its frame), `.deco` (any decoration, with `data-deco="few|more|most"`), `.rule`, `.icon`, `.mark`. Anything else a part needs is named after it: `.background-sign`, `.frames-corner`, `.materials-tape`.
+- **Set only shared names and values, or your own beginning with the part's name:** `--frames-ring-width`, never `--grain`, which two parts once both used.
+- **Name animations after the part** (`@keyframes motion-breathe`), and load only `fonts/<file>` (copied in from `library/tests/parts/fonts/`) or data addresses.
+- **Respect the owners.** Materials paints a sheet's fill; frames draws its border and edge (a torn edge is the material's `--sheet-fill` painted on the sheet's `::before` through `--sheet-mask`, so the sheet itself is never cut); light gives every shadow; shapes gives every radius. Code that reaches into another part's decision is a clash, whichever order it lands in.
+- **An option that draws nothing** still has a block, holding only a comment, so the stylesheet says it was chosen.
+- **SVG pieces** an option draws with (a pen filter, a sign as a `<symbol>`) go in a block fenced ` ```html assemble `; `style css` puts them into `parts.js`, which adds them to the page.
+- **Code every option needs, whatever the pick,** goes under `## Base` in the part guide, in the same kinds of block.
+
+**Who draws where.** Parts share a page, so each invisible layer of a hook belongs to one part, and the stacking order is fixed:
+
+| Layer | Belongs to | For |
+|---|---|---|
+| the root's background | colour | the page colour |
+| `.page::before`, `.page::after` | background | texture, and the tile of small signs |
+| `.band` background, `.band::after` | background | a band's colour (`--band-*`) and its texture; the band's drawings (`aria-hidden`) at `z-index: 0` |
+| `.band::before` | frames | the edge between this section and the one above |
+| `body::before`, `body::after` | light | the lamp, sky and vignette, fixed over the bands and under the sheets (blend layers at `z-index: 1`) |
+| `.sheet`, `.panel`, and every child of a band that is not `aria-hidden` | stacked at `z-index: 2`, above light's layers (the rule is in light's Base and background's Base) | words keep their colour; neither `.page` nor `.band` may be a stacking layer (no `isolation`, `z-index`, `filter`, `transform` or `opacity` on them), or a blend cannot reach the bands and the sheets in them go under the light |
+| `.sheet` background | materials, as `--sheet-fill` | what the paper is |
+| `.sheet::before` | frames | a shaped sheet's paper (torn, cut, deckled): it paints `var(--sheet-fill)` through the shape `--sheet-mask`, so the sheet itself is never cut and its shadow and tape stay whole |
+| `.sheet::after` | frames | rings and an outline drawn along the shape |
+| `.materials-mat` (a span inside the sheet) | materials | texture, wear and tilt; masked with `var(--sheet-mask, none)` |
+| `.materials-fix` (a span inside the sheet) | materials | tape, pins, clips, string: never masked |
+| `.btn::before`, `.btn::after` | shapes | a cut button's silhouette (motion eases colours instead of using a veil) |
+| `filter` on `.sheet`, `.panel`, `.btn` | light | shadows, so they follow any shape |
+
+Motion may animate any of these layers (an `animation` or `transition`, nothing else) without owning them: the lamp breathes on light's layer. `.page` and `.band` are never stacking layers (no `isolation`, `z-index`, `filter` or `transform`), or light's layers could not sit between a band and its sheets. `style check` flags a part that draws on another's layer, and a stacking layer on `.page` or `.band`.
+
+**Markup an option needs** beyond the hooks (a sign, an ornament, a texture span) is written on a `- Needs markup:` line in the option; `style css` lists those for the picks, so the builder knows what to add to the page.
+
+**Scripts** an option needs (a clock that turns the sky) go in a block fenced ` ```js assemble `; `style css` writes them, with the SVG pieces, into `parts.js` beside the stylesheet, which works from a page opened from a folder.
+
+`style check <part>` checks each block against these rules. The swatch book stays the place to see an option; the assembly block is the same code, tidied so it stands alone.
+
+## Recipes
+
+A **recipe** is a whole look written as part picks: a short page, `style-recipe-<name>.md`, instead of a long feel guide. Most of a look is in the parts already; what a recipe adds is the two to four things made for that look that no part can give (the field journal's one sunny sketch taped in; its pencil marks that count things). A site names one in the blueprint as `project.style.recipe` and may change it one part, or one layer, at a time: `{"recipe": "field-journal", "parts": {"light": {"sky": "dusk"}}}` keeps the recipe's light and changes its sky. A pick for a part that names a starting point replaces the recipe's pick for that part.
+
+A recipe may also tune shared values for its look under a `"values"` key in its picks (`"values": {"texture-strength": "0.06"}`), which `style css` writes last. A recipe has, in order: front matter (`name: <Name> (a recipe)`, `summary`, `kind: recipe`, `personality` (one of the five), `checked`, `source`); `# <Name>` and two or three sentences on what it is for; `## Picks`, one JSON block of part picks in the same form as `project.style.parts`, at least three parts and usually colour, light, lettering and density; `## What makes it`, two to four things made for the look, beyond the picks; `## Notes from the owner`, the owner's words about it, where there are any; `## Used on`; `## Not covered yet`. `style check <recipe>` checks that every pick exists and suits the recipe's personality (or that "What makes it" says why one does not). Recipes the user makes are kept in their own styles folder, like their guides.
+
+A new look starts as a recipe: pick the personality, then a starting point or layers for each part, look at it, and write down what had to be made for it. A recipe becomes a feel guide only if the look needs rules the parts cannot hold.
+
 ## Use it properly
 
 Before drawing anything, write the design brief (first note) and set the tokens. Everything on the page then uses a token; nothing gets a one-off size, colour or gap. A starting set, to be changed for each project:
@@ -67,17 +187,20 @@ Before drawing anything, write the design brief (first note) and set the tokens.
   --space-1: 0.25rem;  --space-2: 0.5rem;  --space-3: 0.75rem;  --space-4: 1rem;
   --space-5: 1.5rem;   --space-6: 2rem;    --space-7: 3rem;     --space-8: 4rem;  --space-9: 6rem;
 
-  /* colour: two neutrals and one accent, each named for its job */
-  --color-ground: #f7f4ee;    /* about 60% of the page */
-  --color-surface: #ffffff;   /* about 30% */
-  --color-ink: #1c1f23;
-  --color-ink-soft: #565d66;  /* still at least 4.5:1 on the ground colour */
-  --color-line: #d8d2c6;
-  --color-accent: #2f5d50;    /* about 10%: actions and the one thing to notice */
+  /* colour: two neutrals and one accent, each named for its job. These are the shared names
+     ("Parts, layers and the shared colour names"); when the colour part is picked, it sets them all */
+  --ground: #f7f4ee;          /* about 60% of the page */
+  --surface: #ffffff;         /* about 30% */
+  --ink: #1c1f23;
+  --ink-soft: #565d66;        /* still at least 4.5:1 on the ground colour */
+  --line: #d8d2c6;
+  --accent: #2f5d50;          /* about 10%: actions and the one thing to notice */
+  --on-accent: #ffffff;
+  --accent-edge: #2f5d50;
 
-  /* finish: one of each */
+  /* finish: one of each. When the light part is picked, it sets --shadow-low, --shadow-mid and --shadow-high */
   --radius: 10px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.06);
+  --shadow-mid: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.06);
 }
 ```
 
@@ -311,7 +434,21 @@ Read on 2026-10-03:
 - web.dev, Learn Design, typography
 - WCAG 2.2 Understanding documents: 1.4.3, 1.4.8, 1.4.11, 2.5.5, 2.5.8
 
-Not yet researched, and so not covered: imagery and illustration, motion, dark mode, and data-heavy pages such as tables and dashboards.
+Read on 2026-10-07, for "Parts, layers and the shared colour names":
+
+- W3C Design Tokens format, first stable version: w3.org/community/design-tokens/2025/10/28/design-tokens-specification-reaches-first-stable-version/
+- Nathan Curtis, Tokens in design systems (options and decisions): eightshapes.com/articles/tokens-in-design-systems/
+- Material 3 colour roles (developer.android.com/develop/ui/compose/designsystems/material3) and Material dark theme (m2.material.io/design/color/dark-theme)
+- Radix Colors, understanding the scale; Radix Themes, theme settings: radix-ui.com
+- shadcn/ui theming: ui.shadcn.com/docs/theming
+- Carbon colour overview: carbondesignsystem.com/elements/color/overview/
+- Atlassian foundations: atlassian.design/foundations
+- Open Props (noise and shadow strength): open-props.style
+- MDN, light-dark(): developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark
+- Josh W. Comeau, designing shadows: joshwcomeau.com/css/designing-shadows/
+- Refactoring UI, choose a personality (a community summary of the book): rfui-docs.onrender.com/choose-a-personality
+
+Not yet researched, and so not covered: data-heavy pages such as tables and dashboards.
 
 ## Questions it raises
 

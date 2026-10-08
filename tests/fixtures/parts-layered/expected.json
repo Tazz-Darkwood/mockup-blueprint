@@ -1,0 +1,44 @@
+{
+  "about": "Layered parts: a starting point with one layer changed resolves to its layers; an unknown layer, an unknown option in a layer and a pick that suits another personality are named; three parts with no feel guide is not called plain; style lists the layers.",
+  "steps": [
+    {
+      "run": [
+        "check",
+        ".",
+        "--no-render"
+      ],
+      "must": [
+        "background: texture mottled-and-hatched, pattern none, drawings none, finds on, scene none",
+        "has no layer \"sky\"",
+        "has no option \"maybe\" in its finds layer",
+        "background starting point \"detailed-ground\" suits a dramatic or playful site, and this one is calm",
+        "built from 3 parts and no feel guide"
+      ],
+      "must_not": [
+        "come out plain",
+        "says no personality",
+        "no option \"none\""
+      ]
+    },
+    {
+      "run": [
+        "style"
+      ],
+      "must": [
+        "starting points: plain",
+        "drawings: none, a-few, lots",
+        "choose project.style.personality first"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "check",
+        "background"
+      ],
+      "must": [
+        "nothing missing"
+      ]
+    }
+  ]
+}

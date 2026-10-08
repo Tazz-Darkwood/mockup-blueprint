@@ -52,11 +52,27 @@ var __bpMeasure = (function () {
     return names;
   }
 
+  var painted = {}, pen = null;
   function rgba(str) {
     var m = /^rgba?\(([^)]+)\)$/.exec(str);
-    if (!m) return null;
-    var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
-    return p.length < 3 || p.some(isNaN) ? null : [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    if (m) {
+      var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+      return p.length < 3 || p.some(isNaN) ? null : [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    }
+    // oklch(), color(srgb ...), lab() and the rest come back from getComputedStyle as written:
+    // paint one pixel in that colour and read it back as sRGB, so they are measured, not skipped.
+    if (!str || str === 'transparent') return null;
+    if (!(str in painted)) {
+      try {
+        pen = pen || document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+        pen.clearRect(0, 0, 1, 1);
+        pen.fillStyle = '#000'; pen.fillStyle = str;
+        pen.fillRect(0, 0, 1, 1);
+        var d = pen.getImageData(0, 0, 1, 1).data;
+        painted[str] = d[3] ? [d[0], d[1], d[2], d[3] / 255] : [0, 0, 0, 0];
+      } catch (e) { painted[str] = null; }
+    }
+    return painted[str];
   }
   function blend(top, under) {
     var a = top[3];

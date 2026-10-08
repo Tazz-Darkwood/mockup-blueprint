@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materials: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/materials.py from source/materials-template.html: edit those, then run python3 materials.py
+   ../materials.html in source/. Every colour below is a shared colour name (tokens.css). Textures are masks: black
+   shapes whose only job is their alpha, coloured by a shared name, so one tile works on every tone. Borders belong to
+   the frames part and shadows to the light part: this page borrows the light part's "warm" start (top left, paper
+   lift) so sheets lie on the page, and draws no border round any sheet. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 54ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 54ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- the texture tiles: masks drawn once by materials.py (copy them from here) ---------- */
+:root {
+  --tile-fibre: {{FIBRE}};
+  --tile-formation: {{FORMATION}};
+  --tile-mottle: {{MOTTLE}};
+  --tile-wood: {{WOOD}};
+  --tile-brushed: {{BRUSHED}};
+  --tile-speckle: {{SPECKLE}};
+  --tile-scuff: {{SCUFF}};
+  --tile-knock: {{KNOCK}};
+  --tile-pencil: {{PENCIL}};
+  --tile-chalk: {{CHALK}};
+  --tile-vein: {{VEIN}};
+}
+
+/* ---------- the light, borrowed from the light part (shadows: paper-lift, direction: top-left) ---------- */
+.ground { --lx: 0.5; --ly: 1; --hx: 1; --hy: 1; --shade: rgb(var(--shadow-rgb)); --dx: calc(var(--lx) * 1px); --dy: calc(var(--ly) * 1px);
+  --shadow-low: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent),
+    calc(var(--dx) * 2) calc(var(--dy) * 4) 7px -2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.7) * 100%), transparent);
+  --drop-low: drop-shadow(calc(var(--dx) * 0.5) var(--dy) 0.5px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 4) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.6) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 12%, transparent)); }
+
+/* ---------- every swatch: a ground with something behind (so glass has a world to blur), and one sheet ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; }
+.ground { position: relative; isolation: isolate; overflow: clip; min-height: 17rem; padding: 3.5rem 1.25rem 1.75rem;
+  background: var(--ground); color: var(--on-ground); }
+.behind { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(circle at 68% 50%, color-mix(in oklab, var(--accent) 50%, transparent) 0 4.5rem, transparent 4.6rem),
+    repeating-linear-gradient(-55deg, transparent 0 14px, color-mix(in oklab, var(--mark) 26%, transparent) 14px 20px);
+  mask: linear-gradient(90deg, transparent 35%, black 60%); }
+.sheet { position: relative; isolation: isolate; z-index: 1; max-width: 29rem; margin-right: 3.5rem; padding: 1.5rem 1.5rem 1.25rem; color: var(--ink); }
+.sheet h3 { margin: 0; font-size: 1.5rem; line-height: 1.2; width: fit-content; }
+.sheet .id { margin: 0.125rem 0 0; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet .shown { margin: 0; font: italic 0.875rem/1.4 Georgia, serif; color: var(--ink-soft); }
+.sheet p { margin: 0.5rem 0 0; }
+.sheet .soft { color: var(--ink-soft); margin-bottom: 1rem; }
+.s-kraft .sheet, .s-metal .sheet { --ink-soft: var(--soft-on-brown); }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-low); }
+@media (max-width: 30rem) { .sheet { margin-right: 0.75rem; } }
+
+/* ---------- the material: one empty element behind the words holds the whole sheet (.mat), so the paper can turn
+   while the words stay level. Its ::before is the sheet's body and its wear (slow and large: stains, sheen, dirt),
+   always darker, in the shadow colour; its ::after is the grain (fine), in --ink, so it is dark on a pale sheet and
+   light on a dark one. Each is one colour shown through masks. ---------- */
+.mat { position: absolute; inset: 0; z-index: -1; border-radius: 3px; background: var(--sheet, var(--surface));
+  box-shadow: var(--shadow-low), var(--edge-lit); rotate: var(--tilt, 0deg); transform-origin: var(--tilt-at, 50% 50%);
+  -webkit-backdrop-filter: var(--glass, none); backdrop-filter: var(--glass, none); background-image: var(--wear-lit, none); }
+.mat::before, .mat::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.mat::before { background: rgb(var(--shadow-rgb)); opacity: calc(var(--texture-strength) * 2.5);
+  -webkit-mask-image: linear-gradient(transparent, transparent), var(--body, none), var(--wear, none), var(--wear-2, none);
+          mask-image: linear-gradient(transparent, transparent), var(--body, none), var(--wear, none), var(--wear-2, none);
+  -webkit-mask-size: auto, var(--body-size, 100% 100%), var(--wear-size, 100% 100%), var(--wear-2-size, 100% 100%);
+          mask-size: auto, var(--body-size, 100% 100%), var(--wear-size, 100% 100%), var(--wear-2-size, 100% 100%);
+  -webkit-mask-repeat: no-repeat, repeat, var(--wear-repeat, no-repeat), no-repeat;
+          mask-repeat: no-repeat, repeat, var(--wear-repeat, no-repeat), no-repeat; }
+.mat::after { background: var(--grain-ink, var(--ink)); opacity: var(--grain-op, calc(var(--texture-strength) * var(--grain-k, 1)));
+  -webkit-mask-image: linear-gradient(transparent, transparent), var(--grain, none), var(--grain-2, none), var(--grain-3, none);
+          mask-image: linear-gradient(transparent, transparent), var(--grain, none), var(--grain-2, none), var(--grain-3, none);
+  -webkit-mask-size: auto, var(--grain-size, auto), var(--grain-2-size, auto), var(--grain-3-size, auto);
+          mask-size: auto, var(--grain-size, auto), var(--grain-2-size, auto), var(--grain-3-size, auto); }
+
+/* ---------- sheet: what the surface is made of. Its colour is always the surface, tinted by a shared name ---------- */
+/* --fibre is the colour paper, card and cloth lean to: --line, which the colour part makes in the neutral's own hue on
+   every tone (the drawn-mark colour turned lamplit parchment pink, since the mark there is cool blue). On a light page
+   --line is close to the sheet in lightness, so the sheets lean further there; on a dark or lamplit page less, since
+   there it moves the sheet towards the words. */
+.ground { --fibre: var(--line); --brown: var(--earth, var(--line));
+  --twine: color-mix(in oklab, var(--brown) 60%, var(--ink-soft));   /* tape and string: brown, a step off the sheet on every tone */
+  --soft-on-brown: color-mix(in oklab, var(--ink-soft) 55%, var(--ink)); }   /* soft text on kraft and metal: heavier, as ink on kraft lands */
+.s-plain      { --sheet: var(--surface); }
+.s-fine-paper { --sheet: color-mix(in oklab, var(--surface) 60%, var(--surface-raised));
+  --body: var(--tile-formation); --body-size: 300px 300px; }
+.s-card       { --fibre: var(--brown); --sheet: light-dark(color-mix(in oklch, var(--surface) 80%, var(--fibre)), color-mix(in oklch, var(--surface) 86%, var(--fibre))); }
+.s-kraft      { --fibre: var(--brown); --sheet: light-dark(color-mix(in oklch, var(--surface) 30%, var(--fibre)), color-mix(in oklch, var(--surface) 55%, var(--fibre))); --body: var(--tile-formation); --body-size: 300px 300px; }
+.s-parchment  { --sheet: light-dark(color-mix(in oklch, var(--surface) 72%, var(--fibre)), color-mix(in oklch, var(--surface) 78%, var(--fibre))); --body: var(--tile-mottle); --body-size: 420px 420px; }
+.s-canvas     { --sheet: light-dark(color-mix(in oklch, var(--surface) 72%, var(--fibre)), color-mix(in oklch, var(--surface) 82%, var(--fibre))); }
+.s-glass      { --sheet: color-mix(in oklab, var(--surface) 68%, transparent); --glass: blur(10px) saturate(1.3);
+  --body: linear-gradient(160deg, color-mix(in srgb, black 0%, transparent) 40%, color-mix(in srgb, black 35%, transparent)); }
+.s-metal      { --sheet: light-dark(color-mix(in oklab, var(--surface) 55%, var(--metal, var(--ink-soft))), color-mix(in oklab, var(--surface) 62%, var(--metal-deep, var(--ink-soft))));
+  --body: linear-gradient(104deg, transparent 6%, color-mix(in srgb, black 30%, transparent) 30%, transparent 50%, transparent 64%, color-mix(in srgb, black 22%, transparent) 80%, transparent 94%); }
+/* glass has a solid fallback: no backdrop blur, or the visitor asked for less transparency or more contrast */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .s-glass { --sheet: color-mix(in oklab, var(--surface) 96%, transparent); } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .s-glass { --sheet: var(--surface); --glass: none; } }
+
+/* ---------- grain: the fine texture ---------- */
+.g-fibre   { --grain: var(--tile-fibre); --grain-size: 260px 260px; --grain-k: 1.9; }
+.g-laid    { --grain: repeating-linear-gradient(0deg, color-mix(in srgb, black 60%, transparent) 0 1px, transparent 1px 4px);
+  --grain-2: repeating-linear-gradient(90deg, transparent 0 94px, color-mix(in srgb, black 70%, transparent) 94px 95px, transparent 95px 96px); --grain-k: 0.6; }
+.g-weave   { --grain: repeating-linear-gradient(0deg, color-mix(in srgb, black 70%, transparent) 0 1px, transparent 1px 3px, color-mix(in srgb, black 35%, transparent) 3px 4px, transparent 4px 6px);
+  --grain-2: repeating-linear-gradient(90deg, color-mix(in srgb, black 60%, transparent) 0 1px, transparent 1px 3px, black 3px 4px, transparent 4px 5px);
+  --grain-3: var(--tile-fibre); --grain-3-size: 260px 260px; --grain-k: 0.9; }
+.g-wood    { --grain: var(--tile-wood); --grain-size: 480px 160px; --grain-k: 2.2; }
+.g-brushed { --grain: var(--tile-brushed); --grain-size: 480px 240px; --grain-k: 2.6; }
+.g-speckle { --grain: var(--tile-speckle); --grain-size: 220px 220px; --grain-2: var(--tile-vein); --grain-2-size: 560px 380px; --grain-k: 3; }
+.g-graph   { --grain-ink: var(--line); --grain-op: 0.85;
+  --grain: repeating-linear-gradient(0deg, black 0 1px, transparent 1px 18px); --grain-2: repeating-linear-gradient(90deg, black 0 1px, transparent 1px 18px);
+}
+
+/* ---------- wear: age and handling, kept to the edges and corners ---------- */
+.w-soft-edges { --wear: linear-gradient(90deg, black, transparent 1.75rem, transparent calc(100% - 1.75rem), black);
+  --wear-2: linear-gradient(black, transparent 1.5rem, transparent calc(100% - 1.5rem), black);
+  /* on a dark sheet dirt hardly shows; the worn edge is rubbed paler instead, in the texture colour */
+  --worn: light-dark(transparent, rgb(var(--texture-rgb) / calc(var(--texture-strength) * 1.8)));
+  --wear-lit: linear-gradient(90deg, var(--worn), transparent 1.5rem, transparent calc(100% - 1.5rem), var(--worn)),
+    linear-gradient(var(--worn), transparent 1.25rem, transparent calc(100% - 1.25rem), var(--worn)); }
+.w-creased { --wear: linear-gradient(90deg, transparent calc(64% - 9px), color-mix(in srgb, black 30%, transparent) calc(64% - 1px), black 64%, transparent calc(64% + 1.5px));
+  --wear-2: linear-gradient(180deg, transparent calc(46% - 9px), color-mix(in srgb, black 30%, transparent) calc(46% - 1px), black 46%, transparent calc(46% + 1.5px)); }
+.w-stained { --wear: radial-gradient(circle at calc(100% - 2.75rem) calc(100% - 2.5rem), transparent 1.85rem, color-mix(in srgb, black 55%, transparent) 1.95rem, black 2.05rem, transparent 2.2rem);
+  --wear-2: radial-gradient(ellipse 6rem 3.5rem at 100% 0, black, transparent); }
+.w-scuffed { --wear: var(--tile-scuff); --wear-size: 300px 300px; --wear-repeat: repeat;
+  --wear-2: radial-gradient(circle at 0 0, black, transparent 2.5rem), radial-gradient(circle at 100% 100%, black, transparent 2.5rem); }
+
+/* ---------- ink: how the marks sit. Headings and short labels only: reading text stays printed ---------- */
+.i-stamped h3 { --stamp: var(--tile-knock) 0 0 / 200px 200px, linear-gradient(100deg, black 30%, color-mix(in srgb, black 55%, transparent) 75%, black);
+  -webkit-mask: var(--stamp); mask: var(--stamp); -webkit-mask-composite: source-in; mask-composite: intersect; rotate: -1.5deg; transform-origin: 0 50%; letter-spacing: 0.04em; }
+.i-chalk h3 { -webkit-mask: var(--tile-chalk) 0 0 / 160px 160px; mask: var(--tile-chalk) 0 0 / 160px 160px; letter-spacing: 0.02em; }
+.i-pencil h3 { color: var(--ink-soft); -webkit-mask: var(--tile-pencil) 0 0 / 120px 120px; mask: var(--tile-pencil) 0 0 / 120px 120px;
+  text-decoration: underline 2px color-mix(in oklab, var(--ink-soft) 60%, transparent); text-underline-offset: 0.2em; }
+/* pressed in: the wall of the dent on the light's side is in shade, the far lip catches the light, and the paper
+   round each letter is pushed down a little (a faint halo). The offsets follow the light part's --hx and --hy.
+   The ink is a touch heavier, as pressed ink spreads. */
+.i-letterpress .sheet h3, .i-letterpress .sheet p { -webkit-text-stroke: 0.25px currentColor; text-shadow:
+  calc(var(--hx) * -0.6px) calc(var(--hy) * -1px) 0 light-dark(color-mix(in oklab, var(--ink) 45%, transparent), color-mix(in oklab, rgb(var(--shadow-rgb)) 90%, transparent)),
+  calc(var(--hx) * 0.6px) calc(var(--hy) * 1px) 0 light-dark(var(--surface-raised), color-mix(in oklab, var(--ink) 22%, transparent)),
+  0 0 3px light-dark(color-mix(in oklab, var(--ink) 16%, transparent), color-mix(in oklab, rgb(var(--shadow-rgb)) 70%, transparent)); }
+.i-letterpress .mat { --sheet: color-mix(in oklab, var(--surface) 88%, var(--fibre)); }   /* a lip needs a sheet a step below the brightest white */
+
+/* ---------- fixing: how a sheet is laid on. Each casts the light part's low shadow, as a filter ---------- */
+.fix { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.fix > * { position: absolute; display: block; }
+.f-tape .sheet { filter: var(--drop-low); }
+.f-tape .mat { box-shadow: var(--edge-lit); --tilt: -0.8deg; }
+.tape { width: 5.5rem; height: 1.6rem; top: -0.15rem; background: color-mix(in oklab, var(--twine) 45%, transparent);
+  clip-path: polygon(0 12%, 4% 0, 8% 14%, 12% 2%, 16% 12%, 20% 0, 80% 0, 84% 10%, 88% 0, 92% 12%, 96% 2%, 100% 10%, 100% 88%, 96% 100%, 92% 86%, 88% 98%, 84% 88%, 80% 100%, 20% 100%, 16% 90%, 12% 100%, 8% 88%, 4% 100%, 0 90%); }
+.tape-l { left: -1.6rem; rotate: -38deg; }
+.tape-r { right: -1.6rem; rotate: 35deg; }
+.f-pins .mat { --tilt: 0.7deg; }
+.pin { top: 0.4rem; width: 1.6rem; height: 1.6rem; color: var(--metal, var(--mark)); filter: var(--drop-low); }
+.pin:first-child { left: 0.7rem; } .pin:last-child { right: 0.7rem; }
+.clip { top: -1.6rem; left: 50%; translate: -50% 0; width: 5.25rem; color: var(--metal-deep, color-mix(in oklab, var(--ink) 82%, var(--surface))); filter: var(--drop-low); }
+.f-clips .sheet { padding-top: 2.25rem; }
+.f-rivets .fix { --rv: var(--metal, var(--ink-soft)); --rv-hi: var(--metal-lit, var(--surface-raised)); --rv-lo: var(--metal-deep, var(--ink));
+  background: radial-gradient(circle at 0.8rem 0.8rem, var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at calc(100% - 0.8rem) 0.8rem, var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at 0.8rem calc(100% - 0.8rem), var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at calc(100% - 0.8rem) calc(100% - 0.8rem), var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px); }
+.f-string .sheet { padding-top: 2.4rem; }
+.f-string .mat { --tilt: -1.2deg; --tilt-at: 50% 1.1rem; }
+.rail { top: -2.6rem; left: -3rem; right: -6rem; height: 0.7rem; border-radius: 3px; box-shadow: var(--shadow-low);
+  background: repeating-linear-gradient(179deg, transparent 0 2px, color-mix(in oklab, rgb(var(--shadow-rgb)) 30%, transparent) 2px 3px), color-mix(in oklab, var(--brown) 75%, rgb(var(--shadow-rgb))); }
+.string { left: 50%; top: -2rem; width: 2px; height: 2.75rem; translate: -50% 0; background: var(--twine); }
+.hole { left: 50%; top: 0.55rem; width: 1.2rem; height: 1.2rem; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(circle, var(--ground) 0 0.24rem, color-mix(in oklab, var(--twine) 60%, var(--sheet, var(--surface))) 0.26rem 0.52rem, transparent 0.55rem); }
+
+/* on a phone the paper turns half as far */
+@media (max-width: 30rem) { .mat { rotate: calc(var(--tilt, 0deg) / 2); } }
+
+/* ---------- a row of tags on string: one rail per row, whatever the number of columns ---------- */
+/* Each tag draws its own length of rail, as wide as its column plus half the gap each side, so the lengths meet in a
+   row and every row has its rail. A tag is at least 15rem wide, so a phone shows one per row. */
+.rows { padding: 1.5rem 1.25rem 1.75rem; }
+.rows > p { margin: 0 0 0.5rem; max-width: 54ch; color: var(--on-ground); }
+.tags { --gap: 1.25rem; list-style: none; margin: 0; padding: 3rem 0 0; display: grid; gap: 3.75rem var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); }
+.tags .sheet { max-width: none; margin: 0; padding: 2.4rem 1.25rem 1.25rem; }
+.tags .sheet h3 { font-size: 1.25rem; }
+.tags .rail { left: calc(var(--gap) / -2); right: calc(var(--gap) / -2); border-radius: 0; }
+.tags .sheet:nth-child(2n) .mat { --tilt: 1deg; }
+.tags .sheet:nth-child(3n) .mat { --tilt: -0.5deg; }
+
+/* forced colours: masks, gradients and shadows go; the sheet keeps a plain edge so it is still a sheet */
+@media (forced-colors: active) { .mat { border: 1px solid CanvasText; } .mat::before, .mat::after, .fix { display: none; } .sheet h3 { -webkit-mask: none; mask: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="pin" viewBox="0 0 24 24"><circle cx="12" cy="11" r="8" fill="currentColor"/><circle cx="12" cy="11" r="8" fill="none" style="stroke: var(--metal-deep, var(--ink))" stroke-opacity="0.6"/><ellipse cx="9.2" cy="8" rx="2.6" ry="2" style="fill: var(--metal-lit, var(--surface-raised))"/></symbol>
+  <symbol id="clip" viewBox="0 0 64 44"><path d="M17 20L11 3h16l-4 17M47 20l6-17H37l4 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 18h34l7 24H8Z" fill="currentColor"/><path d="M14 23h36" style="stroke: var(--metal-lit, var(--surface-raised))" stroke-opacity="0.6" stroke-width="1.5"/></symbol>
+</svg>
+<main>
+<h1>Materials: the layers</h1>
+<p class="intro">Every option of every layer, then every starting point, each on a light page and a dark one. Each swatch is one sheet with a heading, a line of text, a line of soft text and a button, so the material is the only thing that changes. Built from the shared colour names only: no sheet has a border (that is frames) and every shadow is the light part's.</p>
+{{SWATCHES}}
+<h2 class="layer">A row of tags on string</h2>
+<p class="layer-note">Where the rail goes: one rail across the top of every row of tags. At this width the tags go as many to a row as fit at 15rem or more; on a phone, one to a row, each with its own length of rail.</p>
+<div class="pair">
+<div class="mode-light rows s-canvas g-weave f-string ground"><ul class="tags"><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Honey</h3><p>Two hives on the allotment.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Bread</h3><p>Sourdough, baked at four.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Soap</h3><p>Goat's milk and lavender.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Candles</h3><p>Beeswax, hand-dipped.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Jam</h3><p>Damson and plum.</p></li></ul></div>
+<div class="mode-dark rows s-canvas g-weave f-string ground"><ul class="tags"><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Honey</h3><p>Two hives on the allotment.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Bread</h3><p>Sourdough, baked at four.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Soap</h3><p>Goat's milk and lavender.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Candles</h3><p>Beeswax, hand-dipped.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Jam</h3><p>Damson and plum.</p></li></ul></div>
+</div>
+</main>
+<script>run(swatchTest);</script>
+</body>
+</html>

@@ -3,245 +3,582 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Density: the options</title>
+<title>Density: the layers</title>
+<link rel="stylesheet" href="tokens.css">
 <script src="../harness.js"></script>
+<script src="swatches.js"></script>
 <style>
+/* Built by source/density.py from source/density-template.html: edit those, then run python3 density.py ../density.html
+   in source/. Every colour is a shared colour name (tokens.css). Each swatch is drawn twice, on a light page and a dark
+   one, from the same CSS.
+
+   Two kinds of swatch. The spacing layer is shown at real size, in words. The other layers are shown as a page in
+   miniature: a real page 1600 pixels wide (and the same page 390 wide, as a phone) laid out at full size with the
+   option's classes, then scaled down to fit. Words are drawn as bars, pictures as tinted blocks, so the space and
+   the arrangement are the only things to look at. The miniature pages are filled in from <template id="mini"> when the
+   page loads, so the file stays small. */
 *, *::before, *::after { box-sizing: border-box; }
-img, svg { display: block; max-width: 100%; height: auto; }
-body {
-  margin: 0; padding: 1.5rem 1rem 3rem;
-  font: 17px/1.5 Georgia, 'Times New Roman', serif; color: #1c1f23; background: #f4f1ea;
-  overflow-wrap: break-word;
-}
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 84rem; margin-inline: auto; }
 h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
-.intro { max-width: 62ch; margin: 0 0 2rem; }
-.book { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 2rem 1.5rem; max-width: 84rem; align-items: start; }
-.swatch { min-width: 0; padding: 1rem; background: #fff; border: 1px solid #b9b2a3; border-radius: 6px; }
-.swatch > h2 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
-.swatch > .id { margin: 0; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: #4b5059; }
-.swatch > .for { margin: 0.25rem 0 1.25rem; font-size: 1rem; color: #4b5059; }
-.demo { position: relative; overflow: clip; }
-.demo h3 { margin: 0; line-height: 1.15; }
-.demo p { margin: 0; }
-.demo ul { list-style: none; margin: 0; padding: 0; }
-.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 0; border-radius: 4px;
-  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; }
-:focus-visible { outline: 3px solid #1c1f23; outline-offset: 3px; }
-.deco { pointer-events: none; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 56ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
-/* The same content in every swatch: a heading, one line, three items, one button. Only the density changes. */
+.swatch { margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; align-content: start; }
+.swatch h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; color: var(--on-ground); }
+.swatch .id { margin: -0.5rem 0 0; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.swatch .what { margin: 0; max-width: 56ch; color: var(--on-ground); }
+.caption { margin: 0; font-size: 0.875rem; line-height: 1.4; color: var(--ink-soft); }
 
-/* ---------- minimal: one thing at a time on an open page ---------- */
-.d-min { --paper: #f6f1e7; --ink: #22201c; --ink-soft: #5f5a50; --seal: #a63a2a;
-  padding: 3rem 1.5rem 3rem; color: var(--ink);
-  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .18  0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"); }
-.d-min .top { position: relative; min-height: 9rem; padding-right: 5.5rem; }
-.d-min .ring { position: absolute; right: -0.5rem; top: -1rem; width: 7.5rem; color: var(--ink); }
-.d-min h3 { font-size: 2.25rem; font-weight: 600; letter-spacing: -0.01em; }
-.d-min .lede { margin-top: 0.75rem; color: var(--ink-soft); max-width: 24ch; }
-.d-min ul { display: flex; flex-direction: column; gap: 4rem; margin-top: 4rem; }   /* --space-8 between items */
-.d-min li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); column-gap: 1rem; }
-.d-min .when { font-size: 0.875rem; color: var(--ink-soft); padding-top: 0.3rem; }
-.d-min .what { font-size: 1.375rem; line-height: 1.3; }
-.d-min .btn { margin-top: 4rem; background: var(--seal); color: #fffaf0; border-radius: 3px; }
+/* ================= the density tokens: the guide's CSS, as written there ================= */
+/* steps 1 to 6 never change: they are the space inside a control and between things you tap */
+.pg, .real { --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.5rem; --space-6: 2rem; }
+.sp-standard { --space-7: clamp(2rem, 1.629rem + 1.52cqi, 3rem); --space-8: clamp(2.5rem, 1.943rem + 2.29cqi, 4rem);
+  --space-9: clamp(3.5rem, 2.571rem + 3.81cqi, 6rem); --gutter: clamp(1rem, -0.114rem + 4.57cqi, 4rem);
+  --gap-inside: var(--space-2); --gap-items: var(--space-5); --gap-groups: var(--space-7); --gap-sections: var(--space-9); --pad: var(--space-5); }
+.sp-airy { --space-7: clamp(2.5rem, 1.943rem + 2.29cqi, 4rem); --space-8: clamp(3.5rem, 2.571rem + 3.81cqi, 6rem);
+  --space-9: clamp(4.5rem, 2.829rem + 6.86cqi, 9rem); --gutter: clamp(1.25rem, -0.886rem + 8.76cqi, 7rem);
+  --gap-inside: var(--space-3); --gap-items: var(--space-7); --gap-groups: var(--space-8); --gap-sections: var(--space-9); --pad: var(--space-6); }
+.sp-snug { --space-7: clamp(1.75rem, 1.471rem + 1.14cqi, 2.5rem); --space-8: clamp(2rem, 1.629rem + 1.52cqi, 3rem); --space-9: var(--space-8);
+  --gutter: clamp(0.75rem, 0.286rem + 1.9cqi, 2rem);
+  --gap-inside: var(--space-2); --gap-items: var(--space-4); --gap-groups: var(--space-5); --gap-sections: var(--space-8); --pad: var(--space-4); }
+.sp-compact { --space-7: clamp(1.5rem, 1.314rem + 0.76cqi, 2rem); --space-8: var(--space-7); --space-9: var(--space-7);
+  --gutter: clamp(0.75rem, 0.471rem + 1.14cqi, 1.5rem);
+  --gap-inside: var(--space-1); --gap-items: var(--space-2); --gap-groups: var(--space-4); --gap-sections: var(--space-5); --pad: var(--space-3); }
 
-/* ---------- clean: a normal amount, in order, with rules not boxes ---------- */
-.d-clean { --ink: #17211b; --ink-soft: #4a5550; --line: #c9cfca; --accent: #1f6b45;
-  padding: 2.5rem 1.25rem; background: #ffffff; color: var(--ink); }
-.d-clean h3 { font-size: 1.875rem; font-weight: 700; }
-.d-clean .lede { margin-top: 0.75rem; color: var(--ink-soft); max-width: 40ch; }
-.d-clean ul { margin-top: 2.5rem; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
-.d-clean li { display: flex; justify-content: space-between; gap: 1.5rem; padding-block: 1rem; }
-.d-clean li + li { border-top: 1px solid var(--line); }
-.d-clean .what { font-weight: 700; }
-.d-clean .when { color: var(--ink-soft); text-align: right; }
-.d-clean .btn { margin-top: 2.5rem; background: var(--accent); color: #fff; }
+/* ================= the spacing swatches: real words at real size ================= */
+.real { container: page / inline-size; background: var(--ground); color: var(--on-ground); padding: var(--gap-sections) var(--gutter);
+  display: grid; gap: var(--gap-sections); border-radius: 4px; }
+.real h4 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.real p { margin: 0; max-width: 52ch; }
+.real .group { display: grid; gap: var(--gap-groups); }
+.real .head { display: grid; gap: var(--gap-inside); }
+.real ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--gap-items); }
+.real li { display: grid; gap: var(--gap-inside); padding: var(--pad); background: var(--surface); color: var(--ink); border-radius: 4px; }
+.real li b { font-size: 1.0625rem; }
+.real li span { color: var(--ink-soft); font-size: 0.9375rem; }
+.real form { display: grid; gap: var(--gap-items); padding: var(--pad); background: var(--surface); color: var(--ink); border-radius: 4px; max-width: 30rem; }
+.real label { display: grid; gap: var(--gap-inside); font-size: 0.9375rem; font-weight: 700; }
+.real input { min-height: 44px; padding: 0 var(--space-3); font: inherit; font-size: 1rem; font-weight: 400; color: var(--ink); background: var(--surface-raised);
+  border: 2px solid var(--ink-soft); border-radius: 4px; }
+.btn { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge);
+  border-radius: 4px; background: var(--accent); color: var(--on-accent); font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; }
+.key { display: grid; gap: 0.375rem; }
+.key div { display: grid; grid-template-columns: 9.5rem auto 1fr; align-items: center; gap: 0.75rem; font-size: 0.875rem; color: var(--ink-soft); }
+.key i { display: block; height: 0.75rem; background: var(--mark); border-radius: 2px; min-width: 2px; }
+.key output { font: 0.875rem ui-monospace, Menlo, Consolas, monospace; }
 
-/* ---------- balanced: coloured bands, a few hand-made marks, room round each thing ---------- */
-.d-bal { --sun: #ffc83a; --navy: #1a2142; --blue: #1e3f8f; --note: #fff3d6; --note2: #ffe0e0; --red: #b02e1a; color: var(--navy); }
-.d-bal .band { position: relative; background: var(--sun); padding: 2rem 1.25rem 2.5rem; }
-.d-bal h3 { font: 800 2rem/1.05 system-ui, sans-serif; letter-spacing: -0.01em; }
-.d-bal .squiggle { width: 8rem; margin-top: 0.4rem; color: var(--blue); }
-.d-bal .lede { margin-top: 1rem; max-width: 30ch; }
-.d-bal .edge { position: absolute; left: 0; bottom: -1px; width: 100%; height: 14px; color: var(--blue); }
-.d-bal .board { padding: 2rem 1.25rem 2.25rem; background-color: var(--blue);
-  background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1.5px); background-size: 8px 8px; }
-.d-bal ul { display: grid; gap: 1.5rem; }                                   /* --space-5 between items */
-.d-bal li { position: relative; background: var(--note); padding: 1rem 1rem 1rem 3.25rem; box-shadow: 0 4px 0 rgb(10 18 50 / 0.35); rotate: -1deg; }
-.d-bal li:nth-child(2) { background: var(--note2); rotate: 1.2deg; margin-left: 1rem; }
-.d-bal li:nth-child(3) { rotate: -0.6deg; }
-.d-bal li::before { content: ""; position: absolute; top: -0.45rem; left: 50%; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: #d23b2b; box-shadow: 0 2px 0 rgb(0 0 0 / 0.3); }
-.d-bal .mark { position: absolute; left: 0.75rem; top: 0.9rem; width: 1.75rem; color: var(--navy); }
-.d-bal .what { font-weight: 800; font-family: system-ui, sans-serif; }
-.d-bal .btn { margin-top: 2rem; background: var(--red); color: #fff; box-shadow: 0 4px 0 #0c1430; }
+/* ================= the miniature pages ================= */
+.stage { display: flex; gap: 14px; align-items: flex-start; min-width: 0; overflow: hidden; --k: 0.15; }
+.win { position: relative; flex: none; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: var(--ground);
+  width: calc(var(--w) * var(--k) * 1px); height: calc(var(--h) * var(--k) * 1px); }
+.win.desk { --w: 1600; --h: calc(900 * var(--screens, 1)); }
+.win.phone { --w: 390; --h: calc(844 * var(--screens, 1)); }
+.vp { position: absolute; left: 0; top: 0; width: calc(var(--w) * 1px); height: calc(var(--h) * 1px); overflow: hidden;
+  transform: scale(var(--k)); transform-origin: 0 0; container: page / inline-size; --screen: 900px; }
+.phone .vp { --screen: 844px; }
+.fold { position: absolute; left: 0; right: 0; height: 0; border-top: 6px dashed var(--ink-soft); opacity: 0.55; z-index: 5; }
+.win-label { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--ink-soft); }
+.boxes { position: absolute; left: 0; top: 0; z-index: 6; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(6, 1fr);
+  width: 100%; height: calc(900 * var(--k) * 1px); pointer-events: none; }
+.boxes i.e { background: color-mix(in oklab, var(--focus) 13%, transparent); outline: 1px dashed color-mix(in oklab, var(--focus) 45%, transparent); outline-offset: -1px; }
+.boxes i.d { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--danger) 30%, transparent) 0 3px, transparent 3px 7px); }
+.count b { color: var(--on-ground); }
 
-/* ---------- full but quiet: the whole window used, every panel plain inside ---------- */
-.d-full { --panel: rgb(14 16 24 / 0.93); --panel-ink: #f3ead6; --soft: #d6ccb6; --gold: #d9a441; --go: #ffcc4d;
-  display: grid; gap: 0.75rem; padding: 0.75rem; min-height: 30rem; align-content: space-between;
-  color: var(--panel-ink);
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none'%3E%3Ccircle cx='300' cy='70' r='34' fill='%23fff6c9'/%3E%3Cpath d='M0 190 L70 120 L130 175 L210 95 L290 170 L350 125 L400 160 L400 300 L0 300Z' fill='%237d74c4'/%3E%3Cpath d='M0 230 Q100 190 200 222 T400 208 L400 300 L0 300Z' fill='%234fae3c'/%3E%3Cpath d='M180 300 Q210 260 260 236' stroke='%23e6c890' stroke-width='16' fill='none'/%3E%3Ccircle cx='60' cy='232' r='18' fill='%232f7d2a'/%3E%3Ccircle cx='350' cy='226' r='22' fill='%232f7d2a'/%3E%3C/svg%3E") center / 100% 100% no-repeat,
-    linear-gradient(#5aa7e6, #bfe3f7); }
-.d-full .panel { background: var(--panel); border: 2px solid var(--gold); border-radius: 6px; padding: 1rem; }
-.d-full .head { max-width: 19rem; }
-.d-full h3 { font: 700 1.625rem/1.1 system-ui, sans-serif; color: var(--go); }
-.d-full .lede { margin-top: 0.5rem; }
-.d-full .btn { margin-top: 0.75rem; background: var(--go); color: #1b1405; }
-.d-full ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }   /* --space-3 between panels */
-.d-full li { padding: 0.75rem; }
-.d-full .what { font: 700 1rem/1.2 system-ui, sans-serif; }
-.d-full .when { font-size: 0.875rem; color: var(--soft); margin-top: 0.25rem; }
-.d-full .meter { display: block; height: 6px; margin-top: 0.5rem; background: #3a3f52; border-radius: 3px; }
-.d-full .meter i { display: block; height: 100%; background: var(--gold); border-radius: 3px; }
+/* --- what the page is drawn with: bars for words, tinted blocks for pictures. --bar is the colour of the words --- */
+.pg { position: relative; display: flex; flex-direction: column; gap: var(--gap-sections); min-height: 100%;
+  padding-bottom: var(--gap-sections); --bar: var(--on-ground); --page: 72rem;
+  --edge: max(var(--gutter), (100cqi - var(--page)) / 2); }
+.pg > * { margin-inline: var(--edge); }
+.pg b, .pg i, .pg span { display: block; }
+.c { border-radius: 4px; }
+.h1 { height: 5.4rem; width: 92%; max-width: 34rem; background: repeating-linear-gradient(var(--bar) 0 2.2rem, transparent 2.2rem 3.2rem); border-radius: 0; }
+.h2 { height: 1.75rem; width: 46%; max-width: 20rem; background: var(--bar); }
+.h3 { height: 1.15rem; width: 72%; max-width: 14rem; background: var(--bar); }
+.p { height: calc(var(--l) * 1.6rem - 0.75rem); width: 100%; max-width: var(--measure, 66ch); border-radius: 0;
+  background: repeating-linear-gradient(color-mix(in oklab, var(--bar) 50%, transparent) 0 0.85rem, transparent 0.85rem 1.6rem);
+  mask: linear-gradient(#000 0 0) 0 0 / 100% calc(100% - 0.85rem) no-repeat, linear-gradient(#000 0 0) 0 100% / 62% 0.85rem no-repeat; }
+.bt { width: 11rem; height: 3rem; background: var(--accent); border: 2px solid var(--accent-edge); }
+.fld { height: 3rem; width: 100%; max-width: 26rem; background: var(--surface-raised); border: 2px solid var(--ink-soft); }
+.pic { width: 100%; aspect-ratio: 4 / 3; border-radius: 4px;
+  background: radial-gradient(circle at 72% 30%, color-mix(in oklab, var(--mark) 75%, var(--surface)) 0 9%, transparent 9.5%),
+    linear-gradient(158deg, transparent 58%, color-mix(in oklab, var(--mark) 62%, var(--surface)) 58.5%),
+    color-mix(in oklab, var(--mark) 30%, var(--surface)); }
+.m-hd { display: flex; justify-content: space-between; align-items: center; padding-block: var(--space-5); border-bottom: 2px solid var(--line); }
+.logo { width: 11rem; height: 2rem; background: var(--bar); }
+.nav { display: flex; gap: var(--space-5); }
+.nav i { width: 5rem; height: 1rem; background: color-mix(in oklab, var(--bar) 60%, transparent); }
+.m-ft { height: 9rem; background: var(--surface); border-top: 2px solid var(--line); }
+.pg > .m-ft { margin-top: auto; }
+.tx { display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--gap-inside) * 2); min-width: 0; }
+.s { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap-groups); align-items: start; }
+.list { display: grid; gap: var(--gap-items); }
+.it { display: grid; gap: var(--gap-inside); align-content: start; min-width: 0; }
+.it:nth-child(n+7) { display: none; }
+.big { height: 10rem; background: color-mix(in oklab, var(--mark) 22%, var(--surface)); border-left: 0.75rem solid var(--mark); border-radius: 0; }
+.meta .p { --l: 2; max-width: 12rem; }
+.xtra { display: none; padding: var(--pad); background: var(--surface); --bar: var(--ink); }
+.xtra .p { --l: 3; }
+.ro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-items); margin-bottom: var(--gap-items); }
+.ro b { height: 2.5rem; background: var(--bar); border-radius: 3px; }
+.form { display: flex; flex-direction: column; gap: var(--gap-items); }
 
-/* ---------- busy: fill the frame; narrow filled gaps; calm patches only behind words and controls ---------- */
-.d-busy { --ground: #1e0e11; --calm: #12070a; --parch: #d6c193; --ink: #1a1108; --pewter: #e9dfca; --brass: #b08a4a; --chalk: #a9b4e6; --glow: #f2a541;
-  padding: 0.75rem 1.75rem; color: var(--pewter);
-  background-color: var(--ground);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .8  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='none' stroke='%238a4b3c' stroke-opacity='.55' stroke-width='1.2'%3E%3Cpath d='M24 6 L30 24 L24 42 L18 24Z'/%3E%3Ccircle cx='0' cy='0' r='5'/%3E%3Ccircle cx='48' cy='0' r='5'/%3E%3Ccircle cx='0' cy='48' r='5'/%3E%3Ccircle cx='48' cy='48' r='5'/%3E%3C/g%3E%3C/svg%3E"); }
-.d-busy .slab { position: relative; z-index: 1; background: var(--calm); border: 2px solid var(--brass); padding: 1rem; }
-.d-busy h3 { font: 700 1.875rem/1.05 Georgia, serif; color: var(--pewter); letter-spacing: 0.01em; }
-.d-busy .sheet { position: relative; z-index: 1; margin-top: 0.5rem; background: var(--parch); color: var(--ink); padding: 0.75rem 1rem;
-  box-shadow: inset 0 0 14px 2px rgb(96 60 20 / 0.45); }
-.d-busy .rule { height: 22px; margin-block: 0.75rem; border-block: 1px solid #000;
-  background: #3b2614 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M0 15 6 7 12 15 18 7 24 15' fill='none' stroke='%23c9a25a' stroke-width='1.6'/%3E%3Ccircle cx='12' cy='4' r='1.3' fill='%23c9a25a'/%3E%3C/svg%3E") left center / auto 22px repeat-x; }
-.d-busy ul { display: grid; gap: 0.5rem; }                                 /* --space-2 between items */
-.d-busy li { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.75rem; background: var(--calm); padding: 0.6rem 0.75rem;
-  border: 3px double var(--brass); }
-.d-busy li:nth-child(2) { margin-left: 2.25rem; }
-.d-busy li:nth-child(3) { margin-right: 2.25rem; }
-.d-busy .plate { flex: none; width: 2.25rem; height: 2.25rem; color: var(--brass); }
-.d-busy .what { font-weight: 700; }
-.d-busy .when { font-size: 0.875rem; color: #d2c6ad; }
-.d-busy .foot { position: relative; z-index: 1; display: flex; justify-content: flex-end; margin-top: 0.75rem; }
-.d-busy .foot .calm { background: var(--calm); border: 2px solid var(--brass); padding: 0.5rem; }
-.d-busy .btn { background: var(--glow); color: #1a0e05; border-radius: 2px; }
-.d-busy .sign { position: absolute; z-index: 0; fill: none; stroke: var(--chalk); stroke-width: 2; stroke-linecap: round; opacity: 0.55; }
-.d-busy .s1 { width: 42px; left: -8px; top: 150px; rotate: -14deg; }     /* each sign its own place, size and tilt, in the margins */
-.d-busy .s2 { width: 38px; right: -10px; top: 262px; rotate: 18deg; }
-.d-busy .s3 { width: 64px; left: 22px; bottom: 4px; rotate: 8deg; }
-.d-busy .s4 { width: 36px; right: -8px; top: 36px; rotate: -6deg; }
-.d-busy .s5 { width: 34px; left: -6px; top: 330px; rotate: 24deg; }
+/* ---------------- layout ---------------- */
+/* single column (the default): one column the width of the page; reading text held to the measure */
+.la-single-column .it { grid-template-columns: 10rem minmax(0, 1fr); column-gap: var(--gap-items); }
+.la-single-column .it .pic { grid-row: span 3; }
+.la-single-column .pic-top { aspect-ratio: 16 / 6; }
+/* margin column: names, dates and headings in a narrow column beside the main one, as in a book or a catalogue */
+.la-margin-column .s { grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr); column-gap: var(--gap-groups); }
+.la-margin-column .s > * { grid-column: 2; }
+.la-margin-column .s > .h2, .la-margin-column .s > .meta { grid-column: 1; }
+.la-margin-column .s-read > .tx { grid-row: 1 / span 3; }
+.la-margin-column .it { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); column-gap: var(--gap-items); }
+.la-margin-column .it .pic { grid-row: span 3; }
+.la-margin-column .pic-top { aspect-ratio: 16 / 7; }
+/* two columns: the main thing and what goes with it, side by side */
+.la-two-columns .s-top, .la-two-columns .s-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; }
+.la-two-columns .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.la-two-columns .it { grid-template-columns: 9rem minmax(0, 1fr); column-gap: var(--gap-items); }
+.la-two-columns .it .pic { grid-row: span 3; }
+.la-two-columns .s-read { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.la-two-columns .s-read > .h2, .la-two-columns .s-read > .tx { grid-column: 1; }
+.la-two-columns .s-read > .meta, .la-two-columns .s-read > .side { grid-column: 2; grid-row: 1 / span 2; }
+/* grid: many like things in tiles that wrap; as many across as fit */
+.la-grid .s-top, .la-grid .s-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; }
+.la-grid .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--tile, 15rem)), 1fr)); }
+.la-grid .s-read { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.la-grid .s-read > .h2, .la-grid .s-read > .tx { grid-column: 1; }
+.la-grid .s-read > .meta, .la-grid .s-read > .side { grid-column: 2; grid-row: 1 / span 2; }
+/* staggered: things of different sizes, set off the straight lines on a six-column grid */
+.la-staggered .s-top { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.la-staggered .s-top > .tx { grid-column: 1 / span 3; grid-row: 1; align-self: end; padding-bottom: var(--gap-groups); }
+.la-staggered .s-top > .pic-top { grid-column: 4 / span 3; grid-row: 1; aspect-ratio: 4 / 5; }
+.la-staggered .list { grid-template-columns: repeat(6, minmax(0, 1fr)); row-gap: var(--gap-groups); }
+.la-staggered .it:nth-child(1) { grid-column: 1 / span 3; }
+.la-staggered .it:nth-child(2) { grid-column: 5 / span 2; margin-top: var(--gap-groups); }
+.la-staggered .it:nth-child(3) { grid-column: 2 / span 2; }
+.la-staggered .it:nth-child(4) { grid-column: 4 / span 3; margin-top: calc(var(--gap-groups) * -1); }
+.la-staggered .it:nth-child(5) { grid-column: 1 / span 2; }
+.la-staggered .it:nth-child(6) { grid-column: 3 / span 3; margin-top: var(--gap-groups); }
+.la-staggered .s-read > * { margin-left: 16.6%; }
+/* panels: a screen laid out to the window, not to the content: regions of a grid, each a plain panel */
+.la-panels.pg { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--gap-groups); padding-inline: var(--edge); }
+.la-panels.pg > * { margin-inline: 0; }
+.la-panels .m-hd { grid-column: 1 / -1; }
+.la-panels .s { padding: var(--pad); background: var(--surface); border: 2px solid var(--line); --bar: var(--ink); }
+.la-panels .s-top { grid-column: 1; grid-row: 2; grid-template-rows: auto minmax(0, 1fr); min-height: calc(var(--screen) - 22rem); }
+.la-panels .s-top > .pic-top { height: 100%; aspect-ratio: auto; grid-row: 2; }
+.la-panels .s-items { grid-column: 2; grid-row: 2 / span 2; align-content: start; }
+.la-panels .s-items .it { grid-template-columns: 5rem minmax(0, 1fr); column-gap: var(--gap-items); }
+.la-panels .s-items .it .pic { grid-row: span 3; }
+.la-panels .s-items .it .p { --l: 1; }
+.la-panels .s-form { grid-column: 1; grid-row: 3; }
+.la-panels .s-form .form { flex-direction: row; align-items: center; }
+.la-panels .s-moment, .la-panels .s-read, .la-panels .m-ft { grid-column: 1 / -1; }
+
+/* ---------------- width ---------------- */
+.wi-narrow { --page: 44rem; }
+.wi-standard { --page: 72rem; }
+.wi-wide { --page: 92rem; }
+.wi-full-bleed { --page: 72rem; }
+.wi-full-bleed > * { margin-inline: 0; padding-inline: var(--edge); }
+.wi-full-bleed > .s-top > .pic-top { margin-right: calc(var(--edge) * -1); width: calc(100% + var(--edge)); }
+.wi-full-bleed.la-single-column > .s-top > .pic-top, .wi-full-bleed.la-margin-column > .s-top > .pic-top { margin-left: calc(var(--edge) * -1); width: 100cqi; }
+.wi-full-bleed > .s-items { background: var(--surface); --bar: var(--ink); padding-block: var(--gap-groups); }
+.wi-full-bleed.la-panels.pg { padding-inline: var(--gutter); }
+.wi-full-bleed.la-panels.pg > * { padding-inline: var(--pad); }
+.la-panels > .s-top > .pic-top, .la-panels .s-moment .big { margin-inline: 0 !important; width: auto !important; }   /* in panels, nothing leaves its panel */
+.wi-full-bleed .s > .deco { margin-inline: var(--edge); }   /* signs keep to the margins beside the content, not the window's edge */
+.guide { position: absolute; margin: 0 !important; inset: 0 var(--edge); border-inline: 5px dashed var(--focus); z-index: 4; pointer-events: none; }
+.wi-full-bleed .guide { inset: 0 0; border-inline: 0; }
+
+/* ---------------- rhythm ---------------- */
+.rh-alternating > .s:nth-of-type(even) { background: var(--surface); --bar: var(--ink); padding-block: var(--gap-groups); }
+.rh-alternating:not(.wi-full-bleed) > .s:nth-of-type(even) { padding-inline: var(--pad); }
+.rh-alternating .s-read { direction: rtl; }
+.rh-alternating .s-read > * { direction: ltr; }
+.rh-alternating .s-moment .big { margin-left: auto; width: 70%; }
+.rh-one-big-moment > .s-moment { margin-block: calc(var(--gap-sections) * 0.5); }
+.rh-one-big-moment .s-moment .big { height: min(70svh, 36rem); margin-inline: calc(var(--edge) * -1); border: 0;
+  background: radial-gradient(circle at 30% 40%, color-mix(in oklab, var(--mark) 70%, var(--surface)) 0 12%, transparent 12.5%),
+    linear-gradient(170deg, transparent 55%, color-mix(in oklab, var(--mark) 55%, var(--surface)) 55.5%), color-mix(in oklab, var(--mark) 28%, var(--surface)); }
+.rh-one-big-moment.wi-full-bleed .s-moment .big { margin-inline: calc(var(--edge) * -1); }
+.rh-one-big-moment > .s-top > .tx > .h1 { height: 10rem; background: repeating-linear-gradient(var(--bar) 0 4.2rem, transparent 4.2rem 5.4rem); max-width: 52rem; }
+
+/* ---------------- fill ---------------- */
+.deco { position: absolute; color: var(--mark); pointer-events: none; z-index: 1; }
+.deco svg { display: block; width: 100%; height: auto; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.band { height: 26px; flex: none; background: var(--mark); margin-block: calc(var(--gap-sections) * -0.5);
+  mask: linear-gradient(45deg, transparent 33%, #000 33% 50%, transparent 50% 83%, #000 83%) 0 0 / 26px 26px repeat-x; }
+.fi-open .deco, .fi-open .band, .fi-full .deco, .fi-full .band { display: none; }
+.fi-balanced .deco:not([data-deco="few"]), .fi-balanced .band { display: none; }
+[data-fill="full"] { display: none !important; }
+.fi-full [data-fill="full"], .fi-packed [data-fill="full"] { display: block !important; }
+.fi-full .it:nth-child(n+7), .fi-packed .it:nth-child(n+7) { display: grid; }
+.fi-open { --tile: 19rem; }
+.fi-full, .fi-packed { --tile: 11rem; --gap-sections: min(var(--space-9), var(--space-7)); }   /* a full page has no wide empty gaps */
+.fi-full .s-top > .pic-top, .fi-packed .s-top > .pic-top { aspect-ratio: 2 / 1; }
+.fi-full .tx, .fi-full .it, .fi-packed .tx, .fi-packed .it, .fi-packed .meta { padding: var(--pad); background: var(--surface); --bar: var(--ink); border-radius: 4px; }
+.fi-full .s-read, .fi-packed .s-read { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.fi-full .s-read > .meta, .fi-packed .s-read > .meta { display: none; }
+.fi-full .s-read > .side, .fi-packed .s-read > .side { grid-column: 2; grid-row: 1 / span 2; }
+.fi-full .s-read > .h2, .fi-full .s-read > .tx, .fi-packed .s-read > .h2, .fi-packed .s-read > .tx { grid-column: 1; }
+
+/* ---------------- the phone: every layout comes down to one column ---------------- */
+@container page (width < 40rem) {
+  .s, .la-panels.pg, .fi-full .s-read, .fi-packed .s-read { grid-template-columns: minmax(0, 1fr) !important; }
+  .s > *, .la-panels.pg > * { grid-column: 1 !important; grid-row: auto !important; margin-left: 0; }
+  .la-panels.pg { grid-template-rows: none; }
+  .la-panels .s-top { min-height: 0; }
+  .la-panels .s-top > .pic-top { height: auto; aspect-ratio: 16 / 9; }
+  .la-panels .s-form .form { flex-direction: column; align-items: stretch; }
+  .s-top > .pic-top { aspect-ratio: 16 / 10; order: -1; }
+  .la-staggered .s-top > .tx { padding-bottom: 0; }
+  .la-staggered .it, .la-staggered .it:nth-child(n) { grid-column: auto; margin-top: 0; }
+  .la-staggered .list, .la-grid .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .la-staggered .it:nth-child(3n+1) { grid-column: 1 / -1; }
+  .la-two-columns .list { grid-template-columns: minmax(0, 1fr); }
+  .la-margin-column .it, .la-two-columns .it { grid-template-columns: 7rem minmax(0, 1fr); }
+  .la-single-column .it { grid-template-columns: 7rem minmax(0, 1fr); }
+  .nav i:nth-child(n+2) { display: none; }
+  .h1 { width: 100%; }
+  .rh-one-big-moment .s-moment .big { height: 26rem; }
+  .fi-packed .deco[data-deco="most"], .fi-balanced .deco[data-deco="few"]:nth-of-type(n+2) { display: none; }
+  .rh-alternating .s-moment .big { width: 85%; }
+  .s-top > .deco { display: none; }   /* on a phone the top is the picture: nothing over it */
+}
 </style>
 </head>
-<body>
+<body class="mode-light">
+
+<!-- the drawn signs used as decoration in the miniature pages: drawn once, outside the swatches -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="sg-star" viewBox="0 0 100 100"><path d="M50 8l11 30 31 2-24 19 8 31-26-17-26 17 8-31L8 40l31-2z"/></symbol>
+    <symbol id="sg-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="38"/><circle cx="50" cy="50" r="24"/><path d="M50 4v18M50 78v18M4 50h18M78 50h18"/></symbol>
+    <symbol id="sg-sprig" viewBox="0 0 100 100"><path d="M20 90C40 60 55 40 82 12M40 64c-14-2-22-12-22-24 14 2 22 12 22 24zM55 44c14 0 24-8 26-20-14 0-24 8-26 20zM64 30c-10-6-12-16-8-26 10 6 12 16 8 26z"/></symbol>
+    <symbol id="sg-swirl" viewBox="0 0 100 100"><path d="M50 50c0-6 8-8 12-4 6 6 2 18-8 20-14 2-24-10-20-24 4-16 24-22 38-12 16 12 14 38-4 48-20 10-46 0-50-24"/></symbol>
+  </defs>
+</svg>
+
+<template id="mini">
+<div class="m-hd"><b class="logo c"></b><span class="nav"><i class="c"></i><i class="c"></i><i class="c"></i></span></div>
+<section class="s s-top">
+  <div class="tx"><b class="h1 c"></b><i class="p c" style="--l:3"></i><span class="bt c"></span></div>
+  <div class="pic pic-top c"></div>
+  <span class="deco" data-deco="few" style="width:60px;right:44%;top:-58px;rotate:-12deg"><svg><use href="#sg-ring"/></svg></span>
+  <span class="deco" data-deco="more" style="width:70px;right:-110px;top:60%;rotate:18deg"><svg><use href="#sg-star"/></svg></span>
+  <span class="deco" data-deco="most" style="width:90px;left:42%;bottom:-70px;rotate:-30deg"><svg><use href="#sg-sprig"/></svg></span>
+  <span class="deco" data-deco="most" style="width:120px;right:-170px;top:-20px;rotate:-6deg"><svg><use href="#sg-swirl"/></svg></span>
+  <span class="deco" data-deco="most" style="width:64px;left:-90px;top:62%;rotate:24deg"><svg><use href="#sg-star"/></svg></span>
+  <span class="deco" data-deco="most" style="width:100px;left:-190px;bottom:-40px;rotate:-18deg"><svg><use href="#sg-sprig"/></svg></span>
+</section>
+<i class="band" data-deco="most"></i>
+<section class="s s-items">
+  <b class="h2 c"></b>
+  <div class="list">
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+    <div class="it"><div class="pic c"></div><b class="h3 c"></b><i class="p c" style="--l:2"></i></div>
+  </div>
+  <span class="deco" data-deco="few" style="width:80px;right:-20px;top:-60px;rotate:14deg"><svg><use href="#sg-sprig"/></svg></span>
+  <span class="deco" data-deco="more" style="width:100px;left:-130px;top:45%;rotate:-8deg"><svg><use href="#sg-swirl"/></svg></span>
+  <span class="deco" data-deco="most" style="width:60px;left:30%;top:-50px;rotate:20deg"><svg><use href="#sg-star"/></svg></span>
+  <span class="deco" data-deco="most" style="width:84px;right:-118px;bottom:10%;rotate:-16deg"><svg><use href="#sg-ring"/></svg></span>
+  <span class="deco" data-deco="most" style="width:110px;left:-170px;top:-10px;rotate:12deg"><svg><use href="#sg-ring"/></svg></span>
+  <span class="deco" data-deco="most" style="width:70px;right:-150px;top:30%;rotate:-28deg"><svg><use href="#sg-star"/></svg></span>
+</section>
+<i class="band" data-deco="most"></i>
+<section class="s s-moment"><div class="big c"></div>
+  <span class="deco" data-deco="most" style="width:70px;right:4%;top:-56px;rotate:-20deg"><svg><use href="#sg-swirl"/></svg></span>
+</section>
+<i class="band" data-deco="most"></i>
+<section class="s s-read">
+  <b class="h2 c"></b>
+  <div class="meta"><i class="p c"></i></div>
+  <div class="tx"><i class="p c" style="--l:5"></i><i class="p c" style="--l:4"></i></div>
+  <div class="side xtra" data-fill="full"><div class="ro"><b></b><b></b><b></b></div><i class="p c"></i></div>
+  <span class="deco" data-deco="few" style="width:96px;left:-140px;top:20%;rotate:10deg"><svg><use href="#sg-star"/></svg></span>
+  <span class="deco" data-deco="most" style="width:76px;right:-100px;top:-10px;rotate:-14deg"><svg><use href="#sg-sprig"/></svg></span>
+</section>
+<i class="band" data-deco="most"></i>
+<section class="s s-form">
+  <div class="tx"><b class="h2 c"></b><i class="p c" style="--l:2"></i></div>
+  <div class="form"><i class="fld c"></i><i class="fld c"></i><span class="bt c"></span></div>
+  <span class="deco" data-deco="more" style="width:90px;right:-120px;top:0;rotate:22deg"><svg><use href="#sg-ring"/></svg></span>
+</section>
+<div class="m-ft"></div>
+</template>
+
 <main>
-<h1>Density: the options</h1>
-<p class="intro">Every box below holds the same content: a heading, one line, three items and one button. Only the density changes: how much is left open, how big the gaps are and how much fills them. The guide is <code>style-part-density.md</code>; the measured signs for each option are there.</p>
+<h1>Density: the layers</h1>
+<p class="intro">Five layers, each switched on its own: the size of the gaps, how full each screen is, how things are arranged, how wide the page runs, and the rhythm from one section to the next. Every option is shown on a light page (left) and the same CSS on a dark page (right), with the other layers at their defaults; the starting points at the end are saved sets of picks. The spacing options are shown in words at real size. The others are shown as a page in miniature: the same page laid out at full size in a window 1600 pixels wide and on a phone 390 wide, then scaled down, with words drawn as bars and pictures as tinted blocks. A dashed line marks the bottom of each screen.</p>
 
-<div class="book">
-
-<section class="swatch" data-option="minimal">
-  <h2>Minimal</h2>
-  <p class="id">minimal</p>
-  <p class="for">One thing at a time. About 65 per cent open space; items 64 pixels apart; one drawn thing set large; no boxes.</p>
-  <div class="demo d-min">
-    <div class="top">
-      <svg class="ring deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M78 24 A38 38 0 1 0 84 62" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" opacity="0.9"/></svg>
-      <h3>Mending morning</h3>
-      <p class="lede">Bring it broken. We mend it while you wait.</p>
-    </div>
-    <ul>
-      <li><span class="when">Sat 10 am</span><span class="what">A lamp that flickers</span></li>
-      <li><span class="when">Sat 11 am</span><span class="what">A kettle that leaks</span></li>
-      <li><span class="when">Sat noon</span><span class="what">A bicycle with no brakes</span></li>
-    </ul>
-    <button class="btn" type="button">Book a place</button>
-  </div>
-</section>
-
-<section class="swatch" data-option="clean">
-  <h2>Clean</h2>
-  <p class="id">clean</p>
-  <p class="for">A normal amount, in order. About 40 to 50 per cent open; ruled rows, not boxes; almost no decoration.</p>
-  <div class="demo d-clean">
-    <h3>Mending morning</h3>
-    <p class="lede">Bring it broken. We mend it while you wait.</p>
-    <ul>
-      <li><span class="what">A lamp that flickers</span><span class="when">Sat 10 am</span></li>
-      <li><span class="what">A kettle that leaks</span><span class="when">Sat 11 am</span></li>
-      <li><span class="what">A bicycle with no brakes</span><span class="when">Sat noon</span></li>
-    </ul>
-    <button class="btn" type="button">Book a place</button>
-  </div>
-</section>
-
-<section class="swatch" data-option="balanced">
-  <h2>Balanced</h2>
-  <p class="id">balanced</p>
-  <p class="for">Lively, with room to breathe. About 30 to 40 per cent open, but coloured; two or three hand-made marks; items 24 pixels apart.</p>
-  <div class="demo d-bal">
-    <div class="band">
-      <h3>Mending morning</h3>
-      <svg class="squiggle deco" viewBox="0 0 120 12" aria-hidden="true" focusable="false"><path d="M2 7 Q12 1 22 7 T42 7 T62 7 T82 7 T102 7 T118 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-      <p class="lede">Bring it broken. We mend it while you wait.</p>
-      <svg class="edge deco" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 14 V8 L18 4 L31 9 L52 3 L70 8 L92 5 L111 10 L133 4 L150 8 L172 3 L195 9 L214 5 L236 9 L255 3 L277 8 L298 4 L316 10 L338 5 L357 9 L380 4 L400 7 V14Z"/></svg>
-    </div>
-    <div class="board">
-      <ul>
-        <li><svg class="mark deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 C7 3 5 7 6 11 C7 13 9 14 9 17 H15 C15 14 17 13 18 11 C19 7 17 3 12 3Z M9.5 20 H14.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="what">A lamp that flickers</span><br><span class="when">Saturday, 10 am</span></li>
-        <li><svg class="mark deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 9 H17 L16 20 H6Z M17 11 C21 11 21 16 16.5 16 M9 9 C9 6 13 6 13 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="what">A kettle that leaks</span><br><span class="when">Saturday, 11 am</span></li>
-        <li><svg class="mark deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16 L10 9 H16 L18 16 M10 9 L12 16 L16 9 M9 7 H12"/></g></svg><span class="what">A bicycle with no brakes</span><br><span class="when">Saturday, noon</span></li>
-      </ul>
-      <button class="btn" type="button">Book a place</button>
-    </div>
-  </div>
-</section>
-
-<section class="swatch" data-option="full-but-quiet">
-  <h2>Full but quiet</h2>
-  <p class="id">full-but-quiet</p>
-  <p class="for">Like a game screen. A scene fills the window; plain, nearly solid panels in every region; 12-pixel gaps; nothing in them.</p>
-  <div class="demo d-full">
-    <div class="panel head">
-      <h3>Mending morning</h3>
-      <p class="lede">Bring it broken. We mend it while you wait.</p>
-      <button class="btn" type="button">Book a place</button>
-    </div>
-    <ul>
-      <li class="panel"><span class="what">Lamp</span><p class="when">10 am, 2 of 4 left</p><span class="meter" aria-hidden="true"><i style="width:50%"></i></span></li>
-      <li class="panel"><span class="what">Kettle</span><p class="when">11 am, 1 of 4 left</p><span class="meter" aria-hidden="true"><i style="width:25%"></i></span></li>
-      <li class="panel"><span class="what">Bicycle</span><p class="when">Noon, 4 of 4 left</p><span class="meter" aria-hidden="true"><i style="width:100%"></i></span></li>
-    </ul>
-  </div>
-</section>
-
-<section class="swatch" data-option="busy">
-  <h2>Busy</h2>
-  <p class="id">busy</p>
-  <p class="for">Fill the frame. Under 15 per cent open; every surface worked; 8-pixel filled gaps; calm patches only behind words and controls.</p>
-  <div class="demo d-busy">
-    <svg class="sign s1 deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="40"/><path d="M50 10 L50 90 M10 50 L90 50 M22 22 L78 78"/></svg>
-    <svg class="sign s2 deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M50 8 L61 40 L94 40 L67 60 L77 92 L50 72 L23 92 L33 60 L6 40 L39 40Z"/></svg>
-    <svg class="sign s3 deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M20 80 L50 15 L80 80 M30 60 H70 M50 15 V95"/></svg>
-    <svg class="sign s4 deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="18"/><circle cx="50" cy="50" r="38"/><path d="M50 12 V32 M50 68 V88 M12 50 H32 M68 50 H88"/></svg>
-    <svg class="sign s5 deco" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="M15 50 Q50 5 85 50 Q50 95 15 50Z"/><circle cx="50" cy="50" r="10"/></svg>
-    <div class="slab">
-      <h3>Mending morning</h3>
-      <p class="sheet">Bring it broken. We mend it while you wait.</p>
-    </div>
-    <div class="rule deco" aria-hidden="true"></div>
-    <ul>
-      <li><svg class="plate deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 C7 3 5 7 6 11 C7 13 9 14 9 17 H15 C15 14 17 13 18 11 C19 7 17 3 12 3Z M9.5 20 H14.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span><span class="what">A lamp that flickers</span><br><span class="when">Saturday, 10 am</span></span></li>
-      <li><svg class="plate deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 9 H17 L16 20 H6Z M17 11 C21 11 21 16 16.5 16 M9 9 C9 6 13 6 13 9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span><span class="what">A kettle that leaks</span><br><span class="when">Saturday, 11 am</span></span></li>
-      <li><svg class="plate deco" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16 L10 9 H16 L18 16 M10 9 L12 16 L16 9"/></g></svg><span><span class="what">A bicycle with no brakes</span><br><span class="when">Saturday, noon</span></span></li>
-    </ul>
-    <div class="rule deco" aria-hidden="true"></div>
-    <div class="foot"><div class="calm"><button class="btn" type="button">Book a place</button></div></div>
-  </div>
-</section>
-
+<h2 class="layer">Spacing</h2>
+<p class="layer-note">The gaps: inside an item, between items, between groups and between sections, and the page's side margin. Shown in words at real size, at this swatch's width; the key under each gives the four gaps measured here. Steps 1 to 6 of the scale never change, so controls and tap spacing are the same in every option.</p>
+<section class="swatch" data-option="spacing:airy">
+<h3>Airy</h3><p class="id">spacing: airy</p><p class="what">Large gaps, growing most on a wide screen: one thing at a time, read slowly.</p>
+<div class="real sp-airy fi-balanced la-single-column wi-standard rh-even">
+<div class="group"><div class="head"><h4>Programme</h4><p>Three sessions this month, each about an hour.</p></div>
+<ul><li><b>Morning session</b><span>Saturday, 10:00</span></li><li><b>Afternoon talk</b><span>Saturday, 14:30</span></li><li><b>Evening meeting</b><span>Tuesday, 19:00</span></li></ul></div>
+<div class="group"><div class="head"><h4>Hold a place</h4><p>We will write back within a day.</p></div>
+<form><label>Your name <input name="n" autocomplete="name"></label><button class="btn" type="submit">Hold a place</button></form></div>
+<div class="key" aria-label="The four gaps, measured at this width">
+<div>Inside an item <i style="width: var(--gap-inside)"></i><output></output></div>
+<div>Between items <i style="width: var(--gap-items)"></i><output></output></div>
+<div>Between groups <i style="width: var(--gap-groups)"></i><output></output></div>
+<div>Between sections <i style="width: var(--gap-sections)"></i><output></output></div></div>
 </div>
+</section>
+<section class="swatch" data-option="spacing:standard">
+<h3>Standard</h3><p class="id">spacing: standard</p><p class="what">The general guide's scale: generous between sections, close inside them.</p>
+<div class="real sp-standard fi-balanced la-single-column wi-standard rh-even">
+<div class="group"><div class="head"><h4>Programme</h4><p>Three sessions this month, each about an hour.</p></div>
+<ul><li><b>Morning session</b><span>Saturday, 10:00</span></li><li><b>Afternoon talk</b><span>Saturday, 14:30</span></li><li><b>Evening meeting</b><span>Tuesday, 19:00</span></li></ul></div>
+<div class="group"><div class="head"><h4>Hold a place</h4><p>We will write back within a day.</p></div>
+<form><label>Your name <input name="n" autocomplete="name"></label><button class="btn" type="submit">Hold a place</button></form></div>
+<div class="key" aria-label="The four gaps, measured at this width">
+<div>Inside an item <i style="width: var(--gap-inside)"></i><output></output></div>
+<div>Between items <i style="width: var(--gap-items)"></i><output></output></div>
+<div>Between groups <i style="width: var(--gap-groups)"></i><output></output></div>
+<div>Between sections <i style="width: var(--gap-sections)"></i><output></output></div></div>
+</div>
+</section>
+<section class="swatch" data-option="spacing:snug">
+<h3>Snug</h3><p class="id">spacing: snug</p><p class="what">Small gaps, nothing over 48 pixels: a full page that still groups clearly.</p>
+<div class="real sp-snug fi-balanced la-single-column wi-standard rh-even">
+<div class="group"><div class="head"><h4>Programme</h4><p>Three sessions this month, each about an hour.</p></div>
+<ul><li><b>Morning session</b><span>Saturday, 10:00</span></li><li><b>Afternoon talk</b><span>Saturday, 14:30</span></li><li><b>Evening meeting</b><span>Tuesday, 19:00</span></li></ul></div>
+<div class="group"><div class="head"><h4>Hold a place</h4><p>We will write back within a day.</p></div>
+<form><label>Your name <input name="n" autocomplete="name"></label><button class="btn" type="submit">Hold a place</button></form></div>
+<div class="key" aria-label="The four gaps, measured at this width">
+<div>Inside an item <i style="width: var(--gap-inside)"></i><output></output></div>
+<div>Between items <i style="width: var(--gap-items)"></i><output></output></div>
+<div>Between groups <i style="width: var(--gap-groups)"></i><output></output></div>
+<div>Between sections <i style="width: var(--gap-sections)"></i><output></output></div></div>
+</div>
+</section>
+<section class="swatch" data-option="spacing:compact">
+<h3>Compact</h3><p class="id">spacing: compact</p><p class="what">The smallest gaps, for tools, tables and readouts used for a long sitting.</p>
+<div class="real sp-compact fi-balanced la-single-column wi-standard rh-even">
+<div class="group"><div class="head"><h4>Programme</h4><p>Three sessions this month, each about an hour.</p></div>
+<ul><li><b>Morning session</b><span>Saturday, 10:00</span></li><li><b>Afternoon talk</b><span>Saturday, 14:30</span></li><li><b>Evening meeting</b><span>Tuesday, 19:00</span></li></ul></div>
+<div class="group"><div class="head"><h4>Hold a place</h4><p>We will write back within a day.</p></div>
+<form><label>Your name <input name="n" autocomplete="name"></label><button class="btn" type="submit">Hold a place</button></form></div>
+<div class="key" aria-label="The four gaps, measured at this width">
+<div>Inside an item <i style="width: var(--gap-inside)"></i><output></output></div>
+<div>Between items <i style="width: var(--gap-items)"></i><output></output></div>
+<div>Between groups <i style="width: var(--gap-groups)"></i><output></output></div>
+<div>Between sections <i style="width: var(--gap-sections)"></i><output></output></div></div>
+</div>
+</section>
+<h2 class="layer">Fill</h2>
+<p class="layer-note">Shown with layout: grid and width: wide. How much of each screen is left open, and what fills the rest. Drawn signs stand for whatever decoration the other parts bring. The tinted boxes are the box count: the first screen cut into 10 by 6, a check anyone can make by eye.</p>
+<section class="swatch" data-option="fill:open" data-stack>
+<h3>Open</h3><p class="id">fill: open</p><p class="what">Most of each screen is left open; no decoration in the gaps.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-grid wi-wide rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-grid wi-wide rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="fill:balanced" data-stack>
+<h3>Balanced</h3><p class="id">fill: balanced</p><p class="what">Room round each thing, and two or three drawn marks per screen.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-wide rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-wide rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="fill:full" data-stack>
+<h3>Full</h3><p class="id">fill: full</p><p class="what">Every region of the screen holds content on plain panels; the gaps stay plain.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-full la-grid wi-wide rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-full la-grid wi-wide rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="fill:packed" data-stack>
+<h3>Packed</h3><p class="id">fill: packed</p><p class="what">Full, and every gap holds detail: drawn bands, signs in the margins.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-packed la-grid wi-wide rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-packed la-grid wi-wide rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<h2 class="layer">Layout</h2>
+<p class="layer-note">How things are arranged on a wide screen. On the phone every layout comes down to one column, except small tiles, two across.</p>
+<section class="swatch" data-option="layout:single-column" data-stack>
+<h3>Single column</h3><p class="id">layout: single-column</p><p class="what">One column, things in the order they are needed.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="layout:margin-column" data-stack>
+<h3>Margin column</h3><p class="id">layout: margin-column</p><p class="what">Headings and particulars in a narrow column beside the main one.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-margin-column wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-margin-column wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="layout:two-columns" data-stack>
+<h3>Two columns</h3><p class="id">layout: two-columns</p><p class="what">The main thing and what goes with it, side by side.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-two-columns wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-two-columns wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="layout:grid" data-stack>
+<h3>Grid</h3><p class="id">layout: grid</p><p class="what">Many like things in tiles that wrap, as many across as fit.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="layout:staggered" data-stack>
+<h3>Staggered</h3><p class="id">layout: staggered</p><p class="what">Things of different sizes, set off the straight lines.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-staggered wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-staggered wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="layout:panels" data-stack>
+<h3>Panels</h3><p class="id">layout: panels</p><p class="what">A screen laid out to the window: plain panels in the regions of a grid.</p>
+<div class="stage" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-panels wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-panels wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<h2 class="layer">Width</h2>
+<p class="layer-note">How wide the page runs in a window 1600 pixels wide. The dashed blue lines mark the edges of the page's content.</p>
+<section class="swatch" data-option="width:narrow" data-stack>
+<h3>Narrow</h3><p class="id">width: narrow</p><p class="what">The page is one reading column: the measure and its margins.</p>
+<div class="stage with-guides" data-screens="1" style="--screens:1"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-narrow rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-narrow rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="width:standard" data-stack>
+<h3>Standard</h3><p class="id">width: standard</p><p class="what">The page stops at 72rem and centres; the ground shows at the sides.</p>
+<div class="stage with-guides" data-screens="1" style="--screens:1"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="width:wide" data-stack>
+<h3>Wide</h3><p class="id">width: wide</p><p class="what">The page runs to 92rem, for galleries and catalogues; text keeps its measure.</p>
+<div class="stage with-guides" data-screens="1" style="--screens:1"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-wide rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-wide rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="width:full-bleed" data-stack>
+<h3>Full bleed</h3><p class="id">width: full-bleed</p><p class="what">Bands and pictures run to the window's edges; the content inside keeps to 72rem.</p>
+<div class="stage with-guides" data-screens="1" style="--screens:1"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-full-bleed rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-single-column wi-full-bleed rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<h2 class="layer">Rhythm</h2>
+<p class="layer-note">Shown with layout: grid, three screens deep. How one section follows the next; the dashed lines are the bottoms of the screens.</p>
+<section class="swatch" data-option="rhythm:even" data-stack>
+<h3>Even</h3><p class="id">rhythm: even</p><p class="what">Every section the same gap, width and alignment: calm and orderly.</p>
+<div class="stage" data-screens="3" style="--screens:3"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="rhythm:alternating" data-stack>
+<h3>Alternating</h3><p class="id">rhythm: alternating</p><p class="what">Every other section on a band, and sides swapped: a beat down the page.</p>
+<div class="stage" data-screens="3" style="--screens:3"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<section class="swatch" data-option="rhythm:one-big-moment" data-stack>
+<h3>One big moment</h3><p class="id">rhythm: one-big-moment</p><p class="what">Sections are even, and one thing per screen is set large with space round it.</p>
+<div class="stage" data-screens="3" style="--screens:3"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-one-big-moment"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-standard rh-one-big-moment"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale.</p>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks, two screens deep, with the box count for the first screen.</p>
+<section class="swatch" data-option="start:minimal" data-stack>
+<h3>Minimal</h3><p class="id">spacing: airy; fill: open; layout: margin-column; width: standard; rhythm: one-big-moment</p><p class="what">One thing at a time on an open page.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-margin-column wi-standard rh-one-big-moment"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-margin-column wi-standard rh-one-big-moment"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:clean" data-stack>
+<h3>Clean</h3><p class="id">spacing: standard; fill: open; layout: two-columns; width: standard; rhythm: even</p><p class="what">A normal amount on each screen, all of it lined up.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-two-columns wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-two-columns wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:balanced" data-stack>
+<h3>Balanced</h3><p class="id">spacing: standard; fill: balanced; layout: grid; width: full-bleed; rhythm: alternating</p><p class="what">Lively, with room to breathe.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-full-bleed rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-grid wi-full-bleed rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:full-but-quiet" data-stack>
+<h3>Full but quiet</h3><p class="id">spacing: compact; fill: full; layout: panels; width: full-bleed; rhythm: even</p><p class="what">The whole window used, every panel calm inside.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-compact fi-full la-panels wi-full-bleed rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-compact fi-full la-panels wi-full-bleed rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:busy" data-stack>
+<h3>Busy</h3><p class="id">spacing: snug; fill: packed; layout: grid; width: standard; rhythm: even</p><p class="what">Fill the frame: narrow gaps, every one filled.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:warm" data-stack>
+<h3>Warm</h3><p class="id">spacing: standard; fill: balanced; layout: two-columns; width: full-bleed; rhythm: alternating</p><p class="what">Bands edge to edge, people at the top, a few marks.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-two-columns wi-full-bleed rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-two-columns wi-full-bleed rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:artistic" data-stack>
+<h3>Artistic</h3><p class="id">spacing: airy; fill: open; layout: staggered; width: wide; rhythm: one-big-moment</p><p class="what">The work large, off the centred column.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-staggered wi-wide rh-one-big-moment"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-staggered wi-wide rh-one-big-moment"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:professional" data-stack>
+<h3>Professional</h3><p class="id">spacing: airy; fill: open; layout: grid; width: standard; rhythm: even</p><p class="what">An orderly grid with generous space.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-grid wi-standard rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-grid wi-standard rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:civic" data-stack>
+<h3>Civic</h3><p class="id">spacing: standard; fill: open; layout: single-column; width: narrow; rhythm: even</p><p class="what">One readable column, nothing extra.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-single-column wi-narrow rh-even"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-open la-single-column wi-narrow rh-even"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:sorcery" data-stack>
+<h3>Sorcery</h3><p class="id">spacing: snug; fill: packed; layout: single-column; width: full-bleed; rhythm: one-big-moment</p><p class="what">A scene at the top, then every gap filled.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-single-column wi-full-bleed rh-one-big-moment"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-single-column wi-full-bleed rh-one-big-moment"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:gilded-dark" data-stack>
+<h3>Gilded dark</h3><p class="id">spacing: snug; fill: full; layout: panels; width: full-bleed; rhythm: one-big-moment</p><p class="what">Heavy panels over one big painted world.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-full la-panels wi-full-bleed rh-one-big-moment"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-full la-panels wi-full-bleed rh-one-big-moment"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:lantern-fair" data-stack>
+<h3>Lantern fair</h3><p class="id">spacing: snug; fill: packed; layout: grid; width: full-bleed; rhythm: alternating</p><p class="what">Bands of stalls, bunting in every gap.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-full-bleed rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-full-bleed rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:almanac-plate" data-stack>
+<h3>Almanac plate</h3><p class="id">spacing: airy; fill: balanced; layout: two-columns; width: full-bleed; rhythm: alternating</p><p class="what">Sheets on one half, the scene on the other, turn about.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-balanced la-two-columns wi-full-bleed rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-balanced la-two-columns wi-full-bleed rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes" data-stack>
+<h3>Catalogue of glazes</h3><p class="id">spacing: airy; fill: open; layout: margin-column; width: standard; rhythm: alternating</p><p class="what">One piece to a screen, particulars in the margin.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-margin-column wi-standard rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-airy fi-open la-margin-column wi-standard rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:field-journal" data-stack>
+<h3>Field journal</h3><p class="id">spacing: standard; fill: balanced; layout: staggered; width: standard; rhythm: alternating</p><p class="what">Pages laid down a little out of line.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-staggered wi-standard rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-standard fi-balanced la-staggered wi-standard rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+<section class="swatch" data-option="start:repair-cafe" data-stack>
+<h3>Repair cafe</h3><p class="id">spacing: snug; fill: packed; layout: grid; width: standard; rhythm: alternating</p><p class="what">A full board: tags four across, a band at every break.</p>
+<div class="stage counted" data-screens="2" style="--screens:2"><div class="win desk" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-standard rh-alternating"></div></div></div><div class="win phone" aria-hidden="true"><div class="vp"><div class="pg sp-snug fi-packed la-grid wi-standard rh-alternating"></div></div></div></div><p class="caption">Left, a window 1600 pixels wide; right, a phone 390 wide, at the same scale. <span class=count></span></p>
+</section>
+
 </main>
 
 <script>
-run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
-});
+/* Fill the miniature pages, scale them to fit, mark the screens, and count the boxes. Runs after swatches.js has made
+   the dark copies (both listen for DOMContentLoaded; swatches.js was loaded first). */
+function fillMinis() {
+  const tpl = document.getElementById('mini');
+  for (const pg of document.querySelectorAll('.pg:empty')) pg.append(tpl.content.cloneNode(true));
+  for (const g of document.querySelectorAll('.with-guides .desk .pg')) { const d = document.createElement('i'); d.className = 'guide'; d.setAttribute('aria-hidden', 'true'); g.append(d); }
+  for (const win of document.querySelectorAll('.win')) {
+    const vp = win.querySelector('.vp'), screens = +(win.closest('.stage').dataset.screens || 1), h = win.classList.contains('phone') ? 844 : 900;
+    for (let i = 1; i < screens; i++) { const f = document.createElement('i'); f.className = 'fold'; f.style.top = (i * h - 3) + 'px'; vp.append(f); }
+  }
+}
+function scaleMinis() {
+  for (const st of document.querySelectorAll('.stage')) {
+    const w = st.clientWidth;
+    if (w) st.style.setProperty('--k', Math.min(0.5, (w - 14 - 4) / (1600 + 390)).toFixed(4));
+  }
+}
+/* The box count: the check a person can make by eye, done here from the page's own boxes. The first screen is cut
+   into 10 by 6 boxes; a box is empty when nothing is in it, and "decoration only" when it holds drawn things and no
+   words, pictures or controls. */
+function countBoxes() {
+  for (const win of document.querySelectorAll('.stage.counted .desk')) {
+    const vp = win.querySelector('.vp'), r = vp.getBoundingClientRect(), cw = r.width / 10, chh = (r.width * 900 / 1600) / 6;
+    const rects = (sel) => [...vp.querySelectorAll(sel)].flatMap((el) => [...el.getClientRects()]).filter((q) => q.width > 0.5 && q.height > 0.5);
+    const words = rects('.c'), drawn = rects('.deco, .band');
+    let grid = win.querySelector('.boxes');
+    if (!grid) { grid = document.createElement('div'); grid.className = 'boxes'; grid.setAttribute('aria-hidden', 'true'); win.append(grid); }
+    grid.textContent = '';
+    let empty = 0, deco = 0;
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 10; x++) {
+      const bx = { l: r.left + x * cw, t: r.top + y * chh, r: r.left + (x + 1) * cw, b: r.top + (y + 1) * chh };
+      const hit = (q) => q.left < bx.r && q.right > bx.l && q.top < bx.b && q.bottom > bx.t;
+      const c = words.some(hit), d = drawn.some(hit), cell = document.createElement('i');
+      if (!c && !d) { empty++; cell.className = 'e'; } else if (!c) { deco++; cell.className = 'd'; }
+      grid.append(cell);
+    }
+    const out = win.closest('.swatch').querySelector('.count');
+    if (out) out.innerHTML = 'Box count, first screen: <b>' + empty + ' of 60 empty</b> (tinted), <b>' + deco + ' decoration only</b> (hatched).';
+  }
+}
+function spacingKeys() {
+  for (const k of document.querySelectorAll('.key div')) {
+    const bar = k.querySelector('i'), o = k.querySelector('output');
+    if (bar && o) o.textContent = Math.round(bar.getBoundingClientRect().width) + ' px';
+  }
+}
+function refresh() { scaleMinis(); requestAnimationFrame(() => { countBoxes(); spacingKeys(); }); }
+document.addEventListener('submit', (e) => e.preventDefault());   /* the form in the spacing swatches goes nowhere */
+document.addEventListener('DOMContentLoaded', () => { fillMinis(); refresh(); addEventListener('resize', refresh); });
+run(swatchTest);
 </script>
 </body>
 </html>

@@ -8,9 +8,10 @@
         "--no-render"
       ],
       "must": [
-        "picks parts on their own: background: detailed-ground, density: busy, frames: inked-panel and wavy-edge",
-        "the part \"light\" has no option \"candlelight\"",
-        "names a part called \"weather\" and there is none"
+        "picks parts on their own: background: detailed-ground; density: busy; frames: inked-panel and wavy-edge",
+        "the part \"light\" has no starting point \"candlelight\"",
+        "names a part called \"weather\" and there is none",
+        "picks parts and says no personality"
       ],
       "must_not": [
         "no option \"detailed-ground\"",

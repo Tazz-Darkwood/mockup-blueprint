@@ -3,112 +3,128 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Background: the options</title>
+<title>Background: the layers</title>
+<link rel="stylesheet" href="tokens.css">
 <script src="../harness.js"></script>
-<!-- The swatch book for library/style-part-background.md. Every option is drawn here in its own CSS and
-     inline SVG; nothing is loaded from a mockup. The long tiles are data URIs, as the mockups used them. -->
+<script src="swatches.js"></script>
 <style>
+/* Built by source/background.py from source/background-template.html: edit those, then run
+   python3 background.py ../background.html in source/. Every colour below is a shared colour name (tokens.css),
+   so each swatch is drawn twice, on a light page and a dark one, from the same CSS. The tiles are masks: black
+   shapes whose alpha is all that counts, coloured by the shared names. */
+:root {
+  --grain: {{GRAIN}};
+  --mottle: {{MOTTLE}};
+  --stone-faces: {{STONE_FACES}};
+  --stone-joints: {{STONE_JOINTS}};
+  --p-face: {{P_FACE}};
+  --p-shade: {{P_SHADE}};
+  --p-lit: {{P_LIT}};
+  --p-leaf: {{P_LEAF}};
+  --p-ridge: {{P_RIDGE}};
+  --signs: {{SIGNS}};
+}
 *, *::before, *::after { box-sizing: border-box; }
 img, svg { display: block; max-width: 100%; height: auto; }
-body { margin: 0; overflow-wrap: break-word; background: #f4f1ea; color: #1f1d1a; font: 1.0625rem/1.5 Georgia, 'Times New Roman', serif; }
-.intro { max-width: 66ch; padding: 2rem 1rem 1rem; margin-inline: auto; }
-.intro h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem); line-height: 1.15; }
-.intro p { margin: 0; }
-.book { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; max-width: 80rem; margin-inline: auto; padding: 1rem 1rem 3rem; }
-@media (min-width: 60rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } .swatch.wide { grid-column: 1 / -1; } }
-.swatch { position: relative; isolation: isolate; overflow: clip; min-height: 22rem; border: 1px solid #6f675a; }
-.swatch h2 { margin: 0 0 0.5rem; font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem); line-height: 1.15; }
-.swatch p { margin: 0 0 1rem; max-width: 52ch; }
-.swatch button { min-height: 44px; padding: 0.5rem 1.25rem; font: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; }
-.id { font: 700 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; }
-:focus-visible { outline: 3px solid #1f6feb; outline-offset: 3px; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 62ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.75rem; font-size: 1.5rem; line-height: 1.2; }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
-/* 1. Plain: one flat colour, separated by space alone */
-.sw-plain { --ground: #f7f4ee; --ink: #1c1f23; --ink-soft: #565d66; --line: #d8d2c6; --accent: #2f5d50;
-  background: var(--ground); color: var(--ink); padding: 2rem 1.5rem; }
-.sw-plain .id { color: var(--ink-soft); }
-.sw-plain .next { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--ink-soft); }
-.sw-plain button { background: var(--accent); color: #fff; border: 0; }
+/* ---------- every swatch: a ground, its layers behind, a calm sheet in front ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.ground { position: relative; isolation: isolate; overflow: clip; min-height: 19rem; padding: 2.5rem 1.25rem; background: var(--ground); }
+.bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.bg > div, .bg > div::before, .bg > div::after { position: absolute; inset: 0; }
+.bg > div::before, .bg > div::after { content: ""; }
+.sheet { position: relative; max-width: 20rem; padding: 1.25rem; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 4px; }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 1rem; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 0; border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); }
 
-/* 2. Coloured bands: whole bands of one strong colour, each with a fine grain in its own hue */
-.sw-bands { --band-a: #6a1a26; --band-b: #1f3a2c; --band-c: #1a0b12; --on-band: #f0e2c2; --light: #ffcf5a; --on-light: #1d0f08;
-  --grain: {{GRAIN_DARK}}; color: var(--on-band); display: grid; }
-.sw-bands .band { padding: 1.5rem; background-image: var(--grain); }
-.sw-bands .band-a { background-color: var(--band-a); }
-.sw-bands .band-b { background-color: var(--band-b); }
-.sw-bands .band-c { background-color: var(--band-c); }
-.sw-bands button { background: var(--light); color: var(--on-light); border: 2px solid var(--on-light); }
+/* ---------- texture ---------- */
+.te-grain .bg-texture::after { background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 2.2); mask: var(--grain) 0 0 / 240px 240px; }
+.te-felt-weave .bg-texture::after { background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 1.4);
+  mask: radial-gradient(circle, black 1px, transparent 1.4px) 0 0 / 6px 6px; }
+.te-mottled-and-hatched .bg-texture::before { background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 2.4); mask: var(--mottle) 0 0 / 640px 720px; }
+.te-mottled-and-hatched .bg-texture::after { background: rgb(var(--texture-rgb)); opacity: calc(var(--texture-strength) * 1.6);
+  mask: repeating-linear-gradient(128deg, black 0 1px, transparent 1px 7px), var(--grain) 0 0 / 240px 240px; }
 
-/* 3. Grain: a pale ground with a paper speckle that only darkens */
-.sw-grain { --ground: #f8f0e0; --ink: #2b2118; --accent: #8a3b1f; --paper: {{PAPER}};
-  background: var(--ground) var(--paper); color: var(--ink); padding: 2rem 1.5rem; }
-.sw-grain button { background: var(--accent); color: #fff; border: 0; }
+/* ---------- pattern ---------- */
+.pa-coloured-bands { min-height: 22rem; }
+.pa-coloured-bands .bg-pattern { background: linear-gradient(var(--band-1) 0 50%, var(--band-2) 50%);   /* the third band is the line of words below */ }
+.on-band { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 0.875rem 1.25rem; background: var(--band-3); color: var(--on-band); font-size: 1.0625rem; }   /* a band of its own, as a section would be */
+/* texture on a band takes the band's ink: --on-band, pale on a deep band and dark on a pale one, so the grain shows on
+   every band on a light page and a dark one. (--texture-rgb is for the ground: dark on a light page, and lost on a deep band.) */
+.pa-coloured-bands.te-grain .bg-texture::after { background: var(--on-band); }
+.pa-coloured-bands.te-grain .on-band { isolation: isolate; }
+.pa-coloured-bands.te-grain .on-band::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--on-band);
+  opacity: calc(var(--texture-strength) * 2.2); mask: var(--grain) 0 0 / 240px 240px; }
+.pa-stone-courses .bg-pattern::before { background: rgb(var(--texture-rgb)); opacity: var(--texture-strength); mask: var(--stone-faces) 0 0 / 420px 208px; }
+.pa-stone-courses .bg-pattern::after { background: rgb(var(--shadow-rgb)); opacity: calc(var(--shadow-strength) * 2); mask: var(--stone-joints) 0 0 / 420px 208px; }
 
-/* 4. Material ground: the ground is the material from the materials part. Here a felt noticeboard: a fine weave of dots */
-.sw-material { --felt: #1e3f8f; --on-felt: #fffaf0; --paper: #fffaf0; --ink: #1c1f2e; --press: #ffcf3f;
-  background-color: var(--felt); color: var(--on-felt); padding: 2rem 1.5rem;
-  background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1.3px); background-size: 6px 6px; }
-.sw-material .note { position: relative; margin-top: 1.5rem; padding: 1.25rem; max-width: 22rem; color: var(--ink); }
-.sw-material .note::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper); rotate: -1.5deg;
-  filter: drop-shadow(0 3px 0 rgb(10 18 50 / 0.3)) drop-shadow(0 10px 14px rgb(10 18 50 / 0.28)); }
-.sw-material .note p { margin: 0 0 0.75rem; }
-.sw-material button { background: var(--press); color: var(--ink); border: 2px solid var(--ink); }
-
-/* 5. Painted ground: a repeating tile of painted strokes from the same world as the picture at the top */
-.sw-painted { --ground: #3e1812; --panel: #1d1012; --metal: #c99a3a; --heading: #f2c14e; --text: #efe3cf; --painted: {{PAINTED}};
-  background: var(--ground) var(--painted) center top / 480px auto repeat; padding: 2.5rem 1.5rem; display: grid; align-content: center; }
-.sw-painted .panel { max-width: 34rem; background: var(--panel); color: var(--text); border: 4px solid var(--metal); padding: 1.5rem; box-shadow: 0 0 0 2px #000, 0 10px 24px rgb(0 0 0 / 0.5); }
-.sw-painted h2 { color: var(--heading); }
-.sw-painted button { background: var(--heading); color: #1d1012; border: 2px solid #000; }
-
-/* 6. Detailed ground: colour, grain, a layer of mottling, hatching, specks and small signs, then signs set
-      by hand at their own size and tilt, small things to find in the gaps, and calm sheets for the words */
-.sw-detailed { --ground: #17142e; --chalk: #a9b4e6; --parchment: #d6c294; --ink: #1d0f08; --light: #f2a541;
-  --grain: {{GRAIN_WHITE}}; --detail: {{DETAIL}}; --grain-paper: {{GRAIN_LIGHT}};
-  background-color: var(--ground); background-image: var(--grain), var(--detail);
-  background-size: 220px, 640px auto; min-height: 30rem; padding: 3rem 1.5rem; }
-.sw-detailed .room { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; max-width: 56rem; margin-inline: auto; }
-@media (min-width: 48rem) { .sw-detailed .room { padding-bottom: 7rem; } }
-@media (min-width: 48rem) { .sw-detailed .room { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; } }
-.sw-detailed .sheet { position: relative; z-index: 1; padding: 1.75rem 1.5rem; color: var(--ink); }
-.sw-detailed .sheet::before { content: ""; position: absolute; inset: 0; z-index: -1; rotate: -0.8deg;
-  background: var(--parchment) var(--grain-paper); box-shadow: 4px 5px 0 rgb(0 0 0 / 0.55); }
-.sw-detailed .scrap { margin-top: 3rem; }
-.sw-detailed .scrap::before { rotate: 1.6deg; }
-.sw-detailed button { background: var(--light); color: var(--ink); border: 3px solid var(--ink); }
-.sign { position: absolute; z-index: 0; pointer-events: none; max-width: none; fill: none; stroke: currentColor; stroke-width: 2;
-  stroke-linecap: round; stroke-linejoin: round; filter: url(#pen); }
+/* ---------- drawings ---------- */
+.sign { position: absolute; max-width: none; height: auto; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; filter: url(#pen); color: var(--mark); opacity: 0.6; }
 .sign * { vector-effect: non-scaling-stroke; }
-.sign.chalk { color: var(--chalk); opacity: 0.5; }
-.sign.inkmark { z-index: 1; color: var(--ink); opacity: 0.55; }
-.s1 { width: 170px; left: -90px; top: -70px; rotate: 14deg; }      /* runs off the edge */
-.s2 { width: 120px; right: 4%; bottom: -40px; rotate: -12deg; }   /* half under the sheet */
-.s3 { width: 64px; right: 14px; top: 12px; rotate: 8deg; }        /* ink, in a corner of the sheet, clear of the words */
-.s4, .s5, .s6 { display: none; }
-.find { position: absolute; z-index: 0; display: none; pointer-events: none; }
-@media (min-width: 48rem) {                                        /* more is drawn in the gaps once there are gaps */
-  .s4 { display: block; width: 210px; left: 52%; top: -110px; rotate: -20deg; }
-  .find { display: block; }
-  .s5 { display: block; width: 150px; right: -70px; top: 30%; rotate: 22deg; }      /* off the other edge */
-  .s6 { display: block; width: 90px; left: 31%; bottom: 0.5rem; rotate: -6deg; }
-  .find-keys { width: 3.5rem; right: 8%; bottom: 0; rotate: 6deg; }
-  .find-jars { width: 8rem; left: 4%; bottom: 0.5rem; }
-  .find-pot { width: 4rem; left: 62%; bottom: 1rem; rotate: -4deg; }
-}
+.sign.ink { width: 56px; right: -14px; bottom: -16px; rotate: 12deg; opacity: 0.7; }
+.dr-lots .bg-drawings::after { background: var(--mark); opacity: 0.45; mask: var(--signs) 0 0 / 640px 720px; }
 
-/* 7. One long scene: each band paints its own part of the world, and ends in a wavy edge of the next band's ground */
-.sw-scene { --panel: rgb(16 11 8 / 0.9); --metal: #d9a93f; --text: #f3ead8; --main: #ffd61f; display: grid; }
-.sw-scene .band { position: relative; isolation: isolate; overflow: clip; padding: 3rem 1.5rem 4.5rem; }
-.sw-scene .paint { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; max-width: none; }
-.sw-scene .edge { position: absolute; bottom: -1px; left: 0; width: 100%; height: 40px; z-index: -1; max-width: none; }
-.sw-scene .panel { max-width: 30rem; background: var(--panel); color: var(--text); border: 3px solid var(--metal); border-radius: 6px; padding: 1.5rem; }
-.sw-scene .panel p:last-child { margin-bottom: 0; }
-.sw-scene button { background: var(--main); color: #1a1205; border: 2px solid #000; }
+/* ---------- things to find: only where there is a gap to hold them ---------- */
+.find { display: none; position: absolute; pointer-events: none; color: var(--mark); fill: none; stroke: currentColor;
+  stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.find .solid { fill: currentColor; }
+.find .f1 { fill: color-mix(in oklab, var(--mark) 45%, var(--ground)); }
+.find .f2 { fill: color-mix(in oklab, var(--accent) 45%, var(--ground)); }
+.find .f3 { fill: color-mix(in oklab, var(--surface-raised) 70%, var(--mark)); }
+@container (min-width: 32rem) { .fi-on .find { display: block; } }
+.find-keys { width: 3.5rem; right: 9%; top: 1rem; }
+.find-pot { width: 4.5rem; right: 26%; top: 38%; }
+.find-jars { width: 6.5rem; right: 5%; bottom: 1.25rem; }
+
+/* ---------- scene ---------- */
+/* painted ground: big shapes in a few values, light from the upper left. At the top, a sky and two far ridges that
+   fade into it (farther is paler and closer to the colour of the air); below, a repeating cliff of rock ledges. The
+   earth is the layer's own colour; the rock faces, the shade, the lit planes and the bushes are masks over it, each
+   its own mix of the shared names. Shade multiplies and light screens, so on a light page and a dark one alike shade
+   darkens and light lightens. */
+.sc-painted-ground .bg-scene { --sky-h: 5.5rem; --earth: light-dark(color-mix(in oklab, var(--mark) 40%, var(--ground)), color-mix(in oklab, var(--ink-soft) 22%, color-mix(in oklab, var(--mark) 20%, var(--ground))));
+  background: linear-gradient(light-dark(color-mix(in oklab, var(--accent) 14%, var(--ground)), color-mix(in oklab, var(--ink-soft) 16%, var(--ground))),
+    light-dark(color-mix(in oklab, var(--surface-raised) 55%, var(--ground)), color-mix(in oklab, var(--ink-soft) 38%, var(--ground)))) 0 0 / 100% var(--sky-h) no-repeat, var(--earth); }
+/* at night (a dark colour-scheme, set by the colour part's tone): a moonlit sky lighter than the ridges, cool pale light, dark green-grey bushes */
+.sc-painted-ground .bg-scene::before { bottom: auto; height: calc(var(--sky-h) + 1.5rem); background: light-dark(color-mix(in oklab, var(--mark) 45%, var(--ground)), color-mix(in oklab, var(--mark) 12%, var(--ground)));
+  mask: var(--p-ridge) -200px 100% / 1200px 100% repeat-x; }
+.sc-painted-ground .bg-scene > i { position: absolute; inset: var(--sky-h) 0 0; mask-size: 960px 600px, 100% 100%; mask-position: -120px -36px, 0 0;
+  mask-repeat: repeat, no-repeat; mask-composite: intersect; --fade: linear-gradient(transparent, black 3.5rem); }   /* the cliff comes out of the haze */
+.p-face  { background: color-mix(in oklab, var(--mark) 62%, rgb(var(--shadow-rgb))); opacity: 0.55; mask-image: var(--p-face), var(--fade); }
+.p-shade { background: light-dark(color-mix(in oklab, var(--mark) 45%, rgb(var(--shadow-rgb))), color-mix(in oklab, var(--mark) 22%, rgb(var(--shadow-rgb)))); mix-blend-mode: multiply; opacity: 0.85; mask-image: var(--p-shade), var(--fade); }
+.p-lit   { background: light-dark(color-mix(in oklab, var(--mark) 40%, var(--surface-raised)), color-mix(in oklab, var(--ink) 72%, var(--surface-raised))); mix-blend-mode: screen; opacity: 0.9; mask-image: var(--p-lit), var(--fade); }
+.p-leaf  { background: light-dark(color-mix(in oklab, var(--accent) 35%, color-mix(in oklab, var(--mark) 50%, rgb(var(--shadow-rgb)))), color-mix(in oklab, var(--accent) 22%, color-mix(in oklab, var(--ink-soft) 48%, var(--ground)))); opacity: 0.9; mask-image: var(--p-leaf), var(--fade); }
+.sc-one-long-scene { padding: 0; --next-ground: color-mix(in oklab, var(--accent) 22%, var(--ground)); }
+.band { position: relative; isolation: isolate; overflow: clip; padding: 2.5rem 1.25rem 4rem; }
+.band.b2 { min-height: 7rem; padding: 0; background: var(--next-ground); }
+.band > .paint { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; max-width: none; }
+.band > .edge { position: absolute; bottom: -1px; left: 0; width: 100%; height: 40px; z-index: -1; max-width: none; }
+.paint .sky { fill: color-mix(in oklab, var(--accent) 10%, var(--ground)); }
+.paint .far { fill: color-mix(in oklab, var(--mark) 25%, var(--ground)); }
+.paint .castle { fill: color-mix(in oklab, var(--mark) 35%, var(--ground)); }
+.paint .near { fill: color-mix(in oklab, var(--mark) 50%, var(--ground)); }
+.paint .road { fill: color-mix(in oklab, var(--mark) 20%, var(--surface)); }
+.paint .meadow { fill: var(--next-ground); }
+.paint .stream { fill: color-mix(in oklab, var(--accent) 55%, var(--surface-raised)); stroke: color-mix(in oklab, var(--accent) 20%, var(--surface-raised)); stroke-width: 4; }   /* water is the meadow's accent, deepened, with a lit bank */
+.paint .tuft { fill: none; stroke: color-mix(in oklab, var(--accent) 60%, var(--ink)); stroke-width: 4; stroke-linecap: round; }
+.edge .next { fill: var(--next-ground); }
 </style>
 </head>
-<body>
+<body class="mode-light">
 
-<!-- One roughening filter, shared by the hand-set signs, and the signs themselves, drawn once and used many times. -->
+<!-- One roughening filter and the signs, drawn once and used by every swatch (outside the swatches, so the dark copies can use them too). -->
 <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
   <defs>
     <filter id="pen" x="-8%" y="-8%" width="116%" height="116%">
@@ -119,120 +135,19 @@ body { margin: 0; overflow-wrap: break-word; background: #f4f1ea; color: #1f1d1a
     <symbol id="sg-diamond" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M50 4L96 50L50 96L4 50Z"/><circle cx="50" cy="50" r="30"/><circle cx="50" cy="50" r="3"/></symbol>
     <symbol id="sg-rose" viewBox="0 0 100 100"><path d="M50 12V88M12 50H88M24 24L76 76M76 24L24 76"/><circle cx="50" cy="50" r="13"/><circle cx="50" cy="7" r="5"/><circle cx="93" cy="50" r="5"/><circle cx="50" cy="93" r="5"/><circle cx="7" cy="50" r="5"/></symbol>
     <symbol id="sg-tree" viewBox="0 0 100 100"><path d="M30 86V70M30 60V46M30 36V20"/><circle cx="30" cy="91" r="5"/><circle cx="30" cy="65" r="5"/><circle cx="30" cy="41" r="5"/><circle cx="30" cy="15" r="5"/><path d="M34 62C50 58 62 54 62 42"/><circle cx="62" cy="37" r="5"/><path d="M62 32C62 22 44 18 35 15M66 34C78 30 86 26 86 16"/><circle cx="86" cy="11" r="5"/></symbol>
+    <symbol id="sg-moon" viewBox="0 0 100 100"><path d="M58 14A36 36 0 1 0 58 86A28 28 0 1 1 58 14Z"/><ellipse cx="50" cy="50" rx="48" ry="14"/><circle cx="84" cy="22" r="3"/></symbol>
   </defs>
 </svg>
 
-<header class="intro">
-  <h1>Background: the options</h1>
-  <p>Every option in <span class="id">style-part-background.md</span>, drawn live. Each box is what lies behind a page and shows between its sections. Widen the window to see what the detailed ground adds in the gaps.</p>
-</header>
+<main>
+<h1>Background: the layers</h1>
+<p class="intro">Five layers, each switched on its own: texture, pattern, drawings, things to find and scene. Every option is shown on a light page (left) and the same CSS on a dark page (right); the starting points at the end are saved sets of picks. The words always sit on a calm sheet.</p>
 
-<main class="book">
-
-  <section class="swatch sw-plain" data-option="plain" aria-labelledby="h-plain">
-    <h2 id="h-plain">Plain</h2>
-    <p>One flat colour behind everything. The words, the pictures and the signature piece carry the look.</p>
-    <button type="button">Book a lesson</button>
-    <p class="next">The next section starts after a wider gap, with a hairline at most. <span class="id">plain</span></p>
-  </section>
-
-  <section class="swatch sw-bands" data-option="coloured-bands" aria-labelledby="h-bands">
-    <div class="band band-a"><h2 id="h-bands">Coloured bands</h2></div>
-    <div class="band band-b"><p>Each section sits on a whole band of one strong colour, with a fine grain in the same hue.</p></div>
-    <div class="band band-c"><button type="button">Browse the stall</button> <p class="id" style="margin: 0.75rem 0 0">coloured-bands</p></div>
-  </section>
-
-  <section class="swatch sw-grain" data-option="grain" aria-labelledby="h-grain">
-    <h2 id="h-grain">Grain</h2>
-    <p>A pale, warm ground with a fine speckle, like paper. Close up it is made; from across the room it is one colour.</p>
-    <button type="button">Order a bar</button>
-    <p class="id" style="margin-top: 1rem">grain</p>
-  </section>
-
-  <section class="swatch sw-material" data-option="material-ground" aria-labelledby="h-material">
-    <h2 id="h-material">Material ground</h2>
-    <p>The ground is the material picked for the site, laid behind everything. Here, the felt of a noticeboard.</p>
-    <div class="note">
-      <p>Paper pinned to the felt, a little crooked. The paper tilts; the words stay level.</p>
-      <button type="button">Count me in</button>
-    </div>
-    <p class="id" style="margin: 1rem 0 0">material-ground</p>
-  </section>
-
-  <section class="swatch wide sw-painted" data-option="painted-ground" aria-labelledby="h-painted">
-    <div class="panel">
-      <h2 id="h-painted">Painted ground</h2>
-      <p>Painted rock from the picture at the top, repeating behind the panels.</p>
-      <button type="button">Read on</button>
-      <p class="id" style="margin: 1rem 0 0">painted-ground</p>
-    </div>
-  </section>
-
-  <section class="swatch wide sw-detailed" data-option="detailed-ground" aria-labelledby="h-detailed">
-    <div class="room">
-      <svg class="sign chalk s1" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-ring"/></svg>
-      <svg class="sign chalk s4" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-rose"/></svg>
-      <div class="sheet">
-        <svg class="sign inkmark s3" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-tree"/></svg>
-        <h2 id="h-detailed">Detailed ground</h2>
-        <p>A coloured ground with grain and hatching, hand-drawn signs here and there, and small things to find in the gaps. The words sit on calm sheets laid over it.</p>
-        <button type="button">Enter the room</button>
-      </div>
-      <div class="sheet scrap">
-        <p>Look in the corners: something is always there.</p>
-        <p class="id" style="margin: 0">detailed-ground</p>
-      </div>
-      <svg class="sign chalk s2" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-diamond"/></svg>
-      <svg class="sign chalk s5" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-ring"/></svg>
-      <svg class="sign chalk s6" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="#sg-tree"/></svg>
-      <!-- small things to find, drawn in the gaps on wider screens -->
-      <svg class="find find-keys" viewBox="0 0 110 170" aria-hidden="true" focusable="false"><g filter="url(#pen)" fill="none" stroke="#c9c2a8" stroke-width="4" stroke-linecap="round"><circle cx="55" cy="10" r="5" fill="#c9c2a8"/><circle cx="55" cy="36" r="22"/><path d="M44 56L24 140M24 140L36 143M27 128L39 131M57 58L60 156M60 156L72 155M60 142L72 141M68 55L92 132M92 132L102 126M88 120L98 114"/></g></svg>
-      <svg class="find find-pot" viewBox="0 0 120 116" aria-hidden="true" focusable="false"><g filter="url(#pen)" stroke="#07060f" stroke-width="3" stroke-linejoin="round"><path fill="#2a2740" d="M28 70H78L90 110H16Z"/><path fill="#2a2740" d="M38 56H68V70H38Z"/><path fill="#e8dcc0" d="M54 62C66 32 86 14 114 4C106 30 92 48 62 66Z"/><path fill="none" stroke="#8a7d60" stroke-width="2" d="M56 64C72 42 92 22 112 6"/></g></svg>
-      <svg class="find find-jars" viewBox="0 0 150 84" aria-hidden="true" focusable="false"><g filter="url(#pen)" stroke="#07060f" stroke-width="3"><path fill="#4f7a5c" d="M4 78V42C4 32 12 32 12 22V10H24V22C24 32 32 32 32 42V78Z"/><path fill="#8a3550" d="M48 78C36 62 50 46 53 42V24H65V42C68 46 82 62 70 78Z"/><path fill="#6a4cab" d="M96 78V42C96 32 104 32 104 22V10H116V22C116 32 124 32 124 42V78Z"/><path fill="none" stroke="#3a3530" d="M0 81H150"/></g></svg>
-    </div>
-  </section>
-
-  <section class="swatch wide sw-scene" data-option="one-long-scene" aria-labelledby="h-scene">
-    <div class="band">
-      <svg class="paint" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
-        <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a8be0"/><stop offset="0.55" stop-color="#9fd3f5"/></linearGradient></defs>
-        <rect width="1600" height="600" fill="url(#sky)"/>
-        <circle cx="1220" cy="140" r="70" fill="#fff4b0"/>
-        <path d="M0 420L260 250L480 400L760 220L1040 390L1300 260L1600 400V600H0Z" fill="#7d6fc0"/>
-        <path d="M0 470Q400 400 800 460T1600 450V600H0Z" fill="#4bb23e"/>
-        <path d="M960 600Q1040 520 1140 470L1170 470Q1090 530 1050 600Z" fill="#d9b77a"/>
-        <g fill="#2e7d32"><circle cx="160" cy="460" r="46"/><circle cx="210" cy="440" r="54"/><circle cx="1460" cy="470" r="50"/></g>
-      </svg>
-      <svg class="edge" viewBox="0 0 1600 80" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 80V46Q80 20 190 48Q320 86 480 50Q630 14 780 52Q930 92 1080 56Q1220 18 1360 46Q1500 74 1600 34V80Z" fill="#8a5c34"/></svg>
-      <div class="panel">
-        <h2 id="h-scene">One long scene</h2>
-        <p>The world goes on down the page: a meadow here, the earth below, each band joined to the next by a wavy edge.</p>
-        <button type="button">Set out</button>
-      </div>
-    </div>
-    <div class="band">
-      <svg class="paint" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMin slice" aria-hidden="true" focusable="false">
-        <rect width="1600" height="600" fill="#8a5c34"/>
-        <g fill="#6e4628"><ellipse cx="300" cy="200" rx="160" ry="30"/><ellipse cx="1100" cy="380" rx="220" ry="34"/><ellipse cx="700" cy="520" rx="180" ry="28"/></g>
-        <path d="M1300 420L1400 230L1500 420Z" fill="#2f7a3a"/><path d="M1400 230L1400 420" stroke="#1d4d24" stroke-width="6"/>
-        <circle cx="1240" cy="430" r="22" fill="#ffb347" opacity="0.8"/>
-      </svg>
-      <svg class="edge" viewBox="0 0 1600 80" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 80V52Q50 66 120 50Q250 18 400 52Q560 90 720 54Q880 16 1020 48Q1180 86 1330 52Q1470 20 1600 46V80Z" fill="#2a1d14"/></svg>
-      <div class="panel">
-        <p>Further down, the ground turns to earth and a camp. The panel stays the same; only the world behind it changes.</p>
-        <p class="id">one-long-scene</p>
-      </div>
-    </div>
-  </section>
-
+{{SWATCHES}}
 </main>
 
 <script>
-run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
-});
+run(swatchTest);
 </script>
 </body>
 </html>

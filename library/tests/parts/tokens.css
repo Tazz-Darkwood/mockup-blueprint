@@ -1,0 +1,85 @@
+/* The shared colour names every part draws with (see "Parts, layers and the shared colour names"
+   in library/style-guide.md). The colour part decides their values for a site; these two sets are
+   the swatch books' stand-ins, one light page and one dark, so every layer is seen working on both.
+   A layer that looks right on one and wrong on the other has a raw colour in it somewhere. */
+.mode-light {
+  color-scheme: light;
+  --dark: 0;                  /* 1 on a dark page: parts multiply by it (lettering thins reading text) */
+  --ground: #f4efe6;          /* the page behind everything */
+  --surface: #fffcf6;         /* sheets, panels, cards: where words sit */
+  --surface-raised: #ffffff;  /* things lifted above a surface: menus, a card in focus */
+  --ink: #1d1b18;             /* main text */
+  --on-ground: #1d1b18;       /* words straight on the ground; the same as ink unless the ground and the sheets differ a lot */
+  --ink-soft: #5a534b;        /* secondary text, captions */
+  --line: #cdc3b4;            /* borders and dividers */
+  --accent: #2f5d50;          /* the one colour for things you can press */
+  --on-accent: #ffffff;       /* text on the accent */
+  --accent-edge: #2f5d50;     /* the edge of an accent control: the accent itself, or darker when a bright fill cannot stand 3:1 off the page */
+  --accent-hover: #284f44;     /* a pointer over an accent control: a step darker on a light page */
+  --accent-pressed: #20413a;   /* while pressed: two steps */
+  --mark: #8f5a3a;            /* drawn decoration: signs, pencil marks, specks */
+  --focus: #1f5fd1;           /* the keyboard focus ring */
+  --danger: #b3261e;
+  --success: #2e6b34;
+  --warning: #855700;
+  --scrim: rgb(20 16 12 / 0.45);  /* the dim layer behind a dialog */
+  --shadow-rgb: 60 45 30;         /* shadows take the page's hue, never pure black */
+  --shadow-strength: 0.18;
+  --texture-strength: 0.10;       /* how strongly grain and pattern show on this ground */
+  --texture-rgb: 60 45 30;        /* the colour of grain, mottling and specks: darker than a light ground */
+  --band-1: #7a2330;              /* up to three strong grounds for whole bands, with the words on them */
+  --band-2: #234536;
+  --band-3: #1d2a4a;
+  --on-band: #f6ead2;
+  --metal: #cb931a;               /* metal and gilt: rings, studs, plates (the colour part's metal layer; gold here) */
+  --metal-deep: #72510a;          /* its shade */
+  --metal-lit: #fed899;           /* its highlight */
+  --on-metal: #14110d;            /* words on a metal plate */
+  --earth: #c09567;               /* kraft, card, cork, wood, leather: brown whatever the neutrals */
+  --on-earth: #15110d;            /* words on it */
+}
+.mode-dark {
+  color-scheme: dark;
+  --dark: 1;
+  --ground: #17151b;
+  --surface: #221f28;
+  --surface-raised: #2d2934;  /* on a dark page, raised things get lighter: shadows hardly show */
+  --ink: #efe9df;
+  --on-ground: #efe9df;
+  --ink-soft: #bdb4a8;
+  --line: #4d4655;
+  --accent: #e2b552;
+  --on-accent: #1c1506;
+  --accent-edge: #e2b552;
+  --accent-hover: #ebc46c;     /* on a dark page, a step lighter */
+  --accent-pressed: #f2d388;
+  --mark: #c7a06f;
+  --focus: #8db6ff;
+  --danger: #ff8a80;
+  --success: #8ad39d;
+  --warning: #f2c14e;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-rgb: 0 0 0;
+  --shadow-strength: 0.45;
+  --texture-strength: 0.16;
+  --texture-rgb: 235 225 210;     /* on a dark ground, texture lightens: a darker speck would vanish */
+  --band-1: #5a1822;
+  --band-2: #1a3529;
+  --band-3: #16203a;
+  --on-band: #f0e2c2;
+  --metal: #db9f1c;
+  --metal-deep: #815c0d;
+  --metal-lit: #fee8c4;
+  --on-metal: #14110d;
+  --earth: #4f381f;               /* at night, dark wood: words on it are pale */
+  --on-earth: #f6f1eb;
+}
+.mode-light, .mode-dark { background: var(--ground); color: var(--ink); }
+
+/* The frame the swatch book draws round each pair: light page on the left, dark on the right
+   (stacked on a phone). It is the book's own chrome, not part of any option. */
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+@media (min-width: 48rem) { .pair:not(.stacked) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* A swatch marked data-stack shows its light copy above its dark one, full width: for whole-page miniatures. */
+.pair > .swatch { position: relative; }
+.pair-label { margin: 0 0 0.25rem; font: 700 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; }

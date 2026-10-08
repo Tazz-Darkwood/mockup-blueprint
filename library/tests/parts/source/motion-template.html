@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/motion.py from source/motion-template.html: edit those, then run python3 motion.py ../motion.html in
+   source/. Every colour is a shared colour name (tokens.css), or the light part's lamp, written as numbers. Every
+   duration and easing comes from the pace layer's shared values; every animation and transition moves only opacity,
+   translate, scale and rotate; and all of it is declared inside prefers-reduced-motion: no-preference, so a visitor
+   who asks for less motion gets none ("no motion first"). */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 60ch; margin: 0 0 1rem; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0 0 1rem; }
+.controls p { margin: 0; color: var(--ink-soft); }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 58ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+:root { view-transition-name: none; }   /* only the thing that changes takes part in a view transition, not the page */
+
+/* ---------- the shared values. The pace layer sets them; with no pace, or when the visitor asks for less motion,
+   every duration is zero, so every transition and animation made from them is an instant change ---------- */
+.mo { --dur-short: 0s; --dur-medium: 0s; --dur-long: 0s; --dur-step: 0s;
+  --ease-out: linear; --ease-in: linear; --ease-in-out: linear; --ease-spring: linear; }
+@media (prefers-reduced-motion: no-preference) {
+  .pa-brisk { --dur-short: 100ms; --dur-medium: 200ms; --dur-long: 300ms; --dur-step: 30ms;
+    --ease-out: cubic-bezier(0, 0, 0.38, 0.9); --ease-in: cubic-bezier(0.2, 0, 1, 0.9); --ease-in-out: cubic-bezier(0.2, 0, 0.38, 0.9); --ease-spring: var(--ease-out); }
+  .pa-gentle { --dur-short: 150ms; --dur-medium: 300ms; --dur-long: 500ms; --dur-step: 50ms;
+    --ease-out: cubic-bezier(0.05, 0.7, 0.1, 1); --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15); --ease-in-out: cubic-bezier(0.2, 0, 0, 1); --ease-spring: var(--ease-out); }
+  .pa-slow { --dur-short: 240ms; --dur-medium: 400ms; --dur-long: 700ms; --dur-step: 80ms;
+    --ease-out: cubic-bezier(0, 0, 0.3, 1); --ease-in: cubic-bezier(0.4, 0.14, 1, 1); --ease-in-out: cubic-bezier(0.4, 0.14, 0.3, 1); --ease-spring: var(--ease-out); }
+  .pa-springy { --dur-short: 150ms; --dur-medium: 300ms; --dur-long: 500ms; --dur-step: 50ms;
+    --ease-out: cubic-bezier(0, 0, 0, 1); --ease-in: cubic-bezier(0.3, 0, 1, 1); --ease-in-out: cubic-bezier(0.2, 0, 0, 1);
+    --ease-spring: {{SPRING}}; }
+}
+
+/* ---------- every swatch: a heading, a live demonstration on a sheet, and still frames under it ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; }
+.stage { position: relative; display: grid; gap: 0.75rem; padding: 1rem 1.25rem 1.25rem; background: var(--ground); color: var(--on-ground);
+  container-type: inline-size;
+  /* stand-ins for the light part's values, which a site takes from its light pick */
+  --lx: 0.5; --ly: 1; --shade: rgb(var(--shadow-rgb));
+  --shadow-low: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.4) * 100%), transparent),
+    calc(var(--lx) * 2px) calc(var(--ly) * 2px) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.9) * 100%), transparent);
+  --shadow-mid: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength)) * 100%), transparent),
+    calc(var(--lx) * 6px) calc(var(--ly) * 10px) 22px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.3) * 100%), transparent);
+  --lamp-lch: 0.84 0.13 78; --lamp: oklch(var(--lamp-lch)); }
+.sw-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.sw-head h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.id { margin: 0.125rem 0 0; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.line { margin: 0; max-width: 60ch; }
+.demo { position: relative; isolation: isolate; min-height: 7.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.demo > :not(.amb) { position: relative; z-index: 1; }
+
+/* buttons: the main one in the accent, the small ones plain; each takes a veil for its states (a "state layer") */
+.btn, .sbtn, .fbtn { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 0 1.1rem; border: 2px solid var(--accent-edge); border-radius: 6px; font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; }
+.btn, .fbtn { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-low); }
+.sbtn { min-height: 44px; padding: 0 0.9rem; background: var(--surface); color: var(--ink); font-weight: 600; }
+.sbtn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.btn::before, .sbtn::before, .fbtn::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: currentColor;
+  opacity: 0; pointer-events: none; }
+@media (hover: hover) { :is(.btn, .sbtn):hover::before { opacity: 0.12; } }
+:is(.btn, .sbtn):active::before, .is-press:is(.btn, .fbtn)::before { opacity: 0.22; }
+.is-hover:not(.is-press):is(.btn, .fbtn)::before { opacity: 0.12; }
+.fbtn.is-half::before { opacity: 0.06; }
+.card { position: relative; isolation: isolate; display: grid; gap: 0.125rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-low); }
+.card b { font-size: 1.0625rem; }
+.card span { color: var(--ink-soft); font-size: 0.9375rem; }
+.link-card { text-decoration: none; min-width: 11rem; }
+@media (hover: hover) { .link-card:hover b { text-decoration: underline; } }
+
+/* ---------- pace: three runners, one per duration, and the button ---------- */
+.tracks { display: grid; gap: 0.5rem; flex: 1 1 14rem; }
+.track { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: end; gap: 0.5rem; }
+.track span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.lane { position: relative; display: block; height: 1.5rem; container-type: inline-size; border-bottom: 1px solid var(--line); }
+.runner { position: absolute; left: calc(100% - 1rem); bottom: 0.2rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--accent); }
+.gh { position: absolute; bottom: 0.45rem; left: calc(var(--p) * (100% - 1rem) + 0.25rem); width: 0.5rem; height: 0.5rem; border-radius: 50%;
+  background: color-mix(in oklab, var(--accent) 40%, transparent); }
+@keyframes mo-run { from { translate: calc(1rem - 100cqi) 0; } }   /* it rests where it finishes */
+@media (prefers-reduced-motion: no-preference) {
+  .go .runner.short { animation: mo-run var(--dur-short) var(--ease-in-out) 0.25s both; }
+  .go .runner.medium { animation: mo-run var(--dur-medium) var(--ease-in-out) 0.25s both; }
+  .go .runner.long { animation: mo-run var(--dur-long) var(--ease-in-out) 0.25s both; }
+  .go.pa-springy .runner { animation-timing-function: var(--ease-spring); }
+}
+.pace-fig { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1rem; align-items: center; }
+.curve { width: 9rem; height: auto; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.curve .axis { stroke: var(--ink-soft); stroke-width: 1.5; }
+.curve .over { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.curve .c-out { stroke: var(--accent); stroke-width: 3; }
+.curve .c-in { stroke: var(--ink-soft); stroke-width: 2; stroke-dasharray: 5 4; }
+.bars { display: grid; gap: 0.4rem; }
+.bar i { display: block; height: 0.55rem; border-radius: 3px; background: var(--accent); }
+.bar span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); }
+
+/* ---------- feedback ---------- */
+.fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; }
+/* fade: the veil fades */
+.fe-fade :is(.btn, .sbtn, .fbtn)::before { transition: opacity var(--dur-short) var(--ease-out); }
+/* press in: the button moves into its own shadow, and the shadow goes */
+.fe-press-in :is(.btn, .fbtn) { transition: translate calc(var(--dur-short) / 2) var(--ease-out); }
+.fe-press-in :is(.btn, .fbtn):is(:active, .is-press) { translate: calc(var(--lx) * 2px) calc(var(--ly) * 2px); box-shadow: none; }
+/* lift: the card rises and its larger shadow fades in (a shadow is never animated itself) */
+.fe-lift :is(.card, .fcard) { transition: translate var(--dur-medium) var(--ease-out); }
+.fe-lift :is(.card, .fcard)::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; box-shadow: var(--shadow-mid);
+  opacity: 0; transition: opacity var(--dur-medium) var(--ease-out); pointer-events: none; }
+@media (hover: hover) { .fe-lift .card:hover { translate: 0 -3px; } .fe-lift .card:hover::after { opacity: 1; } }
+.fe-lift :is(.card, .fcard).is-hover { translate: 0 -3px; } .fe-lift :is(.card, .fcard).is-hover::after { opacity: 1; }
+.fe-lift :is(.card, .fcard):is(:active, .is-press) { translate: 0 -1px; transition-duration: var(--dur-short); }
+/* straighten: pinned up at a slant, straight when pointed at */
+.fe-straighten :is(.card, .fcard) { rotate: -2.5deg; transition: rotate var(--dur-medium) var(--ease-spring); }
+@media (hover: hover) { .fe-straighten .card:hover { rotate: 0deg; } }
+.fe-straighten :is(.card, .fcard).is-hover { rotate: 0deg; }
+/* squeeze: it gives when pressed, and springs back */
+.fe-squeeze :is(.btn, .fbtn) { transition: scale var(--dur-medium) var(--ease-spring); }
+.fe-squeeze :is(.btn, .fbtn):is(:active, .is-press) { scale: 0.94; transition-duration: var(--dur-short); transition-timing-function: var(--ease-out); }
+
+/* ---------- entrance ---------- */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; width: 100%; }
+@container (max-width: 26rem) { .cards { grid-template-columns: minmax(0, 1fr); } }
+@keyframes mo-fade { from { opacity: 0; } }
+@keyframes mo-rise { from { opacity: 0; translate: 0 0.75rem; } }
+@keyframes mo-settle { from { translate: 0 2rem; scale: 0.94; } }   /* moves only: what is not yet in view is still fully drawn */
+.scroller { width: 100%; height: 8.5rem; overflow-y: auto; display: grid; gap: 0.6rem; padding: 0.25rem 0.25rem 2rem; border-radius: 4px; }
+.blockrow { margin: 0; padding: 0.4rem 0.75rem; border-radius: 4px; background: var(--surface-raised); border: 1px solid var(--line); box-shadow: var(--shadow-low); }
+.blockrow:nth-child(odd) { width: 80%; }
+@media (prefers-reduced-motion: no-preference) {
+  .go.en-fade .enter { animation: mo-fade var(--dur-long) var(--ease-out) backwards; }
+  .go.en-rise .enter { animation: mo-rise var(--dur-long) var(--ease-out) backwards; }
+  .go.en-stagger .enter { animation: mo-rise var(--dur-long) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 6) * var(--dur-step)); }
+  @supports (animation-timeline: view()) {
+    .en-scroll-reveal .enter { animation: mo-settle linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+  }
+}
+
+/* ---------- ambient: one element per moving thing, behind the words, opacity and translate only ---------- */
+.amb { position: absolute; inset: 0; z-index: 0; overflow: clip; border-radius: inherit; pointer-events: none; }
+.amb .src { position: absolute; right: 1.5rem; top: 1.1rem; width: 0.9rem; height: 0.9rem; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.99 0.03 90) 0 30%, var(--lamp) 75%);
+  box-shadow: 0 0 8px 3px color-mix(in oklab, var(--lamp) 70%, transparent); }
+.amb .glow { position: absolute; right: -5rem; top: -5.5rem; width: 14rem; height: 14rem; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--lamp) 60%, transparent) 0, color-mix(in oklab, var(--lamp) 22%, transparent) 40%, transparent 70%); }
+.star { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); box-shadow: 0 0 6px 1px color-mix(in oklab, var(--mark) 60%, transparent); }
+.mote { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--texture-rgb) / calc(var(--texture-strength) * 4)); }
+.over { margin: 0; max-width: 32ch; font-size: 1.125rem; }
+@keyframes mo-breathe { 50% { opacity: 0.78; } }
+@keyframes mo-flicker { 0%, 100% { opacity: 1; } 8% { opacity: 0.9; } 14% { opacity: 1; } 30% { opacity: 0.85; } 37% { opacity: 0.96; }
+  55% { opacity: 0.9; } 62% { opacity: 1; } 80% { opacity: 0.87; } 88% { opacity: 0.97; } }
+@keyframes mo-twinkle { to { opacity: 0.4; } }
+@keyframes mo-drift { to { translate: 2.5rem -0.75rem; } }
+@media (prefers-reduced-motion: no-preference) {
+  .am-breathing .glow { animation: mo-breathe 7s ease-in-out infinite; }
+  .am-flicker .glow { animation: mo-flicker 3.2s linear infinite; }
+  .am-twinkle .star { animation: mo-twinkle var(--d) ease-in-out var(--o) infinite alternate; }
+  .am-drift .mote { animation: mo-drift var(--d) ease-in-out var(--o) infinite alternate; }
+}
+html[data-motion="paused"] .amb * { animation-play-state: paused; }   /* the page's own pause switch (WCAG 2.2.2) */
+
+/* ---------- clock: the disc is placed by the hour, with no transition ---------- */
+.clock { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.sky { position: relative; width: 9rem; height: 4.5rem; overflow: hidden; border-radius: 4.5rem 4.5rem 0 0; border-bottom: 2px solid var(--line);
+  background: color-mix(in oklab, var(--ground) 70%, var(--surface)); }
+.sky .arc { position: absolute; left: 0.9rem; right: 0.9rem; top: 0.7rem; height: 7.2rem; border: 1px dashed var(--line); border-radius: 50%; }
+.disc { position: absolute; left: 0; top: 0; width: 1rem; height: 1rem; margin: -0.5rem 0 0 -0.5rem; border-radius: 50%; background: var(--lamp);
+  box-shadow: 0 0 8px 2px color-mix(in oklab, var(--lamp) 60%, transparent);
+  translate: calc(var(--x, 50) * 0.09rem) calc(var(--y, 20) * 0.045rem); }
+.clock.is-night .sky { background: var(--band-3); }
+.clock.is-night .disc { background: var(--on-band); box-shadow: inset -0.3rem 0 0 color-mix(in oklab, var(--band-3) 70%, var(--on-band)); }
+.time { margin: 0; font-size: 1.125rem; }
+.time output { font: 700 1.125rem/1 ui-monospace, Menlo, Consolas, monospace; }
+
+/* ---------- transitions: two views of one panel ---------- */
+.views { display: grid; gap: 0.6rem; width: 100%; max-width: 26rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.panels { display: grid; min-height: 5.75rem; }
+.panel { grid-area: 1 / 1; display: grid; align-content: start; gap: 0.2rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-raised); color: var(--ink); }
+.panel[hidden] { display: none; }
+.panel span { color: var(--ink-soft); }
+.minis { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mini { padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.mini.pick { border: 2px solid var(--accent-edge); }
+@keyframes mo-out { to { opacity: 0; translate: calc(var(--vt-dir, 1) * -1.5rem) 0; } }
+@keyframes mo-in { from { opacity: 0; translate: calc(var(--vt-dir, 1) * 1.5rem) 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation-duration: var(--vt-dur, 0.3s); animation-timing-function: var(--vt-ease, ease); }
+  html[data-vt="slide"]::view-transition-old(mo-panel) { animation-name: mo-out; }
+  html[data-vt="slide"]::view-transition-new(mo-panel) { animation-name: mo-in; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ---------- moments ---------- */
+.signup { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+.names { margin: 0; padding-left: 1.6rem; }
+.names li { padding: 0.1rem 0; border-bottom: 1px dashed var(--line); min-width: 12rem; }
+.who { position: relative; display: inline-block; }
+.new .who { font-weight: 700; }
+.said { margin: 0; min-height: 1.5em; color: var(--ink-soft); }
+.said:empty { display: none; }
+@keyframes mo-unwrite { to { scale: 0 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  .who.writing::after { content: ""; position: absolute; inset: -2px -3px; background: var(--surface); transform-origin: 100% 50%;
+    animation: mo-unwrite calc(var(--dur-long) * 2.5) var(--ease-in-out) forwards; }
+}
+.signup > .btn { z-index: 1; }
+.bit { position: absolute; z-index: 0; width: 0.5rem; height: 0.75rem; border-radius: 1px; pointer-events: none; }
+.look { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--surface-raised); color: var(--ink); }
+.look.b { background: var(--band-3); color: var(--on-band); border-color: var(--band-3); }
+.emblem { width: 1.75rem; height: 1.75rem; rotate: 45deg; border-radius: 4px; background: var(--accent); }
+.look.b .emblem { background: var(--on-band); border-radius: 50%; }
+.hint { margin: 0; }
+.nudge-me.nudging::after { content: ""; position: absolute; inset: -7px; border: 3px solid var(--accent-edge); border-radius: 10px; pointer-events: none; }
+@keyframes mo-ring { from { opacity: 0.9; scale: 1; } to { opacity: 0; scale: 1.3; } }
+@media (prefers-reduced-motion: no-preference) {
+  .nudge-me.nudging::after { animation: mo-ring 1.2s var(--ease-out) 2 forwards; }
+}
+
+/* ---------- starting points ---------- */
+.start-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; width: 100%; }
+.start-grid .cards { grid-template-columns: minmax(0, 1fr); }
+.start-side { display: grid; gap: 0.9rem; justify-items: start; }
+@container (max-width: 34rem) { .start-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- still frames: the same motion stopped at a few moments, for pictures ---------- */
+.frames { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
+.frames-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.frame { display: grid; gap: 0.2rem; }
+.frame > div { position: relative; height: 3.75rem; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 5px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.frame > span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); min-height: 1.3em; }
+.fb { display: block; width: 1.1rem; height: 1.7rem; border-radius: 3px; background: var(--accent); }
+.fbtn { min-height: 0; width: 3.5rem; height: 1.6rem; padding: 0; }
+.fcard { position: relative; isolation: isolate; display: block; width: 3.75rem; height: 2.4rem; border-radius: 4px; border: 1px solid var(--line);
+  background: var(--surface-raised); box-shadow: var(--shadow-low); }
+.fp { position: absolute; display: block; width: 58%; height: 58%; border-radius: 4px; }
+.fp.old { background: var(--ink-soft); }
+.fp.new { background: var(--accent); }
+.f-lamp { position: relative; display: block; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--lamp); }
+.f-lamp b { position: absolute; inset: -1.3rem; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--lamp) 70%, transparent), transparent 70%); }
+.f-star { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--mark); margin: 0 6px; }
+.f-mote { position: absolute; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); }
+.f-sky { position: absolute; inset: 0; display: block; background: color-mix(in oklab, var(--ground) 70%, var(--surface)); }
+.f-sky.night { background: var(--band-3); }
+.f-disc { position: absolute; width: 0.7rem; height: 0.7rem; margin: -0.35rem; border-radius: 50%; background: var(--lamp); }
+.f-disc.moon { background: var(--on-band); }
+.frame > div:has(.f-line) { flex-direction: column; align-items: flex-start; padding: 0 10%; gap: 4px; }
+.f-line { display: block; width: 60%; height: 5px; border-radius: 2px; background: var(--ink-soft); }
+.f-line.new { background: var(--accent); }
+.f-bit { position: absolute; display: block; width: 5px; height: 8px; background: var(--accent); }
+.f-bit:nth-child(3n+1) { background: var(--band-1); } .f-bit:nth-child(3n+2) { background: var(--mark); }
+.f-dot { display: block; width: 1.4rem; height: 0.8rem; border-radius: 3px; background: var(--accent); }
+.f-look { position: absolute; inset: 0; display: block; }
+.f-look.a { background: var(--surface-raised); } .f-look.b { background: var(--band-3); }
+.f-ring { position: absolute; display: block; width: 2rem; height: 1.4rem; border: 2px solid var(--accent-edge); border-radius: 5px; }
+</style>
+</head>
+<body class="mode-light">
+<main>
+<h1>Motion: the layers</h1>
+<p class="intro">Every option of every layer, then every starting point, each on a light page and on a dark one. Motion cannot be seen in a picture, so each swatch plays from its Play button, and under it the same motion is drawn stopped at a few moments. Things that move by themselves are already moving. If your device asks for less motion, everything here is an instant change.</p>
+<div class="controls"><button class="sbtn" id="pause-all" type="button" aria-pressed="false">Pause moving things</button><p id="motion-said"></p></div>
+{{SWATCHES}}
+</main>
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const still = (stage) => reduce.matches || getComputedStyle(stage).getPropertyValue('--dur-long').trim() === '0s';
+const ms = (v) => (v.trim().endsWith('ms') ? parseFloat(v) : parseFloat(v) * 1000) || 0;
+function sayMotion() {
+  document.getElementById('motion-said').textContent = reduce.matches
+    ? 'Your device asks for less motion: every swatch is an instant change, and nothing moves by itself.'
+    : 'Your device allows motion. The switch pauses everything that moves by itself.';
+}
+reduce.addEventListener('change', sayMotion);
+
+/* ---- the clock: the disc's place for an hour, rising at 6 and setting at 18; the moon takes the night ---- */
+function sunXY(h) {
+  const day = h >= 6 && h < 18, a = day ? (h - 6) / 12 : ((h - 18 + 24) % 24) / 12;
+  return [50 - 40 * Math.cos(Math.PI * a), 85 - 70 * Math.sin(Math.PI * a), day];
+}
+const pad = (n) => String(n).padStart(2, '0');
+function paintClock(clk, h) {
+  const [x, y, day] = sunXY(h), disc = clk.querySelector('.disc');
+  disc.style.setProperty('--x', x.toFixed(2)); disc.style.setProperty('--y', y.toFixed(2));
+  clk.classList.toggle('is-night', !day);
+  const m = Math.floor(h * 60) % 1440;
+  clk.querySelector('.t').textContent = (clk.dataset.kind === 'game-time' ? 'Day ' + (1 + Math.floor((clk.mins || 0) / 1440)) + ', ' : '') + pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+}
+function hourNow() {   // ?t=21:40 sets the clock, for pictures and checks
+  const t = new URLSearchParams(location.search).get('t'), m = t && t.match(/^(\d{1,2}):(\d{2})$/);
+  if (m) return +m[1] + m[2] / 60;
+  const d = new Date(); return d.getHours() + d.getMinutes() / 60;
+}
+function paintAll() {
+  for (const clk of document.querySelectorAll('.clock[data-kind="real-time"]')) if (!clk.running) paintClock(clk, hourNow());
+}
+function runDay(clk) {   // Play: a day in six seconds, in twenty-minute jumps, so the path can be seen. Never under reduced motion.
+  if (reduce.matches || clk.running) return;
+  const start = hourNow(); let k = 0; clk.running = true;
+  const timer = setInterval(() => {
+    k += 1; paintClock(clk, (start + k / 3) % 24);
+    if (k >= 72) { clearInterval(timer); clk.running = false; paintClock(clk, hourNow()); }
+  }, 80);
+}
+function tickGames() {   // a game minute each real second, unless held (by its own button or the page's pause switch)
+  const paused = document.documentElement.dataset.motion === 'paused';
+  for (const clk of document.querySelectorAll('.clock[data-kind="game-time"]')) {
+    if (clk.mins === undefined) clk.mins = 6 * 60;
+    if (!paused && clk.querySelector('.hold').getAttribute('aria-pressed') !== 'true') clk.mins += 1;
+    paintClock(clk, (clk.mins % 1440) / 60);
+  }
+}
+
+/* ---- transitions: a view transition on the one panel, when the browser has them and motion is allowed ---- */
+function switchView(stage, to) {
+  const panels = [...stage.querySelectorAll('.panel')], tabs = [...stage.querySelectorAll('.tab')];
+  const from = panels.findIndex((p) => !p.hidden);
+  if (to === undefined) to = 1 - from;
+  if (to === from) return;
+  const swap = () => { panels.forEach((p, j) => { p.hidden = j !== to; }); tabs.forEach((t, j) => t.setAttribute('aria-pressed', String(j === to))); };
+  const kind = stage.dataset.tr;
+  if (kind === 'none' || still(stage) || !document.startViewTransition) return swap();
+  const root = document.documentElement, cs = getComputedStyle(stage);
+  root.style.setProperty('--vt-dur', cs.getPropertyValue('--dur-long'));
+  root.style.setProperty('--vt-ease', cs.getPropertyValue('--ease-in-out'));
+  root.style.setProperty('--vt-dir', to > from ? '1' : '-1');
+  root.dataset.vt = kind;
+  let named, t;
+  if (kind === 'grow') {
+    const mini = stage.querySelector('.mini.pick'), detail = stage.querySelector('.panel.detail');
+    const a = from === 0 ? mini : detail, b = from === 0 ? detail : mini;
+    a.style.viewTransitionName = 'mo-grow'; named = [a, b];
+    t = document.startViewTransition(() => { swap(); a.style.viewTransitionName = ''; b.style.viewTransitionName = 'mo-grow'; });
+  } else {
+    const box = stage.querySelector('.panels'); box.style.viewTransitionName = 'mo-panel'; named = [box];
+    t = document.startViewTransition(swap);
+  }
+  t.ready.catch(() => {});   // a second change before this one starts skips it: that is fine
+  t.finished.finally(() => { named.forEach((n) => { n.style.viewTransitionName = ''; }); delete root.dataset.vt; });
+}
+
+/* ---- moments ---- */
+const BITS = ['--accent', '--band-1', '--band-2', '--mark', '--warning'];
+function burst(holder, from) {
+  const hb = holder.getBoundingClientRect(), fb = from.getBoundingClientRect();
+  const x0 = fb.left - hb.left + fb.width / 2, y0 = fb.top - hb.top + fb.height / 2;
+  for (let k = 0; k < 14; k++) {
+    const bit = document.createElement('i'); bit.className = 'bit'; bit.setAttribute('aria-hidden', 'true');
+    bit.style.left = x0 + 'px'; bit.style.top = y0 + 'px'; bit.style.background = 'var(' + BITS[k % BITS.length] + ')';
+    holder.append(bit);
+    const a = Math.PI * (1.05 + 0.9 * k / 13), r = 60 + 30 * ((k * 7) % 5) / 4, dx = Math.cos(a) * r, dy = Math.sin(a) * r * 0.8, spin = (k % 2 ? 1 : -1) * (180 + 40 * (k % 4));
+    bit.animate([{ translate: '0 0', rotate: '0deg', opacity: 1 },
+                 { translate: dx + 'px ' + dy + 'px', rotate: spin / 2 + 'deg', opacity: 1, offset: 0.55 },
+                 { translate: dx * 1.15 + 'px ' + (dy + 45) + 'px', rotate: spin + 'deg', opacity: 0 }],
+                { duration: 900, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }).finished.then(() => bit.remove(), () => bit.remove());
+  }
+}
+function moment(stage) {
+  const kind = stage.dataset.mm, live = !still(stage);
+  if (kind === 'none' || kind === 'write-in') {
+    const list = stage.querySelector('.names'); if (!list) return;
+    list.querySelectorAll('.new').forEach((n) => n.remove());
+    const li = document.createElement('li'), who = document.createElement('span');
+    li.className = 'new'; who.className = 'who'; who.textContent = 'Rosa Martins'; li.append(who);
+    if (kind === 'write-in' && live) { who.classList.add('writing'); who.addEventListener('animationend', () => who.classList.remove('writing'), { once: true }); }
+    list.append(li);
+    stage.querySelector('.said').textContent = 'Thank you, Rosa: you are on the list.';
+  } else if (kind === 'celebrate') {
+    const holder = stage.querySelector('.signup'), btn = holder.querySelector('[data-moment]');
+    holder.querySelector('.said').textContent = 'You are signed up. See you on Saturday.';
+    if (live) burst(holder, btn);
+  } else if (kind === 'secret-swap') {
+    const look = stage.querySelector('.look');
+    const swap = () => { look.classList.toggle('b'); look.querySelector('span').textContent = look.classList.contains('b') ? 'The secret look.' : 'The everyday look.'; };
+    if (!live || !document.startViewTransition) return swap();
+    const root = document.documentElement, cs = getComputedStyle(stage);
+    root.style.setProperty('--vt-dur', ms(cs.getPropertyValue('--dur-long')) * 1.6 + 'ms');
+    root.style.setProperty('--vt-ease', cs.getPropertyValue('--ease-in-out'));
+    look.style.viewTransitionName = 'mo-look';
+    const t = document.startViewTransition(swap); t.ready.catch(() => {});
+    t.finished.finally(() => { look.style.viewTransitionName = ''; });
+  } else if (kind === 'nudge') {
+    const btn = stage.querySelector('.nudge-me');
+    btn.classList.remove('nudging'); void btn.offsetWidth; btn.classList.add('nudging');
+    if (live) btn.addEventListener('animationend', () => btn.classList.remove('nudging'), { once: true });
+    else setTimeout(() => btn.classList.remove('nudging'), 3000);
+  }
+}
+
+/* ---- Play: everything in the swatch again ---- */
+function play(stage) {
+  stage.classList.remove('go'); void stage.offsetWidth; stage.classList.add('go');
+  for (const el of stage.querySelectorAll('.amb *')) for (const a of el.getAnimations()) a.currentTime = 0;
+  const sc = stage.querySelector('.scroller');
+  if (sc) { sc.scrollTo({ top: 0, behavior: 'instant' }); if (!still(stage)) setTimeout(() => sc.scrollTo({ top: sc.scrollHeight, behavior: 'smooth' }), 80); }
+  if (stage.querySelector('.views')) switchView(stage);
+  if (stage.querySelector('[data-moment]')) moment(stage);
+  const clk = stage.querySelector('.clock[data-kind="real-time"]'); if (clk) runDay(clk);
+  const fb = stage.querySelector('.fb-row');
+  if (fb) {   // point at the button and the card, press, let go: the option's own states, at its own pace
+    const els = [...fb.querySelectorAll('.btn, .card')], gap = Math.max(450, ms(getComputedStyle(stage).getPropertyValue('--dur-medium')) * 3);
+    const set = (h, p) => els.forEach((el) => { el.classList.toggle('is-hover', h); el.classList.toggle('is-press', p); });
+    set(true, false); setTimeout(() => set(true, true), gap); setTimeout(() => set(true, false), gap * 1.6); setTimeout(() => set(false, false), gap * 2.6);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a'); if (!el) return;
+  const stage = el.closest('.stage');
+  if (el.matches('a.link-card')) { e.preventDefault(); return; }
+  if (el.id === 'pause-all') {
+    const on = el.getAttribute('aria-pressed') !== 'true';
+    el.setAttribute('aria-pressed', String(on)); el.textContent = on ? 'Let things move' : 'Pause moving things';
+    if (on) document.documentElement.dataset.motion = 'paused'; else delete document.documentElement.dataset.motion;
+  } else if (el.matches('.play')) play(stage);
+  else if (el.matches('.tab')) switchView(stage, +el.dataset.tab);
+  else if (el.matches('[data-moment]')) moment(stage);
+  else if (el.matches('.hold')) { const on = el.getAttribute('aria-pressed') !== 'true'; el.setAttribute('aria-pressed', String(on)); el.textContent = on ? 'Let it run' : 'Hold it still'; }
+});
+function start() { sayMotion(); paintAll(); tickGames(); setInterval(paintAll, 60000); setInterval(tickGames, 1000); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+
+/* ---- the test: every option drawn on both pages (swatchTest), and the rules of motion proved in the page ---- */
+const MOVES = new Set(['opacity', 'transform', 'translate', 'scale', 'rotate']);
+const KEYS_NOT_PROPS = new Set(['offset', 'easing', 'composite', 'computedOffset']);
+function textOf(stage) {
+  return [...stage.querySelectorAll('h3, p, b, span, button, a, li, output')].filter((el) => !el.closest('[hidden], .frames, .amb') && el.textContent.trim());
+}
+function seen(el, stop) {   // the opacity it is really drawn at: its own times every holder's
+  let o = 1;
+  for (let n = el; n && n !== stop; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity);
+  return o;
+}
+function hidingRules() {   // a rule that hides content (opacity 0) outside an animation or a decorative ::before/::after
+  const out = [];
+  const walk = (rules) => { for (const r of rules) {
+    if (r.cssRules && !(r instanceof CSSKeyframesRule)) walk(r.cssRules);
+    if (r.style && r.selectorText && r.style.opacity === '0' && !/::?(before|after)|view-transition/.test(r.selectorText)) out.push(r.selectorText);
+  } };
+  for (const s of document.styleSheets) { try { walk(s.cssRules); } catch (e) { /* another origin */ } }
+  return out;
+}
+function flashRate(a) {   // dips in brightness per second, for an animation that repeats for ever
+  const t = a.effect.getComputedTiming(), kf = a.effect.getKeyframes();
+  let vals = kf.map((k) => (k.opacity === undefined ? 1 : parseFloat(k.opacity)));
+  if (!kf.length || kf[0].computedOffset > 0) vals.unshift(1);
+  if (kf.length && kf[kf.length - 1].computedOffset < 1) vals.push(1);
+  let cycle = t.duration;
+  if (/alternate/.test(t.direction)) { vals = vals.concat(vals.slice(0, -1).reverse()); cycle *= 2; }
+  const n = vals.length - 1; let dips = 0;   // the last value is the first again
+  for (let i = 0; i < n; i++) { const prev = vals[(i - 1 + n) % n], next = vals[i + 1]; if (vals[i] < prev && vals[i] <= next) dips++; }
+  return dips / (cycle / 1000);
+}
+async function motionTest() {
+  const base = await swatchTest();
+  const problems = [], stages = [...document.querySelectorAll('.stage')];
+  const name = (s) => s.closest('.swatch').dataset.option + ' (' + s.closest('.swatch').dataset.mode + ')';
+  // 1. content is there before any motion runs: no rule hides it, and with the motion classes off it is fully drawn
+  for (const sel of hidingRules()) problems.push('a rule hides content: ' + sel);
+  const played = stages.filter((s) => s.classList.contains('go'));
+  stages.forEach((s) => s.classList.remove('go'));
+  for (const s of stages) for (const el of textOf(s)) if (seen(el, s.parentElement) < 0.99) { problems.push('not visible before motion: ' + name(s)); break; }
+  played.forEach((s) => s.classList.add('go'));
+  // 2. only opacity and transforms move; nothing flashes more than three times a second; the switch pauses everything that loops
+  if (window.__libraryRunner) for (const s of stages) play(s);   // every entrance, transition and moment as well (not when a person or an audit opens the page)
+  await sleep(50);
+  const moving = document.getAnimations().filter((a) => a.effect && a.effect.target && !a.effect.pseudoElement?.startsWith('::view-transition'));
+  const props = new Set();
+  for (const a of moving) for (const k of a.effect.getKeyframes()) for (const p of Object.keys(k)) if (!KEYS_NOT_PROPS.has(p)) props.add(p.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase()));
+  for (const s of stages) for (const el of [s, ...s.querySelectorAll('*')]) for (const pe of [null, '::before', '::after']) {
+    const cs = getComputedStyle(el, pe), names = cs.transitionProperty.split(','), durs = cs.transitionDuration.split(',');
+    names.forEach((p, i) => { if (ms(durs[i % durs.length]) > 0) props.add(p.trim()); });
+  }
+  const wrong = [...props].filter((p) => !MOVES.has(p));
+  if (wrong.length) problems.push('moves more than opacity and transforms: ' + wrong.join(', '));
+  const loops = moving.filter((a) => a.effect.getComputedTiming().iterations === Infinity);
+  const fast = loops.filter((a) => flashRate(a) > 3);
+  if (fast.length) problems.push(fast.length + ' looping animation(s) dip more than three times a second');
+  const pause = document.getElementById('pause-all'); pause.click(); await sleep(50);
+  const still = loops.filter((a) => a.playState !== 'paused').length;
+  if (still) problems.push(still + ' looping animation(s) do not stop with the pause switch');
+  pause.click();
+  // let what was played finish, so nothing from before is still moving when reduced motion is asked for
+  await Promise.race([Promise.allSettled(document.getAnimations().filter((a) => a.effect && a.effect.getComputedTiming().iterations !== Infinity).map((a) => a.finished)), sleep(3000)]);
+  // 3. with reduced motion asked for, every swatch is still: Play everything, and nothing runs with a duration, and every word is fully drawn at once
+  let asked = reduce.matches, note = '';
+  if (!asked && window.__libraryRunner) { await real('motion', 'reduce'); await sleep(80); asked = reduce.matches; }
+  if (asked) {
+    for (const s of stages) play(s);
+    await sleep(20);
+    let running = 0;
+    for (const s of stages) {
+      const live = s.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && a.effect.getComputedTiming().duration > 0);
+      if (live.length) { running += live.length; problems.push('still moving under reduced motion: ' + name(s)); }
+      const slow = [...s.querySelectorAll('*')].some((el) => [null, '::before', '::after'].some((pe) =>
+        getComputedStyle(el, pe).transitionDuration.split(',').some((d) => ms(d) > 0)));
+      if (slow) problems.push('a transition with a duration under reduced motion: ' + name(s));
+      for (const el of textOf(s)) if (seen(el, s.parentElement) < 0.99) { problems.push('not fully drawn under reduced motion: ' + name(s)); break; }
+    }
+    if (document.getAnimations().some((a) => a.playState === 'running' && a.effect?.pseudoElement?.startsWith('::view-transition'))) problems.push('a view transition ran under reduced motion');
+    note = 'under reduced motion every swatch was played: nothing moved, every word fully drawn';
+    if (window.__libraryRunner) { await real('motion', 'no-preference'); await sleep(50); }
+  } else {
+    note = 'reduced motion not checked here (run "blueprint.py library --test", or turn on reduced motion and reload)';
+  }
+  return { pass: base.pass && !problems.length && (asked || !window.__libraryRunner),
+           detail: base.detail + '. Motion: ' + moving.length + ' animations, moving only ' + ([...props].join(', ') || 'nothing')
+             + '; ' + loops.length + ' loops, each under three dips a second and paused by the switch; ' + note
+             + (problems.length ? '. PROBLEMS: ' + [...new Set(problems)].join('; ') : '') };
+}
+run(motionTest);
+</script>
+</body>
+</html>

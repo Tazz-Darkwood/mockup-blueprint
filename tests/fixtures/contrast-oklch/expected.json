@@ -1,0 +1,11 @@
+{
+  "about": "Colours written in oklch() are measured, not skipped: faint oklch words on an oklch page are reported, readable ones are not.",
+  "steps": [
+    {
+      "run": ["audit", "."],
+      "browser": true,
+      "must": ["a11y/contrast", "1.76:1", "Faint words on a pale page"],
+      "must_not": ["Dark words on a pale page", "Pale words on a dark sheet", "contrast-unmeasured"]
+    }
+  ]
+}

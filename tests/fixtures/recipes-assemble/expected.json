@@ -1,0 +1,220 @@
+{
+  "about": "Every recipe gives a complete starter stylesheet (style css): no picked option lacks its assembly code; a blueprint that changes a recipe's light and lettering builds from both, and the fonts it loads are copied beside it.",
+  "steps": [
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "almanac-plate",
+        "--out",
+        "almanac-plate/parts.css"
+      ],
+      "must": [
+        "from recipe almanac-plate"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "artistic",
+        "--out",
+        "artistic/parts.css"
+      ],
+      "must": [
+        "from recipe artistic"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "catalogue-of-glazes",
+        "--out",
+        "catalogue-of-glazes/parts.css"
+      ],
+      "must": [
+        "from recipe catalogue-of-glazes"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "civic",
+        "--out",
+        "civic/parts.css"
+      ],
+      "must": [
+        "from recipe civic"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "field-journal",
+        "--out",
+        "field-journal/parts.css"
+      ],
+      "must": [
+        "from recipe field-journal"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "gilded-dark",
+        "--out",
+        "gilded-dark/parts.css"
+      ],
+      "must": [
+        "from recipe gilded-dark"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "lantern-fair",
+        "--out",
+        "lantern-fair/parts.css"
+      ],
+      "must": [
+        "from recipe lantern-fair"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "professional",
+        "--out",
+        "professional/parts.css"
+      ],
+      "must": [
+        "from recipe professional"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "repair-cafe",
+        "--out",
+        "repair-cafe/parts.css"
+      ],
+      "must": [
+        "from recipe repair-cafe"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "sorcery",
+        "--out",
+        "sorcery/parts.css"
+      ],
+      "must": [
+        "from recipe sorcery"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "--recipe",
+        "warm",
+        "--out",
+        "warm/parts.css"
+      ],
+      "must": [
+        "from recipe warm"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback",
+        "stopped with an error"
+      ]
+    },
+    {
+      "run": [
+        "style",
+        "css",
+        "."
+      ],
+      "must": [
+        "from recipe field-journal, changed for light, lettering",
+        "wrote",
+        "parts.css",
+        "fonts copied beside it"
+      ],
+      "must_not": [
+        "NOT IN IT",
+        "Traceback"
+      ]
+    }
+  ]
+}

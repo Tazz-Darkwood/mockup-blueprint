@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frames and edges: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/frames.py from source/frames-template.html: edit those, then run python3 frames.py ../frames.html in
+   source/. Every colour below is a shared colour name (tokens.css) or a mix of two of them. Each swatch is drawn twice,
+   on a light page and a dark one, from the same CSS. The frames part decides only lines and edges: the shadows are a
+   stand-in for the light part's soft shadow from overhead, and corners are var(--radius, 0) from corners and shapes. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 60ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- stand-ins for other parts: the light part's soft shadow from overhead ---------- */
+.scene { --lx: 0; --ly: 1; --hx: 0; --hy: 1; --shade: rgb(var(--shadow-rgb));
+  --shadow-low: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent),
+    0 3px 6px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent);
+  --drop-low: drop-shadow(0 1px 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.55) * 100%), transparent))
+    drop-shadow(0 3px 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.4) * 100%), transparent)); }
+.scene.flat { --shadow-low: 0 0 transparent; --drop-low: opacity(1); }
+.scene.rounded { --radius: 10px; }
+
+/* ---------- every swatch: a section with a sheet (a short form in it) and a list, then the next section on a band ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.scene { background: var(--ground); color: var(--on-ground); }
+.top { display: grid; grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: 1.75rem 2rem; align-items: start; padding: 1.5rem 1.5rem 2.25rem; }
+@container (max-width: 34rem) { .top { grid-template-columns: minmax(0, 1fr); padding-inline: 1rem; } }
+.sheet { position: relative; isolation: isolate; padding: 1.25rem; border-radius: var(--radius, 0);
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow-low); }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.id { margin: 0.125rem 0 0.5rem; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+@media (max-width: 40rem) { .id { font-size: 1rem; } }
+.sheet p { margin: 0 0 0.75rem; }
+.field label { display: block; font-size: 0.9375rem; }
+.field input { display: block; width: 100%; min-height: 44px; margin-top: 0.25rem; padding: 0 0.625rem; font: inherit; font-size: 1.0625rem;
+  background: var(--surface); color: var(--ink); border: var(--field-edge); border-radius: min(var(--radius, 0px), 6px); }
+.tick label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; font-size: 0.9375rem; }
+.tick input { appearance: none; font-size: 1rem; flex: none; width: 1.375rem; height: 1.375rem; margin: 0; background: var(--surface);
+  border: var(--field-edge); border-radius: min(var(--radius, 0px), 4px); display: grid; place-content: center; }
+.tick input:checked { background: var(--accent); border-color: var(--accent-edge); }
+.tick input:checked::after { content: ""; width: 0.75rem; height: 0.4rem; margin-top: -0.2rem; rotate: -45deg;
+  border: solid var(--on-accent); border-width: 0 0 3px 3px; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge);
+  border-radius: min(var(--radius, 0px), 8px); font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); }
+.list h4 { margin: 0 0 0.75rem; font-size: 1.125rem; line-height: 1.2; }
+.items { margin: 0; padding: 0; list-style: none; max-width: 30rem; }
+.items li { position: relative; }
+.items b { display: block; font: 700 0.875rem/1.4 system-ui, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+.list { color: var(--on-ground); }
+.list .items b { color: var(--on-ground); }
+.low { position: relative; padding: 1.25rem 1.5rem; background: var(--band-2); color: var(--on-band); }
+.low p { margin: 0; max-width: 46ch; }
+.orn { position: absolute; pointer-events: none; z-index: 2; }
+
+/* ---------- the part's own names, made from the shared ones ---------- */
+.scene { --frame-line: var(--line); --frame-strong: color-mix(in oklab, var(--line), var(--ink) 45%);
+  --metal-pale: color-mix(in oklab, var(--metal, var(--mark)) 40%, light-dark(var(--surface-raised), var(--ink)));
+  --metal-deep: color-mix(in oklab, var(--metal, var(--mark)) 45%, rgb(var(--shadow-rgb))); --edge-ink: opacity(1); }
+
+/* ---------- border ---------- */
+.bo-none .sheet { border: 1px solid transparent; }   /* shows only in forced colours, where the sheet needs it */
+.bo-hairline .sheet { border: 1px solid var(--frame-line); }
+.bo-hairline { --edge-ink: drop-shadow(1px 0 0 var(--frame-strong)) drop-shadow(-1px 0 0 var(--frame-strong)) drop-shadow(0 1px 0 var(--frame-strong)) drop-shadow(0 -1px 0 var(--frame-strong)); }
+.bo-rule .sheet { border: 1px solid var(--frame-line); border-top: 4px solid var(--ink); }
+.bo-double .sheet { border: 3px solid var(--frame-strong); padding: calc(1.25rem + 4px); }
+.bo-double .sheet::after { content: ""; position: absolute; inset: 3px; pointer-events: none; border: 1px solid var(--frame-strong);
+  border-radius: max(0px, calc(var(--radius, 0px) - 6px)); }
+.bo-inked .sheet { border: 3px solid var(--ink); }
+.bo-inked { --edge-ink: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink)) drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink)); }
+.bo-pen-line .sheet { border: 2px solid transparent; }
+.bo-pen-line .sheet::after { content: ""; position: absolute; inset: -4px; pointer-events: none; border: 2px solid var(--ink);
+  border-radius: var(--radius, 0); outline: 1px solid color-mix(in oklab, var(--ink) 45%, transparent); outline-offset: -5px; filter: url(#pen); }
+.bo-carved-band .sheet { border: 1px solid var(--frame-strong); padding: calc(1.25rem + 16px); }
+.bo-carved-band .sheet::after { content: ""; position: absolute; inset: 3px; padding: 12px; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(circle at calc(50% - var(--hx) * 14%) calc(50% - var(--hy) * 14%), var(--metal-pale) 0 12%, var(--mark) 38%,
+      var(--metal-deep) 58%, transparent 64%) 0 0 / 12px 12px round border-box,
+    color-mix(in oklab, var(--mark) 22%, var(--surface));
+  outline: 1px solid var(--frame-strong); outline-offset: -1px;
+  -webkit-mask: linear-gradient(var(--ink) 0 0) content-box, linear-gradient(var(--ink) 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--ink) 0 0) content-box exclude, linear-gradient(var(--ink) 0 0); }
+.bo-metal-ring .sheet { border: 2px solid var(--metal-deep); padding: calc(1.25rem + 9px); }
+.bo-metal-ring .sheet::after { content: ""; position: absolute; inset: 0; padding: 9px; pointer-events: none; border-radius: inherit;
+  background:   /* each side a rounded bar: a bright stripe along it; the sides facing the light brighter than the two away from it */
+    linear-gradient(var(--metal, var(--mark)), var(--metal-pale) 35%, var(--metal, var(--mark)) 70%, var(--metal-deep)) top / 100% 9px no-repeat,
+    linear-gradient(to top, var(--metal-deep), var(--metal, var(--mark)) 40%, var(--metal-deep)) bottom / 100% 9px no-repeat,
+    linear-gradient(to right, var(--metal, var(--mark)), var(--metal-pale) 35%, var(--metal, var(--mark)) 70%, var(--metal-deep)) left / 9px 100% no-repeat,
+    linear-gradient(to left, var(--metal-deep), var(--metal, var(--mark)) 40%, var(--metal-deep)) right / 9px 100% no-repeat;
+  box-shadow: inset 0 0 0 1px var(--metal-deep);
+  -webkit-mask: linear-gradient(var(--ink) 0 0) content-box, linear-gradient(var(--ink) 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--ink) 0 0) content-box exclude, linear-gradient(var(--ink) 0 0); }
+.bo-double, .bo-rule, .bo-pen-line, .bo-carved-band, .bo-metal-ring { --edge-ink: drop-shadow(1px 0 0 var(--frame-strong)) drop-shadow(-1px 0 0 var(--frame-strong)) drop-shadow(0 1px 0 var(--frame-strong)) drop-shadow(0 -1px 0 var(--frame-strong)); }
+
+/* ---------- edge of a sheet: the paper is a ::before behind the words, clipped; only the paper turns ---------- */
+.shaped .sheet { background: none; box-shadow: none; border-color: transparent; filter: var(--edge-ink) var(--drop-low); }
+.shaped .sheet::after { display: none; }   /* ring borders need a straight edge: on a shaped sheet the border is the outline above */
+.shaped .sheet::before { content: ""; position: absolute; inset: -1px; z-index: -1; background: var(--surface); }
+.ed-cut .sheet::before { clip-path: polygon(0.8% 1.6%, 99.4% 0, 100% 98.6%, 0.3% 100%); rotate: -0.7deg; }
+.ed-torn .sheet::before { clip-path: var(--tear); rotate: 0.5deg; }
+.ed-deckled .sheet::before { inset: 2px; filter: url(#deckle);   /* a fibrous fringe a step off the sheet, so the ragged edge reads on a near ground */
+  background: linear-gradient(var(--surface) 0 0) center / calc(100% - 10px) calc(100% - 10px) no-repeat,
+    light-dark(color-mix(in oklab, var(--surface), var(--ink) 7%), color-mix(in oklab, var(--surface), var(--ink) 26%)); }
+
+/* ---------- edge between sections: drawn at the top of the lower section, in its colour, one pixel over the seam ---------- */
+.seam { position: absolute; left: 0; width: 100%; pointer-events: none; color: var(--band-2); }
+svg.seam { top: -23px; height: 24px; }
+.seam .trace { fill: none; stroke: var(--frame-strong); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.se-valance .seam { top: -1px; height: 15px; background: var(--ground);
+  -webkit-mask: radial-gradient(circle 14px at 50% 0, var(--ink) 96%, transparent) 0 0 / 28px 14px round no-repeat;
+  mask: radial-gradient(circle 14px at 50% 0, var(--ink) 96%, transparent) 0 0 / 28px 14px round no-repeat; }
+.se-valance .low { padding-top: 2.25rem; }
+.se-band .low { margin-top: 18px; }   /* room for the strip; a transparent border would show in forced colours */
+.se-band .seam { top: -18px; height: 18px; border-block: 1px solid var(--frame-strong);
+  background: repeating-linear-gradient(-55deg, var(--metal-deep) 0, var(--mark) 2px, var(--metal-pale) 3.5px, var(--mark) 5px, var(--metal-deep) 7px); }   /* a twisted rope */
+
+/* ---------- ornament: one empty element inside the sheet, aria-hidden ---------- */
+.or-corners .orn { inset: 4px; background: var(--mark); -webkit-mask: var(--corner-tl) top left / 34px no-repeat, var(--corner-tr) top right / 34px no-repeat,
+    var(--corner-bl) bottom left / 34px no-repeat, var(--corner-br) bottom right / 34px no-repeat;
+  mask: var(--corner-tl) top left / 34px no-repeat, var(--corner-tr) top right / 34px no-repeat,
+    var(--corner-bl) bottom left / 34px no-repeat, var(--corner-br) bottom right / 34px no-repeat; }
+.or-corners .sheet { padding: calc(1.25rem + 14px); }   /* room for the pieces: the frame adds its own width to the padding density sets */
+.bo-carved-band.or-corners .sheet { padding: calc(1.25rem + 22px); }
+.or-studs .orn { inset: var(--stud-at, 6px); --stud: radial-gradient(circle at calc(50% - var(--hx) * 18%) calc(50% - var(--hy) * 18%),
+    var(--metal-pale) 0 18%, var(--metal, var(--mark)) 45%, var(--metal-deep) 70%, transparent 74%);
+  background: var(--stud) top left / 14px 14px no-repeat, var(--stud) top right / 14px 14px no-repeat,
+    var(--stud) bottom left / 14px 14px no-repeat, var(--stud) bottom right / 14px 14px no-repeat; }
+.bo-metal-ring.or-studs .orn { --stud-at: 0px; }
+.shaped.or-studs .orn { --stud-at: 12px; }   /* pins go through the paper, not past its edge */
+.bo-carved-band.or-studs .orn, .bo-carved-band.or-corners .orn { inset: 5px; }
+.or-keystone .orn { top: -12px; left: 50%; width: 22px; height: 22px; translate: -50% 0; rotate: 45deg; border: 2px solid var(--metal-deep);
+  background: radial-gradient(circle at 35% 35%, var(--metal-pale) 0 14%, var(--mark) 55%, var(--metal-deep) 100%);
+  outline: 2px solid var(--metal, var(--mark)); }
+.or-keystone .sheet { margin-top: 0.75rem; }
+.or-crop-marks .orn { inset: -14px; --c: var(--frame-strong);
+  background: linear-gradient(var(--c) 0 0) 0 13px / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) 13px 0 / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 100% 13px / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) calc(100% - 13px) 0 / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 0 calc(100% - 13px) / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) 13px 100% / 1px 9px no-repeat,
+    linear-gradient(var(--c) 0 0) 100% calc(100% - 13px) / 9px 1px no-repeat, linear-gradient(var(--c) 0 0) calc(100% - 13px) 100% / 1px 9px no-repeat; }
+
+/* ---------- dividers between items ---------- */
+.dv-space .items li + li { margin-top: 1.25rem; }
+.dv-hairline .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--frame-line); }
+.dv-dashed .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 2px dashed var(--frame-strong); }
+.dv-double-rule .items { border-top: 3px solid var(--frame-strong); padding-top: 0.875rem;   /* an Oxford rule: thick, then thin */
+  background: linear-gradient(var(--frame-strong) 0 0) 0 2px / 100% 1px no-repeat; }
+.dv-double-rule .items li + li { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--frame-line); }
+.dv-ornament .items li + li { margin-top: 0.5rem; }
+.dv-ornament .items li + li::before { content: "\2042" / ""; display: block; margin-bottom: 0.5rem; text-align: center; font-size: 1.25rem; line-height: 1; color: var(--mark); }
+
+/* ---------- controls: the edge of a field and a tick box (never framed like a picture) ---------- */
+.co-fine { --field-edge: 1px solid var(--ink-soft); }
+.co-firm { --field-edge: 2px solid var(--ink); }
+
+/* ---------- what the visitor's settings change ---------- */
+@media (forced-colors: active) {
+  .sheet, .shaped .sheet { border: 1px solid CanvasText; filter: none; }
+  .bo-rule .sheet { border-top-width: 4px; }
+  .bo-double .sheet, .bo-inked .sheet { border-width: 3px; }
+  .sheet::before, .sheet::after, .orn, .seam { display: none; }
+  .low { border-top: 1px solid CanvasText; }
+}
+@media (prefers-contrast: more) { .scene { --frame-line: var(--frame-strong); } }
+</style>
+</head>
+<body class="mode-light">
+
+<!-- shared drawings, outside the swatches (swatches.js strips ids inside them): the pen's wobble, the deckle, the seams -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+  <filter id="pen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4"/>
+    <feDisplacementMap in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  <filter id="deckle" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="0.7"/></filter>
+{{SYMBOLS}}
+</svg>
+
+<main>
+<h1>Frames and edges: the layers</h1>
+<p class="intro">Six layers, each switched on its own: the border round a sheet, the edge of the sheet itself, the edge between two sections, ornament on the border, the dividers between items, and the edge of a field. Every option is shown on a light page (left) and the same CSS on a dark page (right), with the other layers at their defaults; the starting points at the end are saved sets of picks. In each: a sheet with a short form, a list of three items, and the next section below on a band of colour. Shadows are a stand-in for the light part, and corners are square unless a corners part sets them.</p>
+
+{{SWATCHES}}
+</main>
+<script>run(swatchTest);</script>
+</body>
+</html>

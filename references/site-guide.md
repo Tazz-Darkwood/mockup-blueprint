@@ -15,7 +15,8 @@ If nobody has agreed them yet, say so: the brief is then a proposal, with a ques
 Then the answers to the questions the feel guide asks before drawing (for the warm guide: what would this organisation pin to a wall, and what is it made of).
 
 ## Parts picked
-Only when the site picks parts on their own: each part, the option picked, why, and what in the feel guides it overrides.
+Only when the site uses a recipe or picks parts on their own: the recipe, if any, and what this site changed in it; each part, the option picked, why, and what in the feel guides it overrides.
+Start with the personality (serious, calm, friendly, playful or dramatic) and the shared colour values the colour part gave. For a part with layers, give the starting point and each layer changed. Then a short table of where two parts met: what each asked for and which owner won (the owners are under "Parts, layers and the shared colour names" in the general style guide), or why the site settled it differently.
 
 ## How the guides were combined
 Only when two or more guides are stacked. First, which guide set the three things the lead decides: the page's colour, what fills the top, the main material. Then a table: one row for each part of the page where two guides met, what each asked for, what was done, and which rule settled it (the lead sets the feel, a later guide flavours it in the lead's terms, the earlier guide wins a part both claim, a purpose guide arranges its own steps). The rules are under "When guides are stacked" in the general style guide.

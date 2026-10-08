@@ -4,6 +4,8 @@
    Review tooling only. It is not part of the design; do not port it to the real build. */
 (function () {
   'use strict';
+  // Smooth scrolling is motion: a visitor who asked their device for less of it gets an instant jump.
+  function smoothOrNot() { return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
   if (window.__blueprint) return;
 
   var BP = window.__BLUEPRINT__ && typeof window.__BLUEPRINT__ === 'object' ? window.__BLUEPRINT__ : null;
@@ -64,11 +66,27 @@ var __bpMeasure = (function () {
     return names;
   }
 
+  var painted = {}, pen = null;
   function rgba(str) {
     var m = /^rgba?\(([^)]+)\)$/.exec(str);
-    if (!m) return null;
-    var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
-    return p.length < 3 || p.some(isNaN) ? null : [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    if (m) {
+      var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+      return p.length < 3 || p.some(isNaN) ? null : [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    }
+    // oklch(), color(srgb ...), lab() and the rest come back from getComputedStyle as written:
+    // paint one pixel in that colour and read it back as sRGB, so they are measured, not skipped.
+    if (!str || str === 'transparent') return null;
+    if (!(str in painted)) {
+      try {
+        pen = pen || document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+        pen.clearRect(0, 0, 1, 1);
+        pen.fillStyle = '#000'; pen.fillStyle = str;
+        pen.fillRect(0, 0, 1, 1);
+        var d = pen.getImageData(0, 0, 1, 1).data;
+        painted[str] = d[3] ? [d[0], d[1], d[2], d[3] / 255] : [0, 0, 0, 0];
+      } catch (e) { painted[str] = null; }
+    }
+    return painted[str];
   }
   function blend(top, under) {
     var a = top[3];
@@ -506,7 +524,7 @@ var __bpMeasure = (function () {
   setInterval(function () { sync(); dock(); }, 500);   // catches tab switches, modals, bars that appear later and other DOM changes in the mockup
 
   function flash(el) {
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.scrollIntoView({ block: 'center', behavior: smoothOrNot() });
     state.flash = el;
     state.flashUntil = Date.now() + 2500;
     queueSync();
@@ -519,7 +537,7 @@ var __bpMeasure = (function () {
     var card = root.getElementById('card-' + id);
     if (card) card.scrollIntoView({ block: 'nearest' });
     var el = findAnchor(id);
-    if (scrollPage && el && shown(el)) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (scrollPage && el && shown(el)) el.scrollIntoView({ block: 'center', behavior: smoothOrNot() });
     queueSync();
   }
 
@@ -695,7 +713,7 @@ var __bpMeasure = (function () {
         range ? h('button', { class: 'link', type: 'button', text: 'Show', onclick: function () {
           state.word = w.id;
           var at = range.startContainer.parentElement;
-          if (at) at.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          if (at) at.scrollIntoView({ block: 'center', behavior: smoothOrNot() });
           render();
         } }) : null,
         h('button', { class: 'icon', type: 'button', 'aria-label': 'Remove this note', text: '✕', onclick: function () {

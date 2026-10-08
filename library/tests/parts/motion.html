@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/motion.py from source/motion-template.html: edit those, then run python3 motion.py ../motion.html in
+   source/. Every colour is a shared colour name (tokens.css), or the light part's lamp, written as numbers. Every
+   duration and easing comes from the pace layer's shared values; every animation and transition moves only opacity,
+   translate, scale and rotate; and all of it is declared inside prefers-reduced-motion: no-preference, so a visitor
+   who asks for less motion gets none ("no motion first"). */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 60ch; margin: 0 0 1rem; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0 0 1rem; }
+.controls p { margin: 0; color: var(--ink-soft); }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 58ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+:root { view-transition-name: none; }   /* only the thing that changes takes part in a view transition, not the page */
+
+/* ---------- the shared values. The pace layer sets them; with no pace, or when the visitor asks for less motion,
+   every duration is zero, so every transition and animation made from them is an instant change ---------- */
+.mo { --dur-short: 0s; --dur-medium: 0s; --dur-long: 0s; --dur-step: 0s;
+  --ease-out: linear; --ease-in: linear; --ease-in-out: linear; --ease-spring: linear; }
+@media (prefers-reduced-motion: no-preference) {
+  .pa-brisk { --dur-short: 100ms; --dur-medium: 200ms; --dur-long: 300ms; --dur-step: 30ms;
+    --ease-out: cubic-bezier(0, 0, 0.38, 0.9); --ease-in: cubic-bezier(0.2, 0, 1, 0.9); --ease-in-out: cubic-bezier(0.2, 0, 0.38, 0.9); --ease-spring: var(--ease-out); }
+  .pa-gentle { --dur-short: 150ms; --dur-medium: 300ms; --dur-long: 500ms; --dur-step: 50ms;
+    --ease-out: cubic-bezier(0.05, 0.7, 0.1, 1); --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15); --ease-in-out: cubic-bezier(0.2, 0, 0, 1); --ease-spring: var(--ease-out); }
+  .pa-slow { --dur-short: 240ms; --dur-medium: 400ms; --dur-long: 700ms; --dur-step: 80ms;
+    --ease-out: cubic-bezier(0, 0, 0.3, 1); --ease-in: cubic-bezier(0.4, 0.14, 1, 1); --ease-in-out: cubic-bezier(0.4, 0.14, 0.3, 1); --ease-spring: var(--ease-out); }
+  .pa-springy { --dur-short: 150ms; --dur-medium: 300ms; --dur-long: 500ms; --dur-step: 50ms;
+    --ease-out: cubic-bezier(0, 0, 0, 1); --ease-in: cubic-bezier(0.3, 0, 1, 1); --ease-in-out: cubic-bezier(0.2, 0, 0, 1);
+    --ease-spring: linear(0, 0.077, 0.254, 0.464, 0.662, 0.827, 0.948, 1.026, 1.068, 1.083, 1.08, 1.067, 1.05, 1.032, 1.018, 1.007, 0.999, 0.995, 0.993, 0.993, 0.994, 0.995, 0.997, 0.998, 0.999, 1, 1, 1.001, 1.001, 1.001, 1, 1, 1); }
+}
+
+/* ---------- every swatch: a heading, a live demonstration on a sheet, and still frames under it ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; }
+.stage { position: relative; display: grid; gap: 0.75rem; padding: 1rem 1.25rem 1.25rem; background: var(--ground); color: var(--on-ground);
+  container-type: inline-size;
+  /* stand-ins for the light part's values, which a site takes from its light pick */
+  --lx: 0.5; --ly: 1; --shade: rgb(var(--shadow-rgb));
+  --shadow-low: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.4) * 100%), transparent),
+    calc(var(--lx) * 2px) calc(var(--ly) * 2px) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.9) * 100%), transparent);
+  --shadow-mid: 0 1px 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength)) * 100%), transparent),
+    calc(var(--lx) * 6px) calc(var(--ly) * 10px) 22px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.3) * 100%), transparent);
+  --lamp-lch: 0.84 0.13 78; --lamp: oklch(var(--lamp-lch)); }
+.sw-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.sw-head h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.id { margin: 0.125rem 0 0; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.line { margin: 0; max-width: 60ch; }
+.demo { position: relative; isolation: isolate; min-height: 7.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.demo > :not(.amb) { position: relative; z-index: 1; }
+
+/* buttons: the main one in the accent, the small ones plain; each takes a veil for its states (a "state layer") */
+.btn, .sbtn, .fbtn { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 0 1.1rem; border: 2px solid var(--accent-edge); border-radius: 6px; font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; }
+.btn, .fbtn { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-low); }
+.sbtn { min-height: 44px; padding: 0 0.9rem; background: var(--surface); color: var(--ink); font-weight: 600; }
+.sbtn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.btn::before, .sbtn::before, .fbtn::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: currentColor;
+  opacity: 0; pointer-events: none; }
+@media (hover: hover) { :is(.btn, .sbtn):hover::before { opacity: 0.12; } }
+:is(.btn, .sbtn):active::before, .is-press:is(.btn, .fbtn)::before { opacity: 0.22; }
+.is-hover:not(.is-press):is(.btn, .fbtn)::before { opacity: 0.12; }
+.fbtn.is-half::before { opacity: 0.06; }
+.card { position: relative; isolation: isolate; display: grid; gap: 0.125rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-low); }
+.card b { font-size: 1.0625rem; }
+.card span { color: var(--ink-soft); font-size: 0.9375rem; }
+.link-card { text-decoration: none; min-width: 11rem; }
+@media (hover: hover) { .link-card:hover b { text-decoration: underline; } }
+
+/* ---------- pace: three runners, one per duration, and the button ---------- */
+.tracks { display: grid; gap: 0.5rem; flex: 1 1 14rem; }
+.track { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: end; gap: 0.5rem; }
+.track span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.lane { position: relative; display: block; height: 1.5rem; container-type: inline-size; border-bottom: 1px solid var(--line); }
+.runner { position: absolute; left: calc(100% - 1rem); bottom: 0.2rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--accent); }
+.gh { position: absolute; bottom: 0.45rem; left: calc(var(--p) * (100% - 1rem) + 0.25rem); width: 0.5rem; height: 0.5rem; border-radius: 50%;
+  background: color-mix(in oklab, var(--accent) 40%, transparent); }
+@keyframes mo-run { from { translate: calc(1rem - 100cqi) 0; } }   /* it rests where it finishes */
+@media (prefers-reduced-motion: no-preference) {
+  .go .runner.short { animation: mo-run var(--dur-short) var(--ease-in-out) 0.25s both; }
+  .go .runner.medium { animation: mo-run var(--dur-medium) var(--ease-in-out) 0.25s both; }
+  .go .runner.long { animation: mo-run var(--dur-long) var(--ease-in-out) 0.25s both; }
+  .go.pa-springy .runner { animation-timing-function: var(--ease-spring); }
+}
+.pace-fig { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1rem; align-items: center; }
+.curve { width: 9rem; height: auto; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.curve .axis { stroke: var(--ink-soft); stroke-width: 1.5; }
+.curve .over { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.curve .c-out { stroke: var(--accent); stroke-width: 3; }
+.curve .c-in { stroke: var(--ink-soft); stroke-width: 2; stroke-dasharray: 5 4; }
+.bars { display: grid; gap: 0.4rem; }
+.bar i { display: block; height: 0.55rem; border-radius: 3px; background: var(--accent); }
+.bar span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); }
+
+/* ---------- feedback ---------- */
+.fb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; }
+/* fade: the veil fades */
+.fe-fade :is(.btn, .sbtn, .fbtn)::before { transition: opacity var(--dur-short) var(--ease-out); }
+/* press in: the button moves into its own shadow, and the shadow goes */
+.fe-press-in :is(.btn, .fbtn) { transition: translate calc(var(--dur-short) / 2) var(--ease-out); }
+.fe-press-in :is(.btn, .fbtn):is(:active, .is-press) { translate: calc(var(--lx) * 2px) calc(var(--ly) * 2px); box-shadow: none; }
+/* lift: the card rises and its larger shadow fades in (a shadow is never animated itself) */
+.fe-lift :is(.card, .fcard) { transition: translate var(--dur-medium) var(--ease-out); }
+.fe-lift :is(.card, .fcard)::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; box-shadow: var(--shadow-mid);
+  opacity: 0; transition: opacity var(--dur-medium) var(--ease-out); pointer-events: none; }
+@media (hover: hover) { .fe-lift .card:hover { translate: 0 -3px; } .fe-lift .card:hover::after { opacity: 1; } }
+.fe-lift :is(.card, .fcard).is-hover { translate: 0 -3px; } .fe-lift :is(.card, .fcard).is-hover::after { opacity: 1; }
+.fe-lift :is(.card, .fcard):is(:active, .is-press) { translate: 0 -1px; transition-duration: var(--dur-short); }
+/* straighten: pinned up at a slant, straight when pointed at */
+.fe-straighten :is(.card, .fcard) { rotate: -2.5deg; transition: rotate var(--dur-medium) var(--ease-spring); }
+@media (hover: hover) { .fe-straighten .card:hover { rotate: 0deg; } }
+.fe-straighten :is(.card, .fcard).is-hover { rotate: 0deg; }
+/* squeeze: it gives when pressed, and springs back */
+.fe-squeeze :is(.btn, .fbtn) { transition: scale var(--dur-medium) var(--ease-spring); }
+.fe-squeeze :is(.btn, .fbtn):is(:active, .is-press) { scale: 0.94; transition-duration: var(--dur-short); transition-timing-function: var(--ease-out); }
+
+/* ---------- entrance ---------- */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; width: 100%; }
+@container (max-width: 26rem) { .cards { grid-template-columns: minmax(0, 1fr); } }
+@keyframes mo-fade { from { opacity: 0; } }
+@keyframes mo-rise { from { opacity: 0; translate: 0 0.75rem; } }
+@keyframes mo-settle { from { translate: 0 2rem; scale: 0.94; } }   /* moves only: what is not yet in view is still fully drawn */
+.scroller { width: 100%; height: 8.5rem; overflow-y: auto; display: grid; gap: 0.6rem; padding: 0.25rem 0.25rem 2rem; border-radius: 4px; }
+.blockrow { margin: 0; padding: 0.4rem 0.75rem; border-radius: 4px; background: var(--surface-raised); border: 1px solid var(--line); box-shadow: var(--shadow-low); }
+.blockrow:nth-child(odd) { width: 80%; }
+@media (prefers-reduced-motion: no-preference) {
+  .go.en-fade .enter { animation: mo-fade var(--dur-long) var(--ease-out) backwards; }
+  .go.en-rise .enter { animation: mo-rise var(--dur-long) var(--ease-out) backwards; }
+  .go.en-stagger .enter { animation: mo-rise var(--dur-long) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 6) * var(--dur-step)); }
+  @supports (animation-timeline: view()) {
+    .en-scroll-reveal .enter { animation: mo-settle linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+  }
+}
+
+/* ---------- ambient: one element per moving thing, behind the words, opacity and translate only ---------- */
+.amb { position: absolute; inset: 0; z-index: 0; overflow: clip; border-radius: inherit; pointer-events: none; }
+.amb .src { position: absolute; right: 1.5rem; top: 1.1rem; width: 0.9rem; height: 0.9rem; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.99 0.03 90) 0 30%, var(--lamp) 75%);
+  box-shadow: 0 0 8px 3px color-mix(in oklab, var(--lamp) 70%, transparent); }
+.amb .glow { position: absolute; right: -5rem; top: -5.5rem; width: 14rem; height: 14rem; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--lamp) 60%, transparent) 0, color-mix(in oklab, var(--lamp) 22%, transparent) 40%, transparent 70%); }
+.star { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); box-shadow: 0 0 6px 1px color-mix(in oklab, var(--mark) 60%, transparent); }
+.mote { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--texture-rgb) / calc(var(--texture-strength) * 4)); }
+.over { margin: 0; max-width: 32ch; font-size: 1.125rem; }
+@keyframes mo-breathe { 50% { opacity: 0.78; } }
+@keyframes mo-flicker { 0%, 100% { opacity: 1; } 8% { opacity: 0.9; } 14% { opacity: 1; } 30% { opacity: 0.85; } 37% { opacity: 0.96; }
+  55% { opacity: 0.9; } 62% { opacity: 1; } 80% { opacity: 0.87; } 88% { opacity: 0.97; } }
+@keyframes mo-twinkle { to { opacity: 0.4; } }
+@keyframes mo-drift { to { translate: 2.5rem -0.75rem; } }
+@media (prefers-reduced-motion: no-preference) {
+  .am-breathing .glow { animation: mo-breathe 7s ease-in-out infinite; }
+  .am-flicker .glow { animation: mo-flicker 3.2s linear infinite; }
+  .am-twinkle .star { animation: mo-twinkle var(--d) ease-in-out var(--o) infinite alternate; }
+  .am-drift .mote { animation: mo-drift var(--d) ease-in-out var(--o) infinite alternate; }
+}
+html[data-motion="paused"] .amb * { animation-play-state: paused; }   /* the page's own pause switch (WCAG 2.2.2) */
+
+/* ---------- clock: the disc is placed by the hour, with no transition ---------- */
+.clock { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.sky { position: relative; width: 9rem; height: 4.5rem; overflow: hidden; border-radius: 4.5rem 4.5rem 0 0; border-bottom: 2px solid var(--line);
+  background: color-mix(in oklab, var(--ground) 70%, var(--surface)); }
+.sky .arc { position: absolute; left: 0.9rem; right: 0.9rem; top: 0.7rem; height: 7.2rem; border: 1px dashed var(--line); border-radius: 50%; }
+.disc { position: absolute; left: 0; top: 0; width: 1rem; height: 1rem; margin: -0.5rem 0 0 -0.5rem; border-radius: 50%; background: var(--lamp);
+  box-shadow: 0 0 8px 2px color-mix(in oklab, var(--lamp) 60%, transparent);
+  translate: calc(var(--x, 50) * 0.09rem) calc(var(--y, 20) * 0.045rem); }
+.clock.is-night .sky { background: var(--band-3); }
+.clock.is-night .disc { background: var(--on-band); box-shadow: inset -0.3rem 0 0 color-mix(in oklab, var(--band-3) 70%, var(--on-band)); }
+.time { margin: 0; font-size: 1.125rem; }
+.time output { font: 700 1.125rem/1 ui-monospace, Menlo, Consolas, monospace; }
+
+/* ---------- transitions: two views of one panel ---------- */
+.views { display: grid; gap: 0.6rem; width: 100%; max-width: 26rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.panels { display: grid; min-height: 5.75rem; }
+.panel { grid-area: 1 / 1; display: grid; align-content: start; gap: 0.2rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-raised); color: var(--ink); }
+.panel[hidden] { display: none; }
+.panel span { color: var(--ink-soft); }
+.minis { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mini { padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.mini.pick { border: 2px solid var(--accent-edge); }
+@keyframes mo-out { to { opacity: 0; translate: calc(var(--vt-dir, 1) * -1.5rem) 0; } }
+@keyframes mo-in { from { opacity: 0; translate: calc(var(--vt-dir, 1) * 1.5rem) 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation-duration: var(--vt-dur, 0.3s); animation-timing-function: var(--vt-ease, ease); }
+  html[data-vt="slide"]::view-transition-old(mo-panel) { animation-name: mo-out; }
+  html[data-vt="slide"]::view-transition-new(mo-panel) { animation-name: mo-in; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ---------- moments ---------- */
+.signup { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+.names { margin: 0; padding-left: 1.6rem; }
+.names li { padding: 0.1rem 0; border-bottom: 1px dashed var(--line); min-width: 12rem; }
+.who { position: relative; display: inline-block; }
+.new .who { font-weight: 700; }
+.said { margin: 0; min-height: 1.5em; color: var(--ink-soft); }
+.said:empty { display: none; }
+@keyframes mo-unwrite { to { scale: 0 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  .who.writing::after { content: ""; position: absolute; inset: -2px -3px; background: var(--surface); transform-origin: 100% 50%;
+    animation: mo-unwrite calc(var(--dur-long) * 2.5) var(--ease-in-out) forwards; }
+}
+.signup > .btn { z-index: 1; }
+.bit { position: absolute; z-index: 0; width: 0.5rem; height: 0.75rem; border-radius: 1px; pointer-events: none; }
+.look { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--surface-raised); color: var(--ink); }
+.look.b { background: var(--band-3); color: var(--on-band); border-color: var(--band-3); }
+.emblem { width: 1.75rem; height: 1.75rem; rotate: 45deg; border-radius: 4px; background: var(--accent); }
+.look.b .emblem { background: var(--on-band); border-radius: 50%; }
+.hint { margin: 0; }
+.nudge-me.nudging::after { content: ""; position: absolute; inset: -7px; border: 3px solid var(--accent-edge); border-radius: 10px; pointer-events: none; }
+@keyframes mo-ring { from { opacity: 0.9; scale: 1; } to { opacity: 0; scale: 1.3; } }
+@media (prefers-reduced-motion: no-preference) {
+  .nudge-me.nudging::after { animation: mo-ring 1.2s var(--ease-out) 2 forwards; }
+}
+
+/* ---------- starting points ---------- */
+.start-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; width: 100%; }
+.start-grid .cards { grid-template-columns: minmax(0, 1fr); }
+.start-side { display: grid; gap: 0.9rem; justify-items: start; }
+@container (max-width: 34rem) { .start-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- still frames: the same motion stopped at a few moments, for pictures ---------- */
+.frames { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }
+.frames-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.frame { display: grid; gap: 0.2rem; }
+.frame > div { position: relative; height: 3.75rem; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 5px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.frame > span { font: 0.875rem/1.3 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); min-height: 1.3em; }
+.fb { display: block; width: 1.1rem; height: 1.7rem; border-radius: 3px; background: var(--accent); }
+.fbtn { min-height: 0; width: 3.5rem; height: 1.6rem; padding: 0; }
+.fcard { position: relative; isolation: isolate; display: block; width: 3.75rem; height: 2.4rem; border-radius: 4px; border: 1px solid var(--line);
+  background: var(--surface-raised); box-shadow: var(--shadow-low); }
+.fp { position: absolute; display: block; width: 58%; height: 58%; border-radius: 4px; }
+.fp.old { background: var(--ink-soft); }
+.fp.new { background: var(--accent); }
+.f-lamp { position: relative; display: block; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: var(--lamp); }
+.f-lamp b { position: absolute; inset: -1.3rem; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--lamp) 70%, transparent), transparent 70%); }
+.f-star { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--mark); margin: 0 6px; }
+.f-mote { position: absolute; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); }
+.f-sky { position: absolute; inset: 0; display: block; background: color-mix(in oklab, var(--ground) 70%, var(--surface)); }
+.f-sky.night { background: var(--band-3); }
+.f-disc { position: absolute; width: 0.7rem; height: 0.7rem; margin: -0.35rem; border-radius: 50%; background: var(--lamp); }
+.f-disc.moon { background: var(--on-band); }
+.frame > div:has(.f-line) { flex-direction: column; align-items: flex-start; padding: 0 10%; gap: 4px; }
+.f-line { display: block; width: 60%; height: 5px; border-radius: 2px; background: var(--ink-soft); }
+.f-line.new { background: var(--accent); }
+.f-bit { position: absolute; display: block; width: 5px; height: 8px; background: var(--accent); }
+.f-bit:nth-child(3n+1) { background: var(--band-1); } .f-bit:nth-child(3n+2) { background: var(--mark); }
+.f-dot { display: block; width: 1.4rem; height: 0.8rem; border-radius: 3px; background: var(--accent); }
+.f-look { position: absolute; inset: 0; display: block; }
+.f-look.a { background: var(--surface-raised); } .f-look.b { background: var(--band-3); }
+.f-ring { position: absolute; display: block; width: 2rem; height: 1.4rem; border: 2px solid var(--accent-edge); border-radius: 5px; }
+</style>
+</head>
+<body class="mode-light">
+<main>
+<h1>Motion: the layers</h1>
+<p class="intro">Every option of every layer, then every starting point, each on a light page and on a dark one. Motion cannot be seen in a picture, so each swatch plays from its Play button, and under it the same motion is drawn stopped at a few moments. Things that move by themselves are already moving. If your device asks for less motion, everything here is an instant change.</p>
+<div class="controls"><button class="sbtn" id="pause-all" type="button" aria-pressed="false">Pause moving things</button><p id="motion-said"></p></div>
+<h2 class="layer">Pace</h2>
+<p class="layer-note">The shared durations and easing curves every other layer uses. The faint dots are where each runner is every 50 ms on its way across. The curves show how far a thing has gone (up) against time (across): arriving (solid), leaving (dashed). The bars are the three durations to scale.</p>
+<section class="swatch" data-option="pace:still">
+<div class="stage mo pa-still fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Still</h3><p class="id">pace: still</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Nothing travels: every change is instant. What reduced motion turns any pace into.</p>
+<div class="demo"><div class="tracks"><div class="track"><span>short</span><i class="lane"><i class="runner short"></i></i></div><div class="track"><span>medium</span><i class="lane"><i class="runner medium"></i></i></div><div class="track"><span>long</span><i class="lane"><i class="runner long"></i></i></div></div><button class="btn" type="button">Press me</button></div>
+<div class="pace-fig" aria-hidden="true"><svg class="curve" viewBox="-4 -14 128 102" aria-hidden="true" focusable="false"><path class="axis" d="M0 0 V80 H120"/><path class="over" d="M0 0 H120"/><path class="c-in" d="M0 80 L0 0 L120 0"/><path class="c-out" d="M0 80 L0 0 L120 0"/></svg><div class="bars"><div class="bar"><i style="width:2%"></i><span>short 0 ms</span></div><div class="bar"><i style="width:2%"></i><span>medium 0 ms</span></div><div class="bar"><i style="width:2%"></i><span>long 0 ms</span></div></div></div>
+</div>
+</section>
+<section class="swatch" data-option="pace:brisk">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Brisk</h3><p class="id">pace: brisk</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Quick and plain, for getting things done: 100, 200 and 300 ms.</p>
+<div class="demo"><div class="tracks"><div class="track"><span>short</span><i class="lane"><i class="gh" style="--p:0.68"></i><i class="runner short"></i></i></div><div class="track"><span>medium</span><i class="lane"><i class="gh" style="--p:0.31"></i><i class="gh" style="--p:0.68"></i><i class="gh" style="--p:0.91"></i><i class="runner medium"></i></i></div><div class="track"><span>long</span><i class="lane"><i class="gh" style="--p:0.16"></i><i class="gh" style="--p:0.45"></i><i class="gh" style="--p:0.68"></i><i class="gh" style="--p:0.85"></i><i class="gh" style="--p:0.95"></i><i class="runner long"></i></i></div></div><button class="btn" type="button">Press me</button></div>
+<div class="pace-fig" aria-hidden="true"><svg class="curve" viewBox="-4 -14 128 102" aria-hidden="true" focusable="false"><path class="axis" d="M0 0 V80 H120"/><path class="over" d="M0 0 H120"/><path class="c-in" d="M0.0 80.0 L3.0 79.7 L6.0 79.0 L9.0 78.0 L12.0 76.9 L15.0 75.6 L18.0 74.3 L21.0 72.8 L24.0 71.3 L27.0 69.7 L30.0 68.0 L33.0 66.3 L36.0 64.5 L39.0 62.7 L42.0 60.9 L45.0 59.0 L48.0 57.1 L51.0 55.2 L54.0 53.2 L57.0 51.2 L60.0 49.2 L63.0 47.2 L66.0 45.1 L69.0 43.0 L72.0 40.9 L75.0 38.7 L78.0 36.6 L81.0 34.3 L84.0 32.1 L87.0 29.9 L90.0 27.6 L93.0 25.3 L96.0 22.9 L99.0 20.5 L102.0 18.1 L105.0 15.6 L108.0 13.0 L111.0 10.3 L114.0 7.5 L117.0 4.5 L120.0 0.0"/><path class="c-out" d="M0.0 80.0 L3.0 75.6 L6.0 71.6 L9.0 67.7 L12.0 64.1 L15.0 60.6 L18.0 57.2 L21.0 53.9 L24.0 50.8 L27.0 47.8 L30.0 45.0 L33.0 42.2 L36.0 39.5 L39.0 36.9 L42.0 34.5 L45.0 32.1 L48.0 29.8 L51.0 27.6 L54.0 25.5 L57.0 23.5 L60.0 21.6 L63.0 19.8 L66.0 18.0 L69.0 16.3 L72.0 14.8 L75.0 13.2 L78.0 11.8 L81.0 10.5 L84.0 9.2 L87.0 8.0 L90.0 6.9 L93.0 5.9 L96.0 4.9 L99.0 4.1 L102.0 3.3 L105.0 2.5 L108.0 1.9 L111.0 1.3 L114.0 0.8 L117.0 0.4 L120.0 0.0"/></svg><div class="bars"><div class="bar"><i style="width:14%"></i><span>short 100 ms</span></div><div class="bar"><i style="width:29%"></i><span>medium 200 ms</span></div><div class="bar"><i style="width:43%"></i><span>long 300 ms</span></div></div></div>
+</div>
+</section>
+<section class="swatch" data-option="pace:gentle">
+<div class="stage mo pa-gentle fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Gentle</h3><p class="id">pace: gentle</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A little slower, with a soft landing: 150, 300 and 500 ms.</p>
+<div class="demo"><div class="tracks"><div class="track"><span>short</span><i class="lane"><i class="gh" style="--p:0.73"></i><i class="gh" style="--p:0.95"></i><i class="runner short"></i></i></div><div class="track"><span>medium</span><i class="lane"><i class="gh" style="--p:0.41"></i><i class="gh" style="--p:0.73"></i><i class="gh" style="--p:0.88"></i><i class="gh" style="--p:0.95"></i><i class="gh" style="--p:0.99"></i><i class="runner medium"></i></i></div><div class="track"><span>long</span><i class="lane"><i class="gh" style="--p:0.16"></i><i class="gh" style="--p:0.5"></i><i class="gh" style="--p:0.69"></i><i class="gh" style="--p:0.8"></i><i class="gh" style="--p:0.88"></i><i class="gh" style="--p:0.93"></i><i class="gh" style="--p:0.96"></i><i class="gh" style="--p:0.98"></i><i class="gh" style="--p:1"></i><i class="runner long"></i></i></div></div><button class="btn" type="button">Press me</button></div>
+<div class="pace-fig" aria-hidden="true"><svg class="curve" viewBox="-4 -14 128 102" aria-hidden="true" focusable="false"><path class="axis" d="M0 0 V80 H120"/><path class="over" d="M0 0 H120"/><path class="c-in" d="M0.0 80.0 L3.0 80.0 L6.0 79.9 L9.0 79.8 L12.0 79.6 L15.0 79.3 L18.0 79.0 L21.0 78.6 L24.0 78.2 L27.0 77.7 L30.0 77.2 L33.0 76.6 L36.0 75.9 L39.0 75.1 L42.0 74.3 L45.0 73.4 L48.0 72.4 L51.0 71.4 L54.0 70.2 L57.0 69.0 L60.0 67.7 L63.0 66.3 L66.0 64.7 L69.0 63.1 L72.0 61.3 L75.0 59.4 L78.0 57.4 L81.0 55.2 L84.0 52.8 L87.0 50.3 L90.0 47.6 L93.0 44.6 L96.0 41.4 L99.0 37.9 L102.0 34.1 L105.0 29.9 L108.0 25.3 L111.0 20.2 L114.0 14.4 L117.0 7.8 L120.0 0.0"/><path class="c-out" d="M0.0 80.0 L3.0 57.2 L6.0 44.2 L9.0 36.0 L12.0 30.3 L15.0 25.9 L18.0 22.5 L21.0 19.6 L24.0 17.3 L27.0 15.2 L30.0 13.5 L33.0 12.0 L36.0 10.6 L39.0 9.4 L42.0 8.4 L45.0 7.4 L48.0 6.6 L51.0 5.8 L54.0 5.1 L57.0 4.5 L60.0 4.0 L63.0 3.5 L66.0 3.0 L69.0 2.6 L72.0 2.3 L75.0 1.9 L78.0 1.6 L81.0 1.4 L84.0 1.1 L87.0 0.9 L90.0 0.8 L93.0 0.6 L96.0 0.5 L99.0 0.3 L102.0 0.3 L105.0 0.2 L108.0 0.1 L111.0 0.1 L114.0 0.0 L117.0 0.0 L120.0 0.0"/></svg><div class="bars"><div class="bar"><i style="width:21%"></i><span>short 150 ms</span></div><div class="bar"><i style="width:43%"></i><span>medium 300 ms</span></div><div class="bar"><i style="width:71%"></i><span>long 500 ms</span></div></div></div>
+</div>
+</section>
+<section class="swatch" data-option="pace:slow">
+<div class="stage mo pa-slow fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Slow</h3><p class="id">pace: slow</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Unhurried, for a few big moments: 240, 400 and 700 ms.</p>
+<div class="demo"><div class="tracks"><div class="track"><span>short</span><i class="lane"><i class="gh" style="--p:0.18"></i><i class="gh" style="--p:0.61"></i><i class="gh" style="--p:0.88"></i><i class="runner short"></i></i></div><div class="track"><span>medium</span><i class="lane"><i class="gh" style="--p:0.08"></i><i class="gh" style="--p:0.26"></i><i class="gh" style="--p:0.53"></i><i class="gh" style="--p:0.75"></i><i class="gh" style="--p:0.88"></i><i class="gh" style="--p:0.95"></i><i class="gh" style="--p:0.99"></i><i class="runner medium"></i></i></div><div class="track"><span>long</span><i class="lane"><i class="gh" style="--p:0.04"></i><i class="gh" style="--p:0.1"></i><i class="gh" style="--p:0.19"></i><i class="gh" style="--p:0.33"></i><i class="gh" style="--p:0.49"></i><i class="gh" style="--p:0.63"></i><i class="gh" style="--p:0.75"></i><i class="gh" style="--p:0.83"></i><i class="gh" style="--p:0.89"></i><i class="gh" style="--p:0.94"></i><i class="gh" style="--p:0.97"></i><i class="gh" style="--p:0.99"></i><i class="gh" style="--p:1"></i><i class="runner long"></i></i></div></div><button class="btn" type="button">Press me</button></div>
+<div class="pace-fig" aria-hidden="true"><svg class="curve" viewBox="-4 -14 128 102" aria-hidden="true" focusable="false"><path class="axis" d="M0 0 V80 H120"/><path class="over" d="M0 0 H120"/><path class="c-in" d="M0.0 80.0 L3.0 79.2 L6.0 78.3 L9.0 77.3 L12.0 76.2 L15.0 75.0 L18.0 73.8 L21.0 72.4 L24.0 71.0 L27.0 69.4 L30.0 67.9 L33.0 66.2 L36.0 64.5 L39.0 62.8 L42.0 61.0 L45.0 59.1 L48.0 57.2 L51.0 55.2 L54.0 53.2 L57.0 51.2 L60.0 49.1 L63.0 47.0 L66.0 44.8 L69.0 42.6 L72.0 40.4 L75.0 38.1 L78.0 35.8 L81.0 33.5 L84.0 31.1 L87.0 28.7 L90.0 26.2 L93.0 23.8 L96.0 21.3 L99.0 18.7 L102.0 16.2 L105.0 13.6 L108.0 10.9 L111.0 8.3 L114.0 5.6 L117.0 2.8 L120.0 0.0"/><path class="c-out" d="M0.0 80.0 L3.0 74.2 L6.0 69.0 L9.0 64.3 L12.0 59.9 L15.0 55.8 L18.0 51.9 L21.0 48.3 L24.0 44.8 L27.0 41.6 L30.0 38.5 L33.0 35.6 L36.0 32.8 L39.0 30.2 L42.0 27.7 L45.0 25.4 L48.0 23.2 L51.0 21.1 L54.0 19.1 L57.0 17.3 L60.0 15.6 L63.0 13.9 L66.0 12.4 L69.0 11.0 L72.0 9.7 L75.0 8.4 L78.0 7.3 L81.0 6.2 L84.0 5.3 L87.0 4.4 L90.0 3.6 L93.0 2.9 L96.0 2.3 L99.0 1.7 L102.0 1.3 L105.0 0.9 L108.0 0.6 L111.0 0.3 L114.0 0.1 L117.0 0.0 L120.0 0.0"/></svg><div class="bars"><div class="bar"><i style="width:34%"></i><span>short 240 ms</span></div><div class="bar"><i style="width:57%"></i><span>medium 400 ms</span></div><div class="bar"><i style="width:100%"></i><span>long 700 ms</span></div></div></div>
+</div>
+</section>
+<section class="swatch" data-option="pace:springy">
+<div class="stage mo pa-springy fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Springy</h3><p class="id">pace: springy</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Quick, with a small overshoot that settles, like a spring.</p>
+<div class="demo"><div class="tracks"><div class="track"><span>short</span><i class="lane"><i class="gh" style="--p:1.07"></i><i class="gh" style="--p:1"></i><i class="runner short"></i></i></div><div class="track"><span>medium</span><i class="lane"><i class="gh" style="--p:0.87"></i><i class="gh" style="--p:1.07"></i><i class="gh" style="--p:1"></i><i class="gh" style="--p:1"></i><i class="gh" style="--p:1"></i><i class="runner medium"></i></i></div><div class="track"><span>long</span><i class="lane"><i class="gh" style="--p:0.51"></i><i class="gh" style="--p:0.98"></i><i class="gh" style="--p:1.08"></i><i class="gh" style="--p:1.04"></i><i class="gh" style="--p:1"></i><i class="gh" style="--p:0.99"></i><i class="gh" style="--p:1"></i><i class="gh" style="--p:1"></i><i class="gh" style="--p:1"></i><i class="runner long"></i></i></div></div><button class="btn" type="button">Press me</button></div>
+<div class="pace-fig" aria-hidden="true"><svg class="curve" viewBox="-4 -14 128 102" aria-hidden="true" focusable="false"><path class="axis" d="M0 0 V80 H120"/><path class="over" d="M0 0 H120"/><path class="c-in" d="M0.0 80.0 L3.0 79.8 L6.0 79.4 L9.0 78.7 L12.0 77.8 L15.0 76.7 L18.0 75.6 L21.0 74.3 L24.0 72.8 L27.0 71.3 L30.0 69.7 L33.0 68.0 L36.0 66.3 L39.0 64.5 L42.0 62.6 L45.0 60.7 L48.0 58.7 L51.0 56.6 L54.0 54.5 L57.0 52.4 L60.0 50.2 L63.0 48.0 L66.0 45.8 L69.0 43.5 L72.0 41.2 L75.0 38.8 L78.0 36.4 L81.0 34.0 L84.0 31.6 L87.0 29.1 L90.0 26.6 L93.0 24.1 L96.0 21.5 L99.0 18.9 L102.0 16.3 L105.0 13.7 L108.0 11.0 L111.0 8.3 L114.0 5.6 L117.0 2.8 L120.0 0.0"/><path class="c-out" d="M0.0 80.0 L3.8 73.8 L7.5 59.7 L11.2 42.9 L15.0 27.0 L18.8 13.9 L22.5 4.2 L26.2 -2.1 L30.0 -5.4 L33.8 -6.6 L37.5 -6.4 L41.2 -5.3 L45.0 -4.0 L48.8 -2.6 L52.5 -1.4 L56.2 -0.5 L60.0 0.1 L63.8 0.4 L67.5 0.5 L71.2 0.5 L75.0 0.5 L78.8 0.4 L82.5 0.2 L86.2 0.1 L90.0 0.1 L93.8 0.0 L97.5 -0.0 L101.2 -0.0 L105.0 -0.0 L108.8 -0.0 L112.5 -0.0 L116.2 -0.0 L120.0 -0.0"/></svg><div class="bars"><div class="bar"><i style="width:21%"></i><span>short 150 ms</span></div><div class="bar"><i style="width:43%"></i><span>medium 300 ms</span></div><div class="bar"><i style="width:71%"></i><span>long 500 ms</span></div></div></div>
+</div>
+</section>
+<h2 class="layer">Feedback</h2>
+<p class="layer-note">What a control does when it is pointed at and pressed. Try the button and the card; the frames show rest, pointed at, and pressed.</p>
+<section class="swatch" data-option="feedback:none">
+<div class="stage mo pa-brisk fe-none en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">feedback: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The pointed-at and pressed states change at once.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames frames-3" aria-hidden="true"><div class="frame"><div><span class="fbtn"></span></div><span>at rest</span></div><div class="frame"><div><span class="fbtn is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fbtn is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="feedback:fade">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Fade</h3><p class="id">feedback: fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A light veil fades in when pointed at, and deepens when pressed.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><span class="fbtn"></span></div><span>at rest</span></div><div class="frame"><div><span class="fbtn is-half"></span></div><span>50 ms in</span></div><div class="frame"><div><span class="fbtn is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fbtn is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="feedback:press-in">
+<div class="stage mo pa-brisk fe-press-in en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Press in</h3><p class="id">feedback: press-in</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Pressed, the button moves into its own shadow.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames frames-3" aria-hidden="true"><div class="frame"><div><span class="fbtn"></span></div><span>at rest</span></div><div class="frame"><div><span class="fbtn is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fbtn is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="feedback:lift">
+<div class="stage mo pa-brisk fe-lift en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Lift</h3><p class="id">feedback: lift</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Pointed at, the card rises a little and its shadow grows.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames frames-3" aria-hidden="true"><div class="frame"><div><span class="fcard"></span></div><span>at rest</span></div><div class="frame"><div><span class="fcard is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fcard is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="feedback:straighten">
+<div class="stage mo pa-brisk fe-straighten en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Straighten</h3><p class="id">feedback: straighten</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Things pinned up at a slant straighten when pointed at.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames frames-3" aria-hidden="true"><div class="frame"><div><span class="fcard"></span></div><span>at rest</span></div><div class="frame"><div><span class="fcard is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fcard is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="feedback:squeeze">
+<div class="stage mo pa-brisk fe-squeeze en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Squeeze</h3><p class="id">feedback: squeeze</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Pressed, it gives a little, and springs back when let go.</p>
+<div class="demo"><div class="fb-row"><button class="btn" type="button">Press me</button><a class="card link-card" href="#feedback"><b>Kettles</b><span>Point at this card</span></a></div></div>
+<div class="frames frames-3" aria-hidden="true"><div class="frame"><div><span class="fbtn"></span></div><span>at rest</span></div><div class="frame"><div><span class="fbtn is-hover"></span></div><span>pointed at</span></div><div class="frame"><div><span class="fbtn is-hover is-press"></span></div><span>pressed</span></div></div>
+</div>
+</section>
+<h2 class="layer">Entrance</h2>
+<p class="layer-note">How things arrive when the page opens, or when they are scrolled to. Play shows it again; the frames are the same motion, stopped.</p>
+<section class="swatch" data-option="entrance:none">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">entrance: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Everything is simply there when the page opens.</p>
+<div class="demo"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fb"></i><i class="fb"></i><i class="fb"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fb"></i><i class="fb"></i><i class="fb"></i></div><span></span></div><div class="frame"><div><i class="fb"></i><i class="fb"></i><i class="fb"></i></div><span></span></div><div class="frame"><div><i class="fb"></i><i class="fb"></i><i class="fb"></i></div><span>at once</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="entrance:fade">
+<div class="stage mo pa-brisk fe-fade en-fade am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Fade</h3><p class="id">entrance: fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The things on the page fade in together.</p>
+<div class="demo"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fb" style="opacity:0"></i><i class="fb" style="opacity:0"></i><i class="fb" style="opacity:0"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.55"></i><i class="fb" style="opacity:0.55"></i><i class="fb" style="opacity:0.55"></i></div><span>100 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.86"></i><i class="fb" style="opacity:0.86"></i><i class="fb" style="opacity:0.86"></i></div><span>200 ms</span></div><div class="frame"><div><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i></div><span>300 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="entrance:rise">
+<div class="stage mo pa-brisk fe-fade en-rise am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Rise</h3><p class="id">entrance: rise</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">They fade in while rising a short way into place.</p>
+<div class="demo"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fb" style="opacity:0;translate:0px 12px"></i><i class="fb" style="opacity:0;translate:0px 12px"></i><i class="fb" style="opacity:0;translate:0px 12px"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.55;translate:0px 5.4px"></i><i class="fb" style="opacity:0.55;translate:0px 5.4px"></i><i class="fb" style="opacity:0.55;translate:0px 5.4px"></i></div><span>100 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.86;translate:0px 1.6px"></i><i class="fb" style="opacity:0.86;translate:0px 1.6px"></i><i class="fb" style="opacity:0.86;translate:0px 1.6px"></i></div><span>200 ms</span></div><div class="frame"><div><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i></div><span>300 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="entrance:stagger">
+<div class="stage mo pa-brisk fe-fade en-stagger am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Stagger</h3><p class="id">entrance: stagger</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">They rise one after another, a beat apart.</p>
+<div class="demo"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fb" style="opacity:0;translate:0px 12px"></i><i class="fb" style="opacity:0;translate:0px 12px"></i><i class="fb" style="opacity:0;translate:0px 12px"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.63;translate:0px 4.5px"></i><i class="fb" style="opacity:0.51;translate:0px 5.9px"></i><i class="fb" style="opacity:0.36;translate:0px 7.6px"></i></div><span>120 ms</span></div><div class="frame"><div><i class="fb" style="opacity:0.94;translate:0px 0.7px"></i><i class="fb" style="opacity:0.88;translate:0px 1.4px"></i><i class="fb" style="opacity:0.82;translate:0px 2.2px"></i></div><span>240 ms</span></div><div class="frame"><div><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i><i class="fb" style="opacity:1"></i></div><span>360 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="entrance:scroll-reveal">
+<div class="stage mo pa-brisk fe-fade en-scroll-reveal am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Scroll reveal</h3><p class="id">entrance: scroll-reveal</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Each settles into place as it is scrolled into view, never fading from nothing.</p>
+<div class="demo"><div class="scroller" tabindex="0" role="region" aria-label="Scroll this box"><p class="blockrow enter">Plate 1: a celadon bowl</p><p class="blockrow enter">Plate 2: a tea bowl, ash glaze</p><p class="blockrow enter">Plate 3: a jug in tenmoku</p><p class="blockrow enter">Plate 4: two cups, shino</p><p class="blockrow enter">Plate 5: a dish, copper red</p><p class="blockrow enter">Plate 6: a lidded jar</p></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fb" style="translate:0px 22px;scale:0.94"></i><i class="fb" style="translate:0px 22px;scale:0.94"></i><i class="fb" style="translate:0px 22px;scale:0.94"></i></div><span>below</span></div><div class="frame"><div><i class="fb" style="translate:0px 9.9px;scale:0.97"></i><i class="fb" style="translate:0px 9.9px;scale:0.97"></i><i class="fb" style="translate:0px 9.9px;scale:0.97"></i></div><span>entering</span></div><div class="frame"><div><i class="fb" style="translate:0px 3px;scale:0.99"></i><i class="fb" style="translate:0px 3px;scale:0.99"></i><i class="fb" style="translate:0px 3px;scale:0.99"></i></div><span>half in</span></div><div class="frame"><div><i class="fb"></i><i class="fb"></i><i class="fb"></i></div><span>in view</span></div></div>
+</div>
+</section>
+<h2 class="layer">Ambient</h2>
+<p class="layer-note">Motion that runs by itself. It is slow, small, never flashes, stops when the visitor asks for less motion, and the switch at the top of the page pauses it.</p>
+<section class="swatch" data-option="ambient:none">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">ambient: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Nothing moves by itself.</p>
+<div class="demo"><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-lamp"></i></div><span>0 s</span></div><div class="frame"><div><i class="f-lamp"></i></div><span></span></div><div class="frame"><div><i class="f-lamp"></i></div><span></span></div><div class="frame"><div><i class="f-lamp"></i></div><span>always</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="ambient:breathing">
+<div class="stage mo pa-brisk fe-fade en-none am-breathing cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Breathing</h3><p class="id">ambient: breathing</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A lamp's light swells and settles over seven seconds.</p>
+<div class="demo"><div class="amb" aria-hidden="true"><i class="glow"></i><i class="src"></i></div><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-lamp"><b style="opacity:1.00"></b></i></div><span>0 s, 100%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:0.89"></b></i></div><span>1.8 s, 89%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:0.78"></b></i></div><span>3.5 s, 78%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:1.00"></b></i></div><span>7 s, 100%</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="ambient:flicker">
+<div class="stage mo pa-brisk fe-fade en-none am-flicker cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Flicker</h3><p class="id">ambient: flicker</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A flame's light wavers a little, unevenly, about once a second.</p>
+<div class="demo"><div class="amb" aria-hidden="true"><i class="glow"></i><i class="src"></i></div><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-lamp"><b style="opacity:1.00"></b></i></div><span>0 s, 100%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:0.90"></b></i></div><span>0.3 s, 90%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:0.85"></b></i></div><span>1 s, 85%</span></div><div class="frame"><div><i class="f-lamp"><b style="opacity:0.96"></b></i></div><span>1.2 s, 96%</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="ambient:twinkle">
+<div class="stage mo pa-brisk fe-fade en-none am-twinkle cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Twinkle</h3><p class="id">ambient: twinkle</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A few stars dim and brighten slowly, each in its own time.</p>
+<div class="demo"><div class="amb amb-sky" aria-hidden="true"><i class="star" style="left:12%;top:20%;--d:5s;--o:0s"></i><i class="star" style="left:30%;top:60%;--d:7s;--o:-2s"></i><i class="star" style="left:48%;top:28%;--d:5s;--o:-3.5s"></i><i class="star" style="left:66%;top:70%;--d:7s;--o:-1s"></i><i class="star" style="left:82%;top:34%;--d:5s;--o:-4.2s"></i><i class="star" style="left:90%;top:78%;--d:5s;--o:-1.6s"></i></div><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-star" style="opacity:1"></i><i class="f-star" style="opacity:0.6"></i><i class="f-star" style="opacity:0.9"></i></div><span>0 s</span></div><div class="frame"><div><i class="f-star" style="opacity:0.7"></i><i class="f-star" style="opacity:1"></i><i class="f-star" style="opacity:0.5"></i></div><span>2 s</span></div><div class="frame"><div><i class="f-star" style="opacity:0.45"></i><i class="f-star" style="opacity:0.8"></i><i class="f-star" style="opacity:1"></i></div><span>4 s</span></div><div class="frame"><div><i class="f-star" style="opacity:0.8"></i><i class="f-star" style="opacity:0.5"></i><i class="f-star" style="opacity:0.7"></i></div><span>6 s</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="ambient:drift">
+<div class="stage mo pa-brisk fe-fade en-none am-drift cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Drift</h3><p class="id">ambient: drift</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Motes of dust drift slowly across, behind the words.</p>
+<div class="demo"><div class="amb amb-motes" aria-hidden="true"><i class="mote" style="left:5%;top:25%;--d:30s;--o:0s"></i><i class="mote" style="left:20%;top:70%;--d:38s;--o:-9s"></i><i class="mote" style="left:40%;top:40%;--d:34s;--o:-20s"></i><i class="mote" style="left:55%;top:15%;--d:42s;--o:-5s"></i><i class="mote" style="left:70%;top:60%;--d:30s;--o:-14s"></i><i class="mote" style="left:85%;top:35%;--d:36s;--o:-25s"></i></div><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-mote" style="translate:-30px -10px"></i><i class="f-mote" style="translate:-5px 4px"></i><i class="f-mote" style="translate:20px 12px"></i></div><span>0 s</span></div><div class="frame"><div><i class="f-mote" style="translate:-22px -9px"></i><i class="f-mote" style="translate:3px 5px"></i><i class="f-mote" style="translate:28px 13px"></i></div><span>10 s</span></div><div class="frame"><div><i class="f-mote" style="translate:-14px -8px"></i><i class="f-mote" style="translate:11px 6px"></i><i class="f-mote" style="translate:36px 14px"></i></div><span>20 s</span></div><div class="frame"><div><i class="f-mote" style="translate:-6px -7px"></i><i class="f-mote" style="translate:19px 7px"></i><i class="f-mote" style="translate:-26px 15px"></i></div><span>30 s</span></div></div>
+</div>
+</section>
+<h2 class="layer">Clock</h2>
+<p class="layer-note">Motion at the speed of a clock. The real clock is repainted once a minute with no transition, too slowly to be seen: it is not motion, and goes on under reduced motion.</p>
+<section class="swatch" data-option="clock:none">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">clock: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The page looks the same at every hour.</p>
+<div class="demo"><p class="over">Open every Saturday, ten till four.</p></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>06:00</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>12:00</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>18:00</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>23:00</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="clock:real-time">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-real-time tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Real time</h3><p class="id">clock: real-time</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The sky follows the real hour, repainted once a minute with no transition.</p>
+<div class="demo"><div class="clock" data-kind="real-time"><div class="sky" aria-hidden="true"><i class="arc"></i><b class="disc"></b></div><p class="time"><span>Now:</span> <output class="t">--:--</output></p></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:11%;top:67%"></b></i></div><span>07:00</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>12:00</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:89%;top:67%"></b></i></div><span>17:00</span></div><div class="frame"><div><i class="f-sky night"><b class="f-disc moon" style="left:40%;top:17%"></b></i></div><span>23:00</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="clock:game-time">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-game-time tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Game time</h3><p class="id">clock: game-time</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A faster clock of its own: a game minute every real second, with a way to hold it.</p>
+<div class="demo"><div class="clock" data-kind="game-time"><div class="sky" aria-hidden="true"><i class="arc"></i><b class="disc"></b></div><p class="time"><span>Colony time:</span> <output class="t">--:--</output></p><button class="sbtn hold" type="button" aria-pressed="false">Hold it still</button></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:11%;top:67%"></b></i></div><span>+1 min</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:50%;top:15%"></b></i></div><span>+6 min</span></div><div class="frame"><div><i class="f-sky"><b class="f-disc" style="left:89%;top:67%"></b></i></div><span>+11 min</span></div><div class="frame"><div><i class="f-sky night"><b class="f-disc moon" style="left:40%;top:17%"></b></i></div><span>+17 min</span></div></div>
+</div>
+</section>
+<h2 class="layer">Transitions</h2>
+<p class="layer-note">How one view changes to another: a tab, a step, a page. Press the other tab; the frames show the change stopped at four moments.</p>
+<section class="swatch" data-option="transitions:none">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">transitions: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">One view replaces the other at once.</p>
+<div class="demo"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fp old"></i><i class="fp new" style="opacity:0"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0"></i><i class="fp new"></i></div><span></span></div><div class="frame"><div><i class="fp old" style="opacity:0"></i><i class="fp new"></i></div><span></span></div><div class="frame"><div><i class="fp old" style="opacity:0"></i><i class="fp new"></i></div><span>at once</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="transitions:cross-fade">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-cross-fade mm-none" data-tr="cross-fade" data-mm="none">
+<div class="sw-head"><div><h3>Cross-fade</h3><p class="id">transitions: cross-fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The old view fades out as the new one fades in.</p>
+<div class="demo"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fp old"></i><i class="fp new" style="opacity:0"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0.55"></i><i class="fp new" style="opacity:0.45"></i></div><span>100 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0.15"></i><i class="fp new" style="opacity:0.85"></i></div><span>200 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0"></i><i class="fp new" style="opacity:1"></i></div><span>300 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="transitions:slide">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-slide mm-none" data-tr="slide" data-mm="none">
+<div class="sw-head"><div><h3>Slide</h3><p class="id">transitions: slide</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The new view comes a short way in from the side it lies on.</p>
+<div class="demo"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fp old"></i><i class="fp new" style="opacity:0;translate:12px 0px"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0.55;translate:-5.4px 0px"></i><i class="fp new" style="opacity:0.45;translate:6.6px 0px"></i></div><span>100 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0.15;translate:-10.2px 0px"></i><i class="fp new" style="opacity:0.85;translate:1.8px 0px"></i></div><span>200 ms</span></div><div class="frame"><div><i class="fp old" style="opacity:0;translate:-12px 0px"></i><i class="fp new" style="opacity:1"></i></div><span>300 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="transitions:grow">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-grow mm-none" data-tr="grow" data-mm="none">
+<div class="sw-head"><div><h3>Grow</h3><p class="id">transitions: grow</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">The thing chosen grows into its own view.</p>
+<div class="demo"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">All items</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">The lamp</button></div><div class="panels"><div class="panel" data-p="0"><div class="minis"><div class="mini pick">Lamp</div><div class="mini">Kettle</div><div class="mini">Radio</div></div></div><div class="panel detail" data-p="1" hidden><b>Lamp</b><span>Brass, 1930s. The switch sticks; the cord is worn.</span></div></div></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="fp new" style="translate:-14px -8px;scale:0.35"></i></div><span>0 ms</span></div><div class="frame"><div><i class="fp new" style="translate:-7.7px -4.4px;scale:0.64"></i></div><span>100 ms</span></div><div class="frame"><div><i class="fp new" style="translate:-2.1px -1.2px;scale:0.9"></i></div><span>200 ms</span></div><div class="frame"><div><i class="fp new"></i></div><span>300 ms</span></div></div>
+</div>
+</section>
+<h2 class="layer">Moments</h2>
+<p class="layer-note">Motion that marks something done or something to notice. Press the button; the frames show the moment stopped.</p>
+<section class="swatch" data-option="moments:none">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">moments: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Something done is shown in words, with no motion.</p>
+<div class="demo"><div class="signup"><ol class="names"><li><span class="who">Ade Okafor</span></li><li><span class="who">Mei Lin</span></li></ol><button class="btn" type="button" data-moment>Add my name</button><p class="said" role="status"></p></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-line"></i><i class="f-line"></i></div><span></span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i></div><span></span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i></div><span></span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i><i class="f-line new"></i></div><span>at once</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="moments:write-in">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-write-in" data-tr="none" data-mm="write-in">
+<div class="sw-head"><div><h3>Write in</h3><p class="id">moments: write-in</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A name added to the sheet is written in, left to right.</p>
+<div class="demo"><div class="signup"><ol class="names"><li><span class="who">Ade Okafor</span></li><li><span class="who">Mei Lin</span></li></ol><button class="btn" type="button" data-moment>Add my name</button><p class="said" role="status"></p></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-line"></i><i class="f-line"></i><i class="f-line new" style="width:4%"></i></div><span>0 ms</span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i><i class="f-line new" style="width:33%"></i></div><span>250 ms</span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i><i class="f-line new" style="width:66%"></i></div><span>500 ms</span></div><div class="frame"><div><i class="f-line"></i><i class="f-line"></i><i class="f-line new" style="width:80%"></i></div><span>750 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="moments:celebrate">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-celebrate" data-tr="none" data-mm="celebrate">
+<div class="sw-head"><div><h3>Celebrate</h3><p class="id">moments: celebrate</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Once, on success, a handful of paper pieces burst and fall.</p>
+<div class="demo"><div class="signup"><button class="btn" type="button" data-moment>Sign me up</button><p class="said" role="status"></p></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-bit"></i><i class="f-bit"></i><i class="f-bit"></i><i class="f-bit"></i><i class="f-bit"></i><i class="f-bit"></i><i class="f-dot"></i></div><span>0 ms</span></div><div class="frame"><div><i class="f-bit" style="opacity:0.96;translate:-27.3px -3.5px;rotate:-70deg"></i><i class="f-bit" style="opacity:0.96;translate:-14.5px -11.9px;rotate:70deg"></i><i class="f-bit" style="opacity:0.96;translate:9.9px -13px;rotate:-70deg"></i><i class="f-bit" style="opacity:0.96;translate:25.1px -6px;rotate:70deg"></i><i class="f-bit" style="opacity:0.96;translate:27.3px 7.4px;rotate:-70deg"></i><i class="f-bit" style="opacity:0.96;translate:-27.3px 7.4px;rotate:70deg"></i><i class="f-dot"></i></div><span>233 ms</span></div><div class="frame"><div><i class="f-bit" style="opacity:0.66;translate:-36.6px 0.5px;rotate:-140deg"></i><i class="f-bit" style="opacity:0.66;translate:-19.5px -10.7px;rotate:140deg"></i><i class="f-bit" style="opacity:0.66;translate:13.3px -12.3px;rotate:-140deg"></i><i class="f-bit" style="opacity:0.66;translate:33.7px -2.9px;rotate:140deg"></i><i class="f-bit" style="opacity:0.66;translate:36.6px 15.2px;rotate:-140deg"></i><i class="f-bit" style="opacity:0.66;translate:-36.6px 15.2px;rotate:140deg"></i><i class="f-dot"></i></div><span>467 ms</span></div><div class="frame"><div><i class="f-bit" style="opacity:0;translate:-37.6px 8.5px;rotate:-200deg"></i><i class="f-bit" style="opacity:0;translate:-20px -3.1px;rotate:200deg"></i><i class="f-bit" style="opacity:0;translate:13.7px -4.7px;rotate:-200deg"></i><i class="f-bit" style="opacity:0;translate:34.6px 5px;rotate:200deg"></i><i class="f-bit" style="opacity:0;translate:37.6px 23.5px;rotate:-200deg"></i><i class="f-bit" style="opacity:0;translate:-37.6px 23.5px;rotate:200deg"></i><i class="f-dot"></i></div><span>700 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="moments:secret-swap">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-secret-swap" data-tr="none" data-mm="secret-swap">
+<div class="sw-head"><div><h3>Secret swap</h3><p class="id">moments: secret-swap</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A secret code swaps the whole look, cross-fading.</p>
+<div class="demo"><div class="look"><b class="emblem" aria-hidden="true"></b><span>The everyday look.</span><button class="sbtn" type="button" data-moment>Say the secret word</button></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-look a" style="opacity:1.00"></i><i class="f-look b" style="opacity:0.00"></i></div><span>0 ms</span></div><div class="frame"><div><i class="f-look a" style="opacity:0.55"></i><i class="f-look b" style="opacity:0.45"></i></div><span>160 ms</span></div><div class="frame"><div><i class="f-look a" style="opacity:0.15"></i><i class="f-look b" style="opacity:0.85"></i></div><span>320 ms</span></div><div class="frame"><div><i class="f-look a" style="opacity:0.00"></i><i class="f-look b" style="opacity:1.00"></i></div><span>480 ms</span></div></div>
+</div>
+</section>
+<section class="swatch" data-option="moments:nudge">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-none mm-nudge" data-tr="none" data-mm="nudge">
+<div class="sw-head"><div><h3>Nudge</h3><p class="id">moments: nudge</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A ring pulses twice round the next thing to press, then stops.</p>
+<div class="demo"><div class="signup"><p class="hint">Your basket is ready.</p><button class="btn nudge-me" type="button">Go to checkout</button><button class="sbtn" type="button" data-moment>Nudge</button></div></div>
+<div class="frames" aria-hidden="true"><div class="frame"><div><i class="f-ring" style="scale:1.00;opacity:0.90"></i><i class="f-dot"></i></div><span>0 s</span></div><div class="frame"><div><i class="f-ring" style="scale:1.12;opacity:0.60"></i><i class="f-dot"></i></div><span>0.4 s</span></div><div class="frame"><div><i class="f-ring" style="scale:1.23;opacity:0.31"></i><i class="f-dot"></i></div><span>0.8 s</span></div><div class="frame"><div><i class="f-ring" style="scale:1.35;opacity:0.00"></i><i class="f-dot"></i></div><span>1.2 s</span></div></div>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks; any layer not named is at its default (brisk, fade, nothing else). Play shows each one again.</p>
+<section class="swatch" data-option="start:none">
+<div class="stage mo pa-still fe-none en-none am-none cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>None</h3><p class="id">pace: still; feedback: none</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Nothing moves at all.</p>
+<div class="demo"><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:professional">
+<div class="stage mo pa-brisk fe-fade en-none am-none cl-none tr-cross-fade mm-none" data-tr="cross-fade" data-mm="none">
+<div class="sw-head"><div><h3>Professional</h3><p class="id">pace: brisk; feedback: fade; transitions: cross-fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Quick, plain answers; nothing moves by itself.</p>
+<div class="demo"><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:warm">
+<div class="stage mo pa-gentle fe-lift en-rise am-none cl-none tr-none mm-celebrate" data-tr="none" data-mm="celebrate">
+<div class="sw-head"><div><h3>Warm</h3><p class="id">pace: gentle; feedback: lift; entrance: rise; moments: celebrate</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Cards lift to the hand; a small party when you sign up.</p>
+<div class="demo"><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="signup"><button class="btn" type="button" data-moment>Sign me up</button><p class="said" role="status"></p></div></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:artistic">
+<div class="stage mo pa-slow fe-fade en-scroll-reveal am-none cl-none tr-cross-fade mm-none" data-tr="cross-fade" data-mm="none">
+<div class="sw-head"><div><h3>Artistic</h3><p class="id">pace: slow; feedback: fade; entrance: scroll-reveal; transitions: cross-fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Work arrives slowly as you scroll to it.</p>
+<div class="demo"><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="stage mo pa-slow fe-fade en-fade am-breathing cl-none tr-cross-fade mm-none" data-tr="cross-fade" data-mm="none">
+<div class="sw-head"><div><h3>Sorcery</h3><p class="id">pace: slow; feedback: fade; entrance: fade; ambient: breathing; transitions: cross-fade</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A lamp that breathes in a dark, slow room.</p>
+<div class="demo"><div class="amb" aria-hidden="true"><i class="glow"></i><i class="src"></i></div><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="stage mo pa-brisk fe-squeeze en-none am-twinkle cl-none tr-cross-fade mm-secret-swap" data-tr="cross-fade" data-mm="secret-swap">
+<div class="sw-head"><div><h3>Gilded dark</h3><p class="id">pace: brisk; feedback: squeeze; ambient: twinkle; transitions: cross-fade; moments: secret-swap</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Quick, solid controls; sparkles; a secret look.</p>
+<div class="demo"><div class="amb amb-sky" aria-hidden="true"><i class="star" style="left:12%;top:20%;--d:5s;--o:0s"></i><i class="star" style="left:30%;top:60%;--d:7s;--o:-2s"></i><i class="star" style="left:48%;top:28%;--d:5s;--o:-3.5s"></i><i class="star" style="left:66%;top:70%;--d:7s;--o:-1s"></i><i class="star" style="left:82%;top:34%;--d:5s;--o:-4.2s"></i><i class="star" style="left:90%;top:78%;--d:5s;--o:-1.6s"></i></div><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="views"><div class="tabs" role="group" aria-label="Views"><button class="sbtn tab" type="button" data-tab="0" aria-pressed="true">Stalls</button><button class="sbtn tab" type="button" data-tab="1" aria-pressed="false">Map</button></div><div class="panels"><div class="panel" data-p="0"><b>Stalls</b><span>Forty stalls along the river, open from six.</span></div><div class="panel" data-p="1" hidden><b>Map</b><span>Start at the bridge; the food is at the far end.</span></div></div></div><div class="look"><b class="emblem" aria-hidden="true"></b><span>The everyday look.</span><button class="sbtn" type="button" data-moment>Say the secret word</button></div></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="stage mo pa-gentle fe-lift en-stagger am-breathing cl-none tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Lantern fair</h3><p class="id">pace: gentle; feedback: lift; entrance: stagger; ambient: breathing</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">A breathing lantern over stalls that come in one by one.</p>
+<div class="demo"><div class="amb" aria-hidden="true"><i class="glow"></i><i class="src"></i></div><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="stage mo pa-gentle fe-fade en-none am-twinkle cl-real-time tr-none mm-none" data-tr="none" data-mm="none">
+<div class="sw-head"><div><h3>Almanac plate</h3><p class="id">pace: gentle; feedback: fade; ambient: twinkle; clock: real-time</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Charts under the visitor's own sky, a star or two twinkling.</p>
+<div class="demo"><div class="amb amb-sky" aria-hidden="true"><i class="star" style="left:12%;top:20%;--d:5s;--o:0s"></i><i class="star" style="left:30%;top:60%;--d:7s;--o:-2s"></i><i class="star" style="left:48%;top:28%;--d:5s;--o:-3.5s"></i><i class="star" style="left:66%;top:70%;--d:7s;--o:-1s"></i><i class="star" style="left:82%;top:34%;--d:5s;--o:-4.2s"></i><i class="star" style="left:90%;top:78%;--d:5s;--o:-1.6s"></i></div><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="clock" data-kind="real-time"><div class="sky" aria-hidden="true"><i class="arc"></i><b class="disc"></b></div><p class="time"><span>Now:</span> <output class="t">--:--</output></p></div><button class="btn" type="button">Press me</button></div></div></div>
+
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="stage mo pa-brisk fe-press-in en-none am-none cl-none tr-none mm-write-in" data-tr="none" data-mm="write-in">
+<div class="sw-head"><div><h3>Repair cafe</h3><p class="id">pace: brisk; feedback: press-in; entrance: none; moments: write-in</p></div><button class="sbtn play" type="button">Play</button></div>
+<p class="line">Buttons that press in; your name written on the sheet.</p>
+<div class="demo"><div class="start-grid"><div class="cards"><div class="card enter" style="--i:0"><b>Lamps</b><span>Bring it in</span></div><div class="card enter" style="--i:1"><b>Kettles</b><span>Bring it in</span></div><div class="card enter" style="--i:2"><b>Bicycles</b><span>Bring it in</span></div></div><div class="start-side"><div class="signup"><ol class="names"><li><span class="who">Ade Okafor</span></li><li><span class="who">Mei Lin</span></li></ol><button class="btn" type="button" data-moment>Add my name</button><p class="said" role="status"></p></div></div></div></div>
+
+</div>
+</section>
+
+</main>
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+const still = (stage) => reduce.matches || getComputedStyle(stage).getPropertyValue('--dur-long').trim() === '0s';
+const ms = (v) => (v.trim().endsWith('ms') ? parseFloat(v) : parseFloat(v) * 1000) || 0;
+function sayMotion() {
+  document.getElementById('motion-said').textContent = reduce.matches
+    ? 'Your device asks for less motion: every swatch is an instant change, and nothing moves by itself.'
+    : 'Your device allows motion. The switch pauses everything that moves by itself.';
+}
+reduce.addEventListener('change', sayMotion);
+
+/* ---- the clock: the disc's place for an hour, rising at 6 and setting at 18; the moon takes the night ---- */
+function sunXY(h) {
+  const day = h >= 6 && h < 18, a = day ? (h - 6) / 12 : ((h - 18 + 24) % 24) / 12;
+  return [50 - 40 * Math.cos(Math.PI * a), 85 - 70 * Math.sin(Math.PI * a), day];
+}
+const pad = (n) => String(n).padStart(2, '0');
+function paintClock(clk, h) {
+  const [x, y, day] = sunXY(h), disc = clk.querySelector('.disc');
+  disc.style.setProperty('--x', x.toFixed(2)); disc.style.setProperty('--y', y.toFixed(2));
+  clk.classList.toggle('is-night', !day);
+  const m = Math.floor(h * 60) % 1440;
+  clk.querySelector('.t').textContent = (clk.dataset.kind === 'game-time' ? 'Day ' + (1 + Math.floor((clk.mins || 0) / 1440)) + ', ' : '') + pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+}
+function hourNow() {   // ?t=21:40 sets the clock, for pictures and checks
+  const t = new URLSearchParams(location.search).get('t'), m = t && t.match(/^(\d{1,2}):(\d{2})$/);
+  if (m) return +m[1] + m[2] / 60;
+  const d = new Date(); return d.getHours() + d.getMinutes() / 60;
+}
+function paintAll() {
+  for (const clk of document.querySelectorAll('.clock[data-kind="real-time"]')) if (!clk.running) paintClock(clk, hourNow());
+}
+function runDay(clk) {   // Play: a day in six seconds, in twenty-minute jumps, so the path can be seen. Never under reduced motion.
+  if (reduce.matches || clk.running) return;
+  const start = hourNow(); let k = 0; clk.running = true;
+  const timer = setInterval(() => {
+    k += 1; paintClock(clk, (start + k / 3) % 24);
+    if (k >= 72) { clearInterval(timer); clk.running = false; paintClock(clk, hourNow()); }
+  }, 80);
+}
+function tickGames() {   // a game minute each real second, unless held (by its own button or the page's pause switch)
+  const paused = document.documentElement.dataset.motion === 'paused';
+  for (const clk of document.querySelectorAll('.clock[data-kind="game-time"]')) {
+    if (clk.mins === undefined) clk.mins = 6 * 60;
+    if (!paused && clk.querySelector('.hold').getAttribute('aria-pressed') !== 'true') clk.mins += 1;
+    paintClock(clk, (clk.mins % 1440) / 60);
+  }
+}
+
+/* ---- transitions: a view transition on the one panel, when the browser has them and motion is allowed ---- */
+function switchView(stage, to) {
+  const panels = [...stage.querySelectorAll('.panel')], tabs = [...stage.querySelectorAll('.tab')];
+  const from = panels.findIndex((p) => !p.hidden);
+  if (to === undefined) to = 1 - from;
+  if (to === from) return;
+  const swap = () => { panels.forEach((p, j) => { p.hidden = j !== to; }); tabs.forEach((t, j) => t.setAttribute('aria-pressed', String(j === to))); };
+  const kind = stage.dataset.tr;
+  if (kind === 'none' || still(stage) || !document.startViewTransition) return swap();
+  const root = document.documentElement, cs = getComputedStyle(stage);
+  root.style.setProperty('--vt-dur', cs.getPropertyValue('--dur-long'));
+  root.style.setProperty('--vt-ease', cs.getPropertyValue('--ease-in-out'));
+  root.style.setProperty('--vt-dir', to > from ? '1' : '-1');
+  root.dataset.vt = kind;
+  let named, t;
+  if (kind === 'grow') {
+    const mini = stage.querySelector('.mini.pick'), detail = stage.querySelector('.panel.detail');
+    const a = from === 0 ? mini : detail, b = from === 0 ? detail : mini;
+    a.style.viewTransitionName = 'mo-grow'; named = [a, b];
+    t = document.startViewTransition(() => { swap(); a.style.viewTransitionName = ''; b.style.viewTransitionName = 'mo-grow'; });
+  } else {
+    const box = stage.querySelector('.panels'); box.style.viewTransitionName = 'mo-panel'; named = [box];
+    t = document.startViewTransition(swap);
+  }
+  t.ready.catch(() => {});   // a second change before this one starts skips it: that is fine
+  t.finished.finally(() => { named.forEach((n) => { n.style.viewTransitionName = ''; }); delete root.dataset.vt; });
+}
+
+/* ---- moments ---- */
+const BITS = ['--accent', '--band-1', '--band-2', '--mark', '--warning'];
+function burst(holder, from) {
+  const hb = holder.getBoundingClientRect(), fb = from.getBoundingClientRect();
+  const x0 = fb.left - hb.left + fb.width / 2, y0 = fb.top - hb.top + fb.height / 2;
+  for (let k = 0; k < 14; k++) {
+    const bit = document.createElement('i'); bit.className = 'bit'; bit.setAttribute('aria-hidden', 'true');
+    bit.style.left = x0 + 'px'; bit.style.top = y0 + 'px'; bit.style.background = 'var(' + BITS[k % BITS.length] + ')';
+    holder.append(bit);
+    const a = Math.PI * (1.05 + 0.9 * k / 13), r = 60 + 30 * ((k * 7) % 5) / 4, dx = Math.cos(a) * r, dy = Math.sin(a) * r * 0.8, spin = (k % 2 ? 1 : -1) * (180 + 40 * (k % 4));
+    bit.animate([{ translate: '0 0', rotate: '0deg', opacity: 1 },
+                 { translate: dx + 'px ' + dy + 'px', rotate: spin / 2 + 'deg', opacity: 1, offset: 0.55 },
+                 { translate: dx * 1.15 + 'px ' + (dy + 45) + 'px', rotate: spin + 'deg', opacity: 0 }],
+                { duration: 900, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }).finished.then(() => bit.remove(), () => bit.remove());
+  }
+}
+function moment(stage) {
+  const kind = stage.dataset.mm, live = !still(stage);
+  if (kind === 'none' || kind === 'write-in') {
+    const list = stage.querySelector('.names'); if (!list) return;
+    list.querySelectorAll('.new').forEach((n) => n.remove());
+    const li = document.createElement('li'), who = document.createElement('span');
+    li.className = 'new'; who.className = 'who'; who.textContent = 'Rosa Martins'; li.append(who);
+    if (kind === 'write-in' && live) { who.classList.add('writing'); who.addEventListener('animationend', () => who.classList.remove('writing'), { once: true }); }
+    list.append(li);
+    stage.querySelector('.said').textContent = 'Thank you, Rosa: you are on the list.';
+  } else if (kind === 'celebrate') {
+    const holder = stage.querySelector('.signup'), btn = holder.querySelector('[data-moment]');
+    holder.querySelector('.said').textContent = 'You are signed up. See you on Saturday.';
+    if (live) burst(holder, btn);
+  } else if (kind === 'secret-swap') {
+    const look = stage.querySelector('.look');
+    const swap = () => { look.classList.toggle('b'); look.querySelector('span').textContent = look.classList.contains('b') ? 'The secret look.' : 'The everyday look.'; };
+    if (!live || !document.startViewTransition) return swap();
+    const root = document.documentElement, cs = getComputedStyle(stage);
+    root.style.setProperty('--vt-dur', ms(cs.getPropertyValue('--dur-long')) * 1.6 + 'ms');
+    root.style.setProperty('--vt-ease', cs.getPropertyValue('--ease-in-out'));
+    look.style.viewTransitionName = 'mo-look';
+    const t = document.startViewTransition(swap); t.ready.catch(() => {});
+    t.finished.finally(() => { look.style.viewTransitionName = ''; });
+  } else if (kind === 'nudge') {
+    const btn = stage.querySelector('.nudge-me');
+    btn.classList.remove('nudging'); void btn.offsetWidth; btn.classList.add('nudging');
+    if (live) btn.addEventListener('animationend', () => btn.classList.remove('nudging'), { once: true });
+    else setTimeout(() => btn.classList.remove('nudging'), 3000);
+  }
+}
+
+/* ---- Play: everything in the swatch again ---- */
+function play(stage) {
+  stage.classList.remove('go'); void stage.offsetWidth; stage.classList.add('go');
+  for (const el of stage.querySelectorAll('.amb *')) for (const a of el.getAnimations()) a.currentTime = 0;
+  const sc = stage.querySelector('.scroller');
+  if (sc) { sc.scrollTo({ top: 0, behavior: 'instant' }); if (!still(stage)) setTimeout(() => sc.scrollTo({ top: sc.scrollHeight, behavior: 'smooth' }), 80); }
+  if (stage.querySelector('.views')) switchView(stage);
+  if (stage.querySelector('[data-moment]')) moment(stage);
+  const clk = stage.querySelector('.clock[data-kind="real-time"]'); if (clk) runDay(clk);
+  const fb = stage.querySelector('.fb-row');
+  if (fb) {   // point at the button and the card, press, let go: the option's own states, at its own pace
+    const els = [...fb.querySelectorAll('.btn, .card')], gap = Math.max(450, ms(getComputedStyle(stage).getPropertyValue('--dur-medium')) * 3);
+    const set = (h, p) => els.forEach((el) => { el.classList.toggle('is-hover', h); el.classList.toggle('is-press', p); });
+    set(true, false); setTimeout(() => set(true, true), gap); setTimeout(() => set(true, false), gap * 1.6); setTimeout(() => set(false, false), gap * 2.6);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a'); if (!el) return;
+  const stage = el.closest('.stage');
+  if (el.matches('a.link-card')) { e.preventDefault(); return; }
+  if (el.id === 'pause-all') {
+    const on = el.getAttribute('aria-pressed') !== 'true';
+    el.setAttribute('aria-pressed', String(on)); el.textContent = on ? 'Let things move' : 'Pause moving things';
+    if (on) document.documentElement.dataset.motion = 'paused'; else delete document.documentElement.dataset.motion;
+  } else if (el.matches('.play')) play(stage);
+  else if (el.matches('.tab')) switchView(stage, +el.dataset.tab);
+  else if (el.matches('[data-moment]')) moment(stage);
+  else if (el.matches('.hold')) { const on = el.getAttribute('aria-pressed') !== 'true'; el.setAttribute('aria-pressed', String(on)); el.textContent = on ? 'Let it run' : 'Hold it still'; }
+});
+function start() { sayMotion(); paintAll(); tickGames(); setInterval(paintAll, 60000); setInterval(tickGames, 1000); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+
+/* ---- the test: every option drawn on both pages (swatchTest), and the rules of motion proved in the page ---- */
+const MOVES = new Set(['opacity', 'transform', 'translate', 'scale', 'rotate']);
+const KEYS_NOT_PROPS = new Set(['offset', 'easing', 'composite', 'computedOffset']);
+function textOf(stage) {
+  return [...stage.querySelectorAll('h3, p, b, span, button, a, li, output')].filter((el) => !el.closest('[hidden], .frames, .amb') && el.textContent.trim());
+}
+function seen(el, stop) {   // the opacity it is really drawn at: its own times every holder's
+  let o = 1;
+  for (let n = el; n && n !== stop; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity);
+  return o;
+}
+function hidingRules() {   // a rule that hides content (opacity 0) outside an animation or a decorative ::before/::after
+  const out = [];
+  const walk = (rules) => { for (const r of rules) {
+    if (r.cssRules && !(r instanceof CSSKeyframesRule)) walk(r.cssRules);
+    if (r.style && r.selectorText && r.style.opacity === '0' && !/::?(before|after)|view-transition/.test(r.selectorText)) out.push(r.selectorText);
+  } };
+  for (const s of document.styleSheets) { try { walk(s.cssRules); } catch (e) { /* another origin */ } }
+  return out;
+}
+function flashRate(a) {   // dips in brightness per second, for an animation that repeats for ever
+  const t = a.effect.getComputedTiming(), kf = a.effect.getKeyframes();
+  let vals = kf.map((k) => (k.opacity === undefined ? 1 : parseFloat(k.opacity)));
+  if (!kf.length || kf[0].computedOffset > 0) vals.unshift(1);
+  if (kf.length && kf[kf.length - 1].computedOffset < 1) vals.push(1);
+  let cycle = t.duration;
+  if (/alternate/.test(t.direction)) { vals = vals.concat(vals.slice(0, -1).reverse()); cycle *= 2; }
+  const n = vals.length - 1; let dips = 0;   // the last value is the first again
+  for (let i = 0; i < n; i++) { const prev = vals[(i - 1 + n) % n], next = vals[i + 1]; if (vals[i] < prev && vals[i] <= next) dips++; }
+  return dips / (cycle / 1000);
+}
+async function motionTest() {
+  const base = await swatchTest();
+  const problems = [], stages = [...document.querySelectorAll('.stage')];
+  const name = (s) => s.closest('.swatch').dataset.option + ' (' + s.closest('.swatch').dataset.mode + ')';
+  // 1. content is there before any motion runs: no rule hides it, and with the motion classes off it is fully drawn
+  for (const sel of hidingRules()) problems.push('a rule hides content: ' + sel);
+  const played = stages.filter((s) => s.classList.contains('go'));
+  stages.forEach((s) => s.classList.remove('go'));
+  for (const s of stages) for (const el of textOf(s)) if (seen(el, s.parentElement) < 0.99) { problems.push('not visible before motion: ' + name(s)); break; }
+  played.forEach((s) => s.classList.add('go'));
+  // 2. only opacity and transforms move; nothing flashes more than three times a second; the switch pauses everything that loops
+  if (window.__libraryRunner) for (const s of stages) play(s);   // every entrance, transition and moment as well (not when a person or an audit opens the page)
+  await sleep(50);
+  const moving = document.getAnimations().filter((a) => a.effect && a.effect.target && !a.effect.pseudoElement?.startsWith('::view-transition'));
+  const props = new Set();
+  for (const a of moving) for (const k of a.effect.getKeyframes()) for (const p of Object.keys(k)) if (!KEYS_NOT_PROPS.has(p)) props.add(p.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase()));
+  for (const s of stages) for (const el of [s, ...s.querySelectorAll('*')]) for (const pe of [null, '::before', '::after']) {
+    const cs = getComputedStyle(el, pe), names = cs.transitionProperty.split(','), durs = cs.transitionDuration.split(',');
+    names.forEach((p, i) => { if (ms(durs[i % durs.length]) > 0) props.add(p.trim()); });
+  }
+  const wrong = [...props].filter((p) => !MOVES.has(p));
+  if (wrong.length) problems.push('moves more than opacity and transforms: ' + wrong.join(', '));
+  const loops = moving.filter((a) => a.effect.getComputedTiming().iterations === Infinity);
+  const fast = loops.filter((a) => flashRate(a) > 3);
+  if (fast.length) problems.push(fast.length + ' looping animation(s) dip more than three times a second');
+  const pause = document.getElementById('pause-all'); pause.click(); await sleep(50);
+  const still = loops.filter((a) => a.playState !== 'paused').length;
+  if (still) problems.push(still + ' looping animation(s) do not stop with the pause switch');
+  pause.click();
+  // let what was played finish, so nothing from before is still moving when reduced motion is asked for
+  await Promise.race([Promise.allSettled(document.getAnimations().filter((a) => a.effect && a.effect.getComputedTiming().iterations !== Infinity).map((a) => a.finished)), sleep(3000)]);
+  // 3. with reduced motion asked for, every swatch is still: Play everything, and nothing runs with a duration, and every word is fully drawn at once
+  let asked = reduce.matches, note = '';
+  if (!asked && window.__libraryRunner) { await real('motion', 'reduce'); await sleep(80); asked = reduce.matches; }
+  if (asked) {
+    for (const s of stages) play(s);
+    await sleep(20);
+    let running = 0;
+    for (const s of stages) {
+      const live = s.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && a.effect.getComputedTiming().duration > 0);
+      if (live.length) { running += live.length; problems.push('still moving under reduced motion: ' + name(s)); }
+      const slow = [...s.querySelectorAll('*')].some((el) => [null, '::before', '::after'].some((pe) =>
+        getComputedStyle(el, pe).transitionDuration.split(',').some((d) => ms(d) > 0)));
+      if (slow) problems.push('a transition with a duration under reduced motion: ' + name(s));
+      for (const el of textOf(s)) if (seen(el, s.parentElement) < 0.99) { problems.push('not fully drawn under reduced motion: ' + name(s)); break; }
+    }
+    if (document.getAnimations().some((a) => a.playState === 'running' && a.effect?.pseudoElement?.startsWith('::view-transition'))) problems.push('a view transition ran under reduced motion');
+    note = 'under reduced motion every swatch was played: nothing moved, every word fully drawn';
+    if (window.__libraryRunner) { await real('motion', 'no-preference'); await sleep(50); }
+  } else {
+    note = 'reduced motion not checked here (run "blueprint.py library --test", or turn on reduced motion and reload)';
+  }
+  return { pass: base.pass && !problems.length && (asked || !window.__libraryRunner),
+           detail: base.detail + '. Motion: ' + moving.length + ' animations, moving only ' + ([...props].join(', ') || 'nothing')
+             + '; ' + loops.length + ' loops, each under three dips a second and paused by the switch; ' + note
+             + (problems.length ? '. PROBLEMS: ' + [...new Set(problems)].join('; ') : '') };
+}
+run(motionTest);
+</script>
+</body>
+</html>

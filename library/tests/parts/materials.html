@@ -3,234 +3,653 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Materials: the options</title>
+<title>Materials: the layers</title>
+<link rel="stylesheet" href="tokens.css">
 <script src="../harness.js"></script>
+<script src="swatches.js"></script>
 <style>
-  /* The page itself is plain, so that only the swatches carry a material. Every swatch is self-contained:
-     its own class, its own colours as custom properties, nothing shared but the box it sits in. */
-  *, *::before, *::after { box-sizing: border-box; }
-  img, svg { display: block; max-width: 100%; }
-  body { margin: 0; overflow-wrap: break-word; background: #f2f1ee; color: #1d1d1f; font: 1.0625rem/1.5 Georgia, 'Times New Roman', serif; }
-  .page { max-width: 76rem; margin-inline: auto; padding: 1.5rem 1rem 4rem; }
-  .page > h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.15; }
-  .page > p { max-width: 62ch; margin: 0 0 1.5rem; }
-  .book { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
-  @media (min-width: 52rem) { .book { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .swatch { display: flex; flex-direction: column; border: 1px solid #b9b5ac; background: #fff; min-width: 0; }
-  .swatch > h2 { margin: 0; padding: 0.75rem 1rem; font-size: 1.25rem; line-height: 1.2; border-bottom: 1px solid #b9b5ac; }
-  .swatch > h2 code { font: 0.9375rem/1 ui-monospace, Menlo, Consolas, monospace; color: #4a4740; margin-left: 0.5rem; }
-  .stage { flex: 1; position: relative; overflow: clip; padding: 2.5rem 1.25rem; display: grid; place-items: center; }
-  .stage h3 { margin: 0 0 0.5rem; line-height: 1.15; }
-  .stage p { margin: 0 0 1rem; }
-  .stage button { min-height: 44px; padding: 0.5rem 1.25rem; font: inherit; font-weight: 700; cursor: pointer; }
-  .decor { position: absolute; pointer-events: none; }
+/* Built by source/materials.py from source/materials-template.html: edit those, then run python3 materials.py
+   ../materials.html in source/. Every colour below is a shared colour name (tokens.css). Textures are masks: black
+   shapes whose only job is their alpha, coloured by a shared name, so one tile works on every tone. Borders belong to
+   the frames part and shadows to the light part: this page borrows the light part's "warm" start (top left, paper
+   lift) so sheets lie on the page, and draws no border round any sheet. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 54ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 54ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
-  /* ---------------------------------------------------------------- 1. fine paper */
-  .fp { --paper: #f6f1e7; --sheet: #fcf9f3; --ink: #22201c; --ink-soft: #5f5a50; --rule: #d9cfbd; --accent: #a63a2a; --on-accent: #fffaf2;
-    background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0 0.15  0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .fp-sheet { width: min(100%, 26rem); padding: 1.5rem 1.5rem 1.25rem; background: var(--sheet); color: var(--ink); border: 1px solid var(--rule); border-radius: 3px;
-    box-shadow: 0 1px 2px rgb(34 32 28 / 0.08), 0 16px 32px -14px rgb(34 32 28 / 0.25); }
-  .fp-label { margin: 0 0 0.5rem; font-size: 0.875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--rule); padding-bottom: 0.25rem; }
-  .fp-sheet h3 { font-size: 1.75rem; font-weight: 400; }
-  .fp-sheet button { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 3px; }
+/* ---------- the texture tiles: masks drawn once by materials.py (copy them from here) ---------- */
+:root {
+  --tile-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='1' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.2 0 0 0 -1.0'/%3E%3C/filter%3E %3Crect width='260' height='260' filter='url(%23n)'/%3E%3Cg fill='none' stroke='black' stroke-width='0.7' stroke-linecap='round'%3E%3Cpath d='M117.6 145.5Q122.8 143.0 127.9 140.2' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M49.4 209.0Q43.2 213.1 36.2 211.0' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M78.9 23.6Q77.2 15.2 84.1 10.2' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M78.9 23.6Q77.2 15.2 84.1 10.2' transform='translate(0 260)' opacity='0.5'/%3E%3Cpath d='M250.8 170.0Q244.7 171.0 244.9 164.8' transform='translate(-260 0)' opacity='0.7'/%3E%3Cpath d='M250.8 170.0Q244.7 171.0 244.9 164.8' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M16.4 9.3Q23.1 6.8 26.0 0.2' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M16.4 9.3Q23.1 6.8 26.0 0.2' transform='translate(0 260)' opacity='0.5'/%3E%3Cpath d='M16.4 9.3Q23.1 6.8 26.0 0.2' transform='translate(260 0)' opacity='0.5'/%3E%3Cpath d='M16.4 9.3Q23.1 6.8 26.0 0.2' transform='translate(260 260)' opacity='0.5'/%3E%3Cpath d='M114.5 219.0Q107.7 218.2 101.0 217.4' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M22.1 170.2Q14.5 170.1 11.6 177.2' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M22.1 170.2Q14.5 170.1 11.6 177.2' transform='translate(260 0)' opacity='0.35'/%3E%3Cpath d='M184.0 82.0Q188.9 86.1 185.2 91.4' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M104.1 220.1Q95.2 223.2 90.9 231.6' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M55.5 241.0Q59.8 244.7 65.5 244.4' transform='translate(0 -260)' opacity='0.5'/%3E%3Cpath d='M55.5 241.0Q59.8 244.7 65.5 244.4' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M19.0 163.7Q15.8 158.4 20.6 154.6' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M19.0 163.7Q15.8 158.4 20.6 154.6' transform='translate(260 0)' opacity='0.5'/%3E%3Cpath d='M3.9 106.6Q8.3 106.7 10.7 103.1' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M3.9 106.6Q8.3 106.7 10.7 103.1' transform='translate(260 0)' opacity='0.35'/%3E%3Cpath d='M15.6 207.2Q18.8 212.7 21.2 218.6' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M15.6 207.2Q18.8 212.7 21.2 218.6' transform='translate(260 0)' opacity='0.35'/%3E%3Cpath d='M256.2 200.1Q252.0 203.6 246.9 205.2' transform='translate(-260 0)' opacity='0.35'/%3E%3Cpath d='M256.2 200.1Q252.0 203.6 246.9 205.2' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M0.1 224.7Q7.4 228.6 13.1 222.7' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M0.1 224.7Q7.4 228.6 13.1 222.7' transform='translate(260 0)' opacity='0.35'/%3E%3Cpath d='M54.8 102.5Q55.8 94.6 63.1 91.7' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M55.4 67.2Q54.1 61.9 56.9 57.3' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M19.3 54.3Q16.3 52.8 15.3 49.6' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M19.3 54.3Q16.3 52.8 15.3 49.6' transform='translate(260 0)' opacity='0.7'/%3E%3Cpath d='M117.8 249.4Q111.0 246.4 105.0 250.7' transform='translate(0 -260)' opacity='0.35'/%3E%3Cpath d='M117.8 249.4Q111.0 246.4 105.0 250.7' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M163.1 80.8Q161.8 87.7 164.9 94.0' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M192.3 244.5Q191.5 254.0 198.0 260.9' transform='translate(0 -260)' opacity='0.7'/%3E%3Cpath d='M192.3 244.5Q191.5 254.0 198.0 260.9' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M20.4 12.3Q26.7 14.3 29.8 20.0' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M20.4 12.3Q26.7 14.3 29.8 20.0' transform='translate(0 260)' opacity='0.7'/%3E%3Cpath d='M183.2 66.8Q184.3 60.0 189.1 55.0' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M241.6 254.1Q244.6 259.3 249.8 262.4' transform='translate(-260 -260)' opacity='0.7'/%3E%3Cpath d='M241.6 254.1Q244.6 259.3 249.8 262.4' transform='translate(-260 0)' opacity='0.7'/%3E%3Cpath d='M241.6 254.1Q244.6 259.3 249.8 262.4' transform='translate(0 -260)' opacity='0.7'/%3E%3Cpath d='M241.6 254.1Q244.6 259.3 249.8 262.4' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M159.7 72.9Q161.0 66.6 167.1 68.7' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M107.0 64.8Q111.4 66.4 116.0 67.5' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M24.0 36.0Q18.5 35.3 14.5 39.0' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M24.0 36.0Q18.5 35.3 14.5 39.0' transform='translate(260 0)' opacity='0.7'/%3E%3Cpath d='M152.0 36.5Q154.1 41.2 158.0 37.8' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M81.1 8.7Q75.8 10.2 75.4 4.7' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M81.1 8.7Q75.8 10.2 75.4 4.7' transform='translate(0 260)' opacity='0.5'/%3E%3Cpath d='M82.9 259.8Q87.4 264.8 94.1 265.6' transform='translate(0 -260)' opacity='0.7'/%3E%3Cpath d='M82.9 259.8Q87.4 264.8 94.1 265.6' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M191.7 33.7Q195.6 28.5 201.5 31.4' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M234.2 226.5Q225.7 227.2 220.8 234.2' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M3.8 172.2Q4.5 177.4 -0.7 176.4' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M3.8 172.2Q4.5 177.4 -0.7 176.4' transform='translate(260 0)' opacity='0.35'/%3E%3Cpath d='M166.2 258.3Q170.8 252.4 177.0 248.2' transform='translate(0 -260)' opacity='0.7'/%3E%3Cpath d='M166.2 258.3Q170.8 252.4 177.0 248.2' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M180.5 119.0Q174.4 120.3 168.3 121.9' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M7.7 156.3Q3.2 154.9 -1.0 157.4' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M7.7 156.3Q3.2 154.9 -1.0 157.4' transform='translate(260 0)' opacity='0.5'/%3E%3Cpath d='M202.8 171.6Q194.6 173.7 186.1 173.1' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M176.3 52.7Q179.0 60.8 184.5 67.4' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M129.6 62.8Q125.1 64.2 122.1 67.9' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M228.9 99.9Q222.8 100.7 220.4 95.1' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M91.2 232.9Q93.3 238.4 97.7 234.6' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M29.3 122.6Q35.9 117.9 43.6 115.4' transform='translate(0 0)' opacity='0.7'/%3E%3Cpath d='M128.4 82.0Q132.7 74.2 137.9 66.9' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M215.5 72.3Q208.6 69.6 204.4 63.5' transform='translate(0 0)' opacity='0.5'/%3E%3Cpath d='M80.3 205.8Q84.2 205.8 87.9 206.7' transform='translate(0 0)' opacity='0.35'/%3E%3Cpath d='M200.0 69.3Q206.2 62.5 202.8 54.0' transform='translate(0 0)' opacity='0.35'/%3E%3C/g%3E%3C/svg%3E");
+  --tile-formation: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='3' seed='4' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0 0 0 -0.31'/%3E%3C/filter%3E %3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-mottle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.009' numOctaves='4' seed='7' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.3 0 0 0 -0.48'/%3E%3C/filter%3E %3Crect width='520' height='520' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-wood: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='160'%3E%3Cg fill='none' stroke='black' stroke-linecap='round'%3E%3Cpath d='M0 12L16 13L32 13L48 12L64 12L80 12L96 12L112 12L128 12L144 12L160 12L176 12L192 12L208 11L224 10L240 10L256 9L272 9L288 10L304 10L320 10L336 10L352 10L368 10L384 10L400 10L416 10L432 10L448 11L464 12L480 12' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M0 12L16 13L32 13L48 12L64 12L80 12L96 12L112 12L128 12L144 12L160 12L176 12L192 12L208 11L224 10L240 10L256 9L272 9L288 10L304 10L320 10L336 10L352 10L368 10L384 10L400 10L416 10L432 10L448 11L464 12L480 12' transform='translate(0 160)' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M0 15L16 15L32 15L48 15L64 14L80 13L96 13L112 12L128 12L144 13L160 14L176 15L192 15L208 15L224 15L240 15L256 15L272 15L288 15L304 16L320 17L336 17L352 18L368 18L384 17L400 16L416 15L432 15L448 15L464 15L480 15' stroke-width='0.8' opacity='0.55'/%3E%3Cpath d='M0 20L16 20L32 21L48 20L64 20L80 19L96 18L112 18L128 17L144 18L160 18L176 19L192 20L208 20L224 20L240 20L256 20L272 19L288 20L304 20L320 21L336 22L352 22L368 23L384 22L400 22L416 21L432 20L448 20L464 20L480 20' stroke-width='0.8' opacity='0.55'/%3E%3Cpath d='M0 29L16 30L32 30L48 31L64 32L80 32L96 32L112 33L128 33L144 33L160 33L176 33L192 33L208 33L224 33L240 33L256 32L272 32L288 31L304 30L320 30L336 30L352 29L368 29L384 29L400 29L416 29L432 29L448 29L464 29L480 29' stroke-width='0.8' opacity='0.55'/%3E%3Cpath d='M0 37L16 36L32 36L48 37L64 37L80 38L96 39L112 39L128 39L144 38L160 38L176 37L192 36L208 36L224 37L240 37L256 38L272 38L288 37L304 37L320 36L336 35L352 35L368 35L384 36L400 36L416 37L432 38L448 38L464 37L480 37' stroke-width='1.1' opacity='0.55'/%3E%3Cpath d='M0 40L16 40L32 40L48 41L64 41L80 41L96 41L112 41L128 41L144 41L160 42L176 42L192 43L208 43L224 44L240 44L256 44L272 44L288 43L304 43L320 43L336 43L352 43L368 43L384 43L400 42L416 42L432 41L448 41L464 40L480 40' stroke-width='0.6' opacity='0.35'/%3E%3Cpath d='M0 45L16 45L32 45L48 45L64 46L80 47L96 48L112 49L128 49L144 49L160 48L176 47L192 47L208 46L224 47L240 47L256 47L272 47L288 47L304 46L320 45L336 44L352 43L368 43L384 43L400 44L416 45L432 45L448 46L464 45L480 45' stroke-width='1.1' opacity='0.55'/%3E%3Cpath d='M0 58L16 58L32 58L48 58L64 58L80 59L96 59L112 59L128 59L144 59L160 58L176 58L192 57L208 56L224 56L240 56L256 56L272 56L288 56L304 56L320 55L336 55L352 55L368 55L384 55L400 56L416 56L432 57L448 58L464 58L480 58' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M0 61L16 61L32 61L48 62L64 62L80 63L96 63L112 64L128 65L144 65L160 65L176 65L192 65L208 65L224 65L240 65L256 65L272 65L288 64L304 64L320 63L336 63L352 62L368 61L384 61L400 61L416 61L432 61L448 61L464 61L480 61' stroke-width='0.6' opacity='0.35'/%3E%3Cpath d='M0 73L16 73L32 73L48 72L64 72L80 71L96 71L112 71L128 71L144 72L160 72L176 72L192 73L208 73L224 73L240 72L256 70L272 70L288 70L304 70L320 71L336 71L352 71L368 71L384 70L400 70L416 70L432 70L448 71L464 72L480 73' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M0 81L16 81L32 81L48 81L64 81L80 80L96 80L112 80L128 80L144 79L160 79L176 78L192 80L208 82L224 83L240 83L256 80L272 78L288 78L304 78L320 78L336 78L352 78L368 78L384 79L400 80L416 80L432 81L448 81L464 81L480 81' stroke-width='1.1' opacity='0.8'/%3E%3Cpath d='M0 85L16 85L32 85L48 85L64 86L80 87L96 88L112 88L128 88L144 88L160 88L176 89L192 91L208 94L224 97L240 96L256 93L272 91L288 89L304 88L320 87L336 86L352 86L368 86L384 86L400 86L416 86L432 86L448 86L464 86L480 85' stroke-width='1.1' opacity='0.8'/%3E%3Cpath d='M0 93L16 92L32 91L48 90L64 90L80 90L96 90L112 91L128 92L144 93L160 93L176 92L192 90L208 87L224 85L240 86L256 90L272 93L288 95L304 96L320 96L336 96L352 95L368 94L384 93L400 93L416 93L432 93L448 93L464 93L480 93' stroke-width='0.8' opacity='0.8'/%3E%3Cpath d='M0 102L16 102L32 102L48 101L64 101L80 100L96 100L112 100L128 100L144 100L160 100L176 100L192 99L208 97L224 96L240 96L256 98L272 99L288 100L304 101L320 102L336 102L352 102L368 102L384 102L400 102L416 101L432 101L448 102L464 102L480 102' stroke-width='0.6' opacity='0.8'/%3E%3Cpath d='M0 108L16 107L32 106L48 106L64 105L80 106L96 106L112 107L128 107L144 108L160 107L176 106L192 105L208 104L224 104L240 105L256 106L272 107L288 108L304 109L320 108L336 108L352 107L368 107L384 106L400 107L416 107L432 108L448 108L464 108L480 108' stroke-width='0.6' opacity='0.55'/%3E%3Cpath d='M0 110L16 110L32 109L48 109L64 108L80 108L96 108L112 108L128 109L144 109L160 109L176 109L192 109L208 108L224 108L240 109L256 110L272 111L288 111L304 112L320 112L336 112L352 112L368 111L384 111L400 111L416 111L432 111L448 111L464 111L480 110' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M0 114L16 114L32 114L48 114L64 114L80 114L96 113L112 113L128 113L144 112L160 112L176 112L192 113L208 113L224 113L240 113L256 114L272 114L288 114L304 114L320 114L336 115L352 115L368 115L384 116L400 116L416 116L432 115L448 115L464 115L480 114' stroke-width='1.6' opacity='0.8'/%3E%3Cpath d='M0 120L16 120L32 120L48 119L64 119L80 119L96 119L112 120L128 120L144 120L160 120L176 120L192 120L208 119L224 118L240 118L256 118L272 118L288 119L304 119L320 119L336 119L352 118L368 118L384 118L400 118L416 118L432 118L448 119L464 120L480 120' stroke-width='0.6' opacity='0.35'/%3E%3Cpath d='M0 124L16 123L32 124L48 124L64 124L80 124L96 123L112 123L128 123L144 122L160 122L176 122L192 122L208 122L224 122L240 122L256 122L272 122L288 122L304 122L320 122L336 123L352 123L368 123L384 124L400 124L416 124L432 124L448 124L464 124L480 124' stroke-width='0.8' opacity='0.8'/%3E%3Cpath d='M0 130L16 129L32 129L48 129L64 129L80 130L96 130L112 131L128 130L144 130L160 129L176 129L192 128L208 128L224 128L240 128L256 129L272 129L288 129L304 129L320 128L336 128L352 127L368 128L384 128L400 129L416 129L432 130L448 130L464 130L480 130' stroke-width='1.1' opacity='0.8'/%3E%3Cpath d='M0 133L16 133L32 133L48 134L64 134L80 135L96 136L112 136L128 135L144 135L160 134L176 133L192 133L208 133L224 133L240 133L256 133L272 133L288 132L304 132L320 131L336 130L352 130L368 131L384 131L400 132L416 133L432 133L448 133L464 133L480 133' stroke-width='0.8' opacity='0.8'/%3E%3Cpath d='M0 140L16 140L32 139L48 139L64 138L80 138L96 137L112 137L128 137L144 137L160 137L176 137L192 136L208 135L224 135L240 134L256 134L272 135L288 135L304 136L320 136L336 137L352 137L368 137L384 137L400 137L416 137L432 138L448 139L464 139L480 140' stroke-width='0.8' opacity='0.35'/%3E%3Cpath d='M0 149L16 149L32 149L48 149L64 149L80 150L96 150L112 149L128 149L144 148L160 148L176 147L192 147L208 147L224 147L240 147L256 147L272 147L288 147L304 147L320 146L336 146L352 147L368 147L384 148L400 148L416 149L432 149L448 149L464 149L480 149' transform='translate(0 -160)' stroke-width='0.8' opacity='0.35'/%3E%3Cpath d='M0 149L16 149L32 149L48 149L64 149L80 150L96 150L112 149L128 149L144 148L160 148L176 147L192 147L208 147L224 147L240 147L256 147L272 147L288 147L304 147L320 146L336 146L352 147L368 147L384 148L400 148L416 149L432 149L448 149L464 149L480 149' stroke-width='0.8' opacity='0.35'/%3E%3Cpath d='M0 154L16 154L32 154L48 154L64 154L80 154L96 153L112 153L128 152L144 151L160 151L176 150L192 150L208 150L224 150L240 150L256 150L272 150L288 150L304 150L320 150L336 151L352 151L368 152L384 153L400 153L416 154L432 154L448 154L464 154L480 154' transform='translate(0 -160)' stroke-width='1.1' opacity='0.55'/%3E%3Cpath d='M0 154L16 154L32 154L48 154L64 154L80 154L96 153L112 153L128 152L144 151L160 151L176 150L192 150L208 150L224 150L240 150L256 150L272 150L288 150L304 150L320 150L336 151L352 151L368 152L384 153L400 153L416 154L432 154L448 154L464 154L480 154' stroke-width='1.1' opacity='0.55'/%3E%3Cpath d='M0 154L16 153L32 154L48 154L64 154L80 155L96 155L112 155L128 154L144 153L160 153L176 153L192 154L208 154L224 155L240 156L256 157L272 156L288 156L304 156L320 155L336 155L352 155L368 156L384 157L400 157L416 157L432 156L448 156L464 155L480 154' transform='translate(0 -160)' stroke-width='0.8' opacity='0.55'/%3E%3Cpath d='M0 154L16 153L32 154L48 154L64 154L80 155L96 155L112 155L128 154L144 153L160 153L176 153L192 154L208 154L224 155L240 156L256 157L272 156L288 156L304 156L320 155L336 155L352 155L368 156L384 157L400 157L416 157L432 156L448 156L464 155L480 154' stroke-width='0.8' opacity='0.55'/%3E%3Cpath d='M0 167L16 167L32 167L48 168L64 168L80 168L96 167L112 167L128 167L144 166L160 165L176 165L192 165L208 165L224 165L240 165L256 165L272 165L288 164L304 164L320 164L336 165L352 165L368 165L384 166L400 167L416 167L432 167L448 167L464 167L480 167' transform='translate(0 -160)' stroke-width='1.1' opacity='0.35'/%3E%3Cpath d='M0 167L16 167L32 167L48 168L64 168L80 168L96 167L112 167L128 167L144 166L160 165L176 165L192 165L208 165L224 165L240 165L256 165L272 165L288 164L304 164L320 164L336 165L352 165L368 165L384 166L400 167L416 167L432 167L448 167L464 167L480 167' stroke-width='1.1' opacity='0.35'/%3E%3C/g%3E%3Cellipse cx='227' cy='88' rx='9' ry='4' fill='black' opacity='0.5'/%3E%3Cellipse cx='227' cy='88' rx='15' ry='7' fill='none' stroke='black' opacity='0.4'/%3E%3C/svg%3E");
+  --tile-brushed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='240'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.75' numOctaves='2' seed='9' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2.6 0 0 0 -1.05'/%3E%3C/filter%3E %3Crect width='480' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-speckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.42' numOctaves='2' seed='5' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 9.0 0 0 0 -6.2'/%3E%3C/filter%3E %3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-scuff: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cg stroke='black' stroke-width='0.8' stroke-linecap='round'%3E%3Cpath d='M211.4 190.4L217.1 164.7' opacity='0.4'/%3E%3Cpath d='M144.6 7.3L154.6 30.0' opacity='0.9'/%3E%3Cpath d='M154.4 170.6L166.8 168.7' opacity='0.4'/%3E%3Cpath d='M297.1 278.1L307.1 277.1' opacity='0.4'/%3E%3Cpath d='M40.3 204.3L56.7 201.8' opacity='0.6'/%3E%3Cpath d='M154.6 129.0L175.2 123.9' opacity='0.4'/%3E%3Cpath d='M190.2 12.3L205.8 9.2' opacity='0.6'/%3E%3Cpath d='M121.6 58.5L133.1 60.1' opacity='0.9'/%3E%3Cpath d='M237.7 97.1L261.9 109.6' opacity='0.9'/%3E%3Cpath d='M281.9 170.9L294.0 172.6' opacity='0.9'/%3E%3Cpath d='M294.8 241.4L317.2 231.8' opacity='0.4'/%3E%3Cpath d='M244.4 121.7L264.7 140.6' opacity='0.9'/%3E%3Cpath d='M208.4 230.2L231.3 223.1' opacity='0.4'/%3E%3Cpath d='M239.2 90.5L245.9 82.8' opacity='0.6'/%3E%3Cpath d='M297.2 270.8L326.3 271.7' opacity='0.6'/%3E%3Cpath d='M101.3 197.9L121.3 193.3' opacity='0.9'/%3E%3Cpath d='M23.1 154.4L31.2 147.6' opacity='0.6'/%3E%3Cpath d='M294.0 6.8L314.3 -0.4' opacity='0.9'/%3E%3Cpath d='M71.1 133.1L79.3 112.4' opacity='0.4'/%3E%3Cpath d='M29.5 75.3L55.5 65.0' opacity='0.9'/%3E%3Cpath d='M162.1 124.7L164.8 114.9' opacity='0.6'/%3E%3Cpath d='M242.9 22.9L261.7 13.2' opacity='0.4'/%3E%3Cpath d='M115.9 281.6L121.8 255.4' opacity='0.9'/%3E%3Cpath d='M183.4 17.6L208.3 31.9' opacity='0.6'/%3E%3Cpath d='M85.3 119.6L100.9 109.3' opacity='0.6'/%3E%3Cpath d='M168.2 85.1L191.4 90.2' opacity='0.6'/%3E%3Cpath d='M8.1 231.7L17.8 217.8' opacity='0.9'/%3E%3Cpath d='M117.0 269.3L135.5 253.3' opacity='0.4'/%3E%3Cpath d='M174.5 216.9L184.2 208.3' opacity='0.9'/%3E%3Cpath d='M143.3 292.0L155.3 297.9' opacity='0.9'/%3E%3Cpath d='M29.5 243.1L58.5 239.7' opacity='0.4'/%3E%3Cpath d='M181.1 34.5L200.2 24.1' opacity='0.6'/%3E%3Cpath d='M35.4 258.3L49.2 250.3' opacity='0.4'/%3E%3Cpath d='M200.4 136.7L214.0 135.0' opacity='0.9'/%3E%3C/g%3E%3C/svg%3E");
+  --tile-knock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' seed='8' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7.0 0 0 0 4.9'/%3E%3C/filter%3E %3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-pencil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='1' seed='6' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.2 0 0 0 2.75'/%3E%3C/filter%3E %3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-chalk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E %3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8 0.3' numOctaves='2' seed='2' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4.5 0 0 0 3.25'/%3E%3C/filter%3E %3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --tile-vein: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='380'%3E %3Cfilter id='v' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.011' numOctaves='4' seed='12' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5 0 0 0 0.5'/%3E%3C/filter%3E %3Cfilter id='c' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='3' seed='3' stitchTiles='stitch'/%3E %3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.8 0 0 0 -0.36'/%3E%3C/filter%3E %3Crect width='560' height='380' filter='url(%23c)'/%3E%3Crect width='560' height='380' filter='url(%23v)'/%3E%3C/svg%3E");
+}
 
-  /* ---------------------------------------------------------------- 2. paper and tape */
-  .pt { --paper: #f8f0e0; --sheet: #fffaf0; --kraft: #cfae7c; --ink: #1f2a22; --ember: #b8481f; --on-ember: #fffaf0;
-    background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.36  0 0 0 0 0.22  0 0 0 0.5 -0.13'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); }
-  .pt-card { position: relative; isolation: isolate; width: min(100%, 24rem); padding: 1.75rem 1.5rem 1.25rem; color: var(--ink); }
-  .pt-card::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--sheet); border-radius: 4px; rotate: -1.3deg;
-    box-shadow: 0 1px 2px rgb(31 42 34 / 0.12), 0 10px 22px -8px rgb(31 42 34 / 0.3); }
-  .pt-card::after { content: ""; position: absolute; top: -0.7rem; left: 50%; translate: -50% 0; width: 5.5rem; height: 1.5rem; background: rgb(207 174 124 / 0.72); rotate: -3deg;
-    clip-path: polygon(0 12%, 4% 0, 8% 14%, 12% 2%, 16% 12%, 20% 0, 100% 0, 100% 88%, 96% 100%, 92% 86%, 88% 98%, 84% 88%, 80% 100%, 0 100%); }
-  .pt-card h3 { font-size: 1.75rem; }
-  .pt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
-  .pt-price { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 1rem 0.25rem 1.5rem; background: var(--kraft); color: var(--ink); font-weight: 700; rotate: -2deg;
-    clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0.9rem 100%, 0 50%); }
-  .pt-price::before { content: ""; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--sheet); margin-left: -0.5rem; }
-  .pt-card button { background: var(--ember); color: var(--on-ember); border: 0; border-radius: 8px; }
+/* ---------- the light, borrowed from the light part (shadows: paper-lift, direction: top-left) ---------- */
+.ground { --lx: 0.5; --ly: 1; --hx: 1; --hy: 1; --shade: rgb(var(--shadow-rgb)); --dx: calc(var(--lx) * 1px); --dy: calc(var(--ly) * 1px);
+  --shadow-low: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent),
+    calc(var(--dx) * 2) calc(var(--dy) * 4) 7px -2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.7) * 100%), transparent);
+  --drop-low: drop-shadow(calc(var(--dx) * 0.5) var(--dy) 0.5px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 4) 3px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.6) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 12%, transparent)); }
 
-  /* ---------------------------------------------------------------- 3. cut paper on felt */
-  .cf { --felt: #1e3f8f; --paper: #ffe0b3; --ink: #1a2142; --pin: #c9321e; --red: #c9321e; --on-red: #fffaf0;
-    --cut: polygon(0.6% 1.4%, 99.5% 0, 100% 98.8%, 0 100%);
-    background-color: var(--felt); background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1.3px); background-size: 6px 6px; }
-  .cf-notice { position: relative; isolation: isolate; width: min(100%, 24rem); padding: 2rem 1.5rem 1.5rem; color: var(--ink);
-    filter: drop-shadow(0 3px 0 rgb(10 18 50 / 0.3)) drop-shadow(0 10px 14px rgb(10 18 50 / 0.28)); }
-  .cf-notice::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper); clip-path: var(--cut); rotate: -0.8deg; }
-  .cf-pin { top: -0.75rem; left: 50%; translate: -50% 0; width: 1.75rem; height: 2rem; }
-  .cf-notice h3 { font-size: 1.75rem; }
-  .cf-notice button { background: var(--red); color: var(--on-red); border: 0; border-radius: 10px 14px 11px 13px / 13px 10px 14px 11px; }
+/* ---------- every swatch: a ground with something behind (so glass has a world to blur), and one sheet ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; }
+.ground { position: relative; isolation: isolate; overflow: clip; min-height: 17rem; padding: 3.5rem 1.25rem 1.75rem;
+  background: var(--ground); color: var(--on-ground); }
+.behind { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(circle at 68% 50%, color-mix(in oklab, var(--accent) 50%, transparent) 0 4.5rem, transparent 4.6rem),
+    repeating-linear-gradient(-55deg, transparent 0 14px, color-mix(in oklab, var(--mark) 26%, transparent) 14px 20px);
+  mask: linear-gradient(90deg, transparent 35%, black 60%); }
+.sheet { position: relative; isolation: isolate; z-index: 1; max-width: 29rem; margin-right: 3.5rem; padding: 1.5rem 1.5rem 1.25rem; color: var(--ink); }
+.sheet h3 { margin: 0; font-size: 1.5rem; line-height: 1.2; width: fit-content; }
+.sheet .id { margin: 0.125rem 0 0; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet .shown { margin: 0; font: italic 0.875rem/1.4 Georgia, serif; color: var(--ink-soft); }
+.sheet p { margin: 0.5rem 0 0; }
+.sheet .soft { color: var(--ink-soft); margin-bottom: 1rem; }
+.s-kraft .sheet, .s-metal .sheet { --ink-soft: var(--soft-on-brown); }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-low); }
+@media (max-width: 30rem) { .sheet { margin-right: 0.75rem; } }
 
-  /* ---------------------------------------------------------------- 4. parchment and ink */
-  .pi { --room: #1e0e11; --parchment: #c9b083; --ink: #1d0f08; --rubric: #450c19; --on-ink: #e9dcbc; background: var(--room); }
-  .pi-sheet { position: relative; isolation: isolate; width: min(100%, 26rem); padding: 2rem 1.75rem 1.75rem; color: var(--ink); background: var(--parchment);
-    clip-path: polygon(0 1%, 7% 0, 18% 1.2%, 33% 0.2%, 52% 1%, 70% 0, 88% 0.8%, 100% 0, 99.3% 22%, 100% 47%, 99.2% 74%, 100% 99%, 81% 100%, 60% 98.8%, 41% 100%, 23% 99%, 6% 100%, 0 99%, 0.8% 70%, 0 45%, 0.7% 20%); }
-  .pi-sheet::before { /* grain, mottling and a darkened edge, laid over the sheet; the darkening stays in the margin the padding keeps */
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: multiply;
-    box-shadow: inset 0 0 18px 3px rgb(96 60 20 / 0.5);
-    background-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35  0 0 0 0 .22  0 0 0 0 .08  0 0 0 .4 -.12'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E"),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35  0 0 0 0 .22  0 0 0 0 .08  0 0 0 .36 -.07'/%3E%3C/filter%3E%3Crect width='520' height='520' filter='url(%23m)'/%3E%3C/svg%3E"); }
-  .pi-sheet > * { position: relative; z-index: 1; }
-  .pi-sheet h3 { font-size: 1.875rem; font-weight: 700; }
-  .pi-sheet h3::first-letter { color: var(--rubric); }
-  .pi-tag { margin: 0 0 0.25rem; font-size: 0.875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rubric); }
-  .pi-sheet button { background: var(--ink); color: var(--on-ink); border: 0; border-radius: 2px; }
+/* ---------- the material: one empty element behind the words holds the whole sheet (.mat), so the paper can turn
+   while the words stay level. Its ::before is the sheet's body and its wear (slow and large: stains, sheen, dirt),
+   always darker, in the shadow colour; its ::after is the grain (fine), in --ink, so it is dark on a pale sheet and
+   light on a dark one. Each is one colour shown through masks. ---------- */
+.mat { position: absolute; inset: 0; z-index: -1; border-radius: 3px; background: var(--sheet, var(--surface));
+  box-shadow: var(--shadow-low), var(--edge-lit); rotate: var(--tilt, 0deg); transform-origin: var(--tilt-at, 50% 50%);
+  -webkit-backdrop-filter: var(--glass, none); backdrop-filter: var(--glass, none); background-image: var(--wear-lit, none); }
+.mat::before, .mat::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.mat::before { background: rgb(var(--shadow-rgb)); opacity: calc(var(--texture-strength) * 2.5);
+  -webkit-mask-image: linear-gradient(transparent, transparent), var(--body, none), var(--wear, none), var(--wear-2, none);
+          mask-image: linear-gradient(transparent, transparent), var(--body, none), var(--wear, none), var(--wear-2, none);
+  -webkit-mask-size: auto, var(--body-size, 100% 100%), var(--wear-size, 100% 100%), var(--wear-2-size, 100% 100%);
+          mask-size: auto, var(--body-size, 100% 100%), var(--wear-size, 100% 100%), var(--wear-2-size, 100% 100%);
+  -webkit-mask-repeat: no-repeat, repeat, var(--wear-repeat, no-repeat), no-repeat;
+          mask-repeat: no-repeat, repeat, var(--wear-repeat, no-repeat), no-repeat; }
+.mat::after { background: var(--grain-ink, var(--ink)); opacity: var(--grain-op, calc(var(--texture-strength) * var(--grain-k, 1)));
+  -webkit-mask-image: linear-gradient(transparent, transparent), var(--grain, none), var(--grain-2, none), var(--grain-3, none);
+          mask-image: linear-gradient(transparent, transparent), var(--grain, none), var(--grain-2, none), var(--grain-3, none);
+  -webkit-mask-size: auto, var(--grain-size, auto), var(--grain-2-size, auto), var(--grain-3-size, auto);
+          mask-size: auto, var(--grain-size, auto), var(--grain-2-size, auto), var(--grain-3-size, auto); }
 
-  /* ---------------------------------------------------------------- 5. stone and chalk */
-  .sc { --wall: #131129; --slab: #0e0c20; --pen: #07060f; --text: #efe4c8; --chalk: #a9b4e6; --glow: #ffb030; --on-glow: #1a1205;
-    background: var(--wall) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Crect width='160' height='80' fill='%23131129'/%3E%3Crect x='1' y='1' width='70' height='37' fill='%23181540'/%3E%3Crect x='73' y='1' width='86' height='37' fill='%231e1a48'/%3E%3Crect x='0' y='41' width='38' height='38' fill='%231a1740'/%3E%3Crect x='40' y='41' width='64' height='38' fill='%23211d4c'/%3E%3Crect x='106' y='41' width='54' height='38' fill='%23181540'/%3E%3Cpath d='M30 4l5 14l-2 16M120 44l4 12l-3 18' stroke='%230a0919' stroke-width='1.3' fill='none'/%3E%3C/svg%3E"); }
-  .sc-slab { position: relative; width: min(100%, 24rem); padding: 1.5rem; background: var(--slab); color: var(--text); border: 3px solid var(--pen); border-radius: 2px; box-shadow: 5px 6px 0 #06050f; }
-  .sc-slab h3 { font-size: 1.75rem; color: #c9d4e6; }
-  .sc-slab button { background: var(--glow); color: var(--on-glow); border: 3px solid var(--pen); border-radius: 2px; }
-  .sc-mark { color: var(--chalk); opacity: 0.5; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
-  .sc-mark.one { top: 0.75rem; left: 0.75rem; width: 4.5rem; rotate: -8deg; }
-  .sc-mark.two { right: 0.75rem; bottom: 0.5rem; width: 3.5rem; rotate: 6deg; }
+/* ---------- sheet: what the surface is made of. Its colour is always the surface, tinted by a shared name ---------- */
+/* --fibre is the colour paper, card and cloth lean to: --line, which the colour part makes in the neutral's own hue on
+   every tone (the drawn-mark colour turned lamplit parchment pink, since the mark there is cool blue). On a light page
+   --line is close to the sheet in lightness, so the sheets lean further there; on a dark or lamplit page less, since
+   there it moves the sheet towards the words. */
+.ground { --fibre: var(--line); --brown: var(--earth, var(--line));
+  --twine: color-mix(in oklab, var(--brown) 60%, var(--ink-soft));   /* tape and string: brown, a step off the sheet on every tone */
+  --soft-on-brown: color-mix(in oklab, var(--ink-soft) 55%, var(--ink)); }   /* soft text on kraft and metal: heavier, as ink on kraft lands */
+.s-plain      { --sheet: var(--surface); }
+.s-fine-paper { --sheet: color-mix(in oklab, var(--surface) 60%, var(--surface-raised));
+  --body: var(--tile-formation); --body-size: 300px 300px; }
+.s-card       { --fibre: var(--brown); --sheet: light-dark(color-mix(in oklch, var(--surface) 80%, var(--fibre)), color-mix(in oklch, var(--surface) 86%, var(--fibre))); }
+.s-kraft      { --fibre: var(--brown); --sheet: light-dark(color-mix(in oklch, var(--surface) 30%, var(--fibre)), color-mix(in oklch, var(--surface) 55%, var(--fibre))); --body: var(--tile-formation); --body-size: 300px 300px; }
+.s-parchment  { --sheet: light-dark(color-mix(in oklch, var(--surface) 72%, var(--fibre)), color-mix(in oklch, var(--surface) 78%, var(--fibre))); --body: var(--tile-mottle); --body-size: 420px 420px; }
+.s-canvas     { --sheet: light-dark(color-mix(in oklch, var(--surface) 72%, var(--fibre)), color-mix(in oklch, var(--surface) 82%, var(--fibre))); }
+.s-glass      { --sheet: color-mix(in oklab, var(--surface) 68%, transparent); --glass: blur(10px) saturate(1.3);
+  --body: linear-gradient(160deg, color-mix(in srgb, black 0%, transparent) 40%, color-mix(in srgb, black 35%, transparent)); }
+.s-metal      { --sheet: light-dark(color-mix(in oklab, var(--surface) 55%, var(--metal, var(--ink-soft))), color-mix(in oklab, var(--surface) 62%, var(--metal-deep, var(--ink-soft))));
+  --body: linear-gradient(104deg, transparent 6%, color-mix(in srgb, black 30%, transparent) 30%, transparent 50%, transparent 64%, color-mix(in srgb, black 22%, transparent) 80%, transparent 94%); }
+/* glass has a solid fallback: no backdrop blur, or the visitor asked for less transparency or more contrast */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .s-glass { --sheet: color-mix(in oklab, var(--surface) 96%, transparent); } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .s-glass { --sheet: var(--surface); --glass: none; } }
 
-  /* ---------------------------------------------------------------- 6. wood and canvas */
-  .wc { --room: #1e0e11; --oak: #3d2614; --oak-hi: #5a3a20; --stripe-a: #7a1f24; --stripe-b: #e8d9b5; --tag: #d6c294; --ink: #1d0f08; --pale: #f1e3c4; --string: #8a6a44;
-    background: var(--room); place-items: start center; padding-top: 0; }
-  .wc-valance { position: absolute; top: 0; left: 0; right: 0; height: 40px;
-    background: repeating-linear-gradient(90deg, var(--stripe-a) 0 24px, var(--stripe-b) 24px 48px);
-    -webkit-mask: linear-gradient(#000 0 0) top / 100% 28px no-repeat, radial-gradient(circle 12px at 12px 0, #000 98%, transparent) 0 28px / 24px 12px repeat-x;
-            mask: linear-gradient(#000 0 0) top / 100% 28px no-repeat, radial-gradient(circle 12px at 12px 0, #000 98%, transparent) 0 28px / 24px 12px repeat-x; }
-  .wc-inner { width: min(100%, 24rem); padding-top: 3.5rem; display: grid; gap: 2.5rem; justify-items: center; }
-  .wc-plank { position: relative; padding: 0.5rem 2rem 0.75rem; color: var(--pale); text-align: center; border: 2px solid #4e3219; outline: 1px solid #000;
-    background: repeating-linear-gradient(178deg, rgb(255 255 255 / 0.03) 0 3px, transparent 3px 9px), linear-gradient(#1b0d08, #120806); box-shadow: 0 6px 14px rgb(0 0 0 / 0.7); }
-  .wc-plank::before, .wc-plank::after { content: ""; position: absolute; top: 50%; translate: 0 -50%; width: 10px; height: 10px; border-radius: 50%; background: #6e5432; box-shadow: inset 0 0 0 2px #2a180a; }
-  .wc-plank::before { left: 8px; } .wc-plank::after { right: 8px; }
-  .wc-plank h3 { margin: 0; font-size: 1.75rem; color: var(--pale); }
-  .wc-rail { width: 100%; padding-top: 1.5rem; background: linear-gradient(var(--oak-hi), var(--oak)) top / 100% 8px no-repeat; display: grid; justify-items: center; }
-  .wc-tag { position: relative; isolation: isolate; width: min(100%, 18rem); padding: 1.5rem 1.25rem 1.25rem; color: var(--ink); }
-  .wc-tag::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tag); clip-path: polygon(14% 0, 86% 0, 100% 6%, 100% 100%, 0 100%, 0 6%); rotate: -1.2deg; transform-origin: 50% 0;
-    filter: drop-shadow(0 6px 8px rgb(0 0 0 / 0.6)); }
-  .wc-tag::after { content: ""; position: absolute; left: 50%; top: -1.5rem; width: 2px; height: 1.9rem; background: var(--string); }
-  .wc-eyelet { top: 6px; left: 50%; translate: -50% 0; width: 12px; height: 12px; border-radius: 50%; background: var(--room); box-shadow: inset 0 0 0 3px #7a5a34; }
-  .wc-tag p { margin: 0.5rem 0 1rem; }
-  .wc-tag button { background: var(--oak); color: var(--pale); border: 0; border-radius: 2px; }
+/* ---------- grain: the fine texture ---------- */
+.g-fibre   { --grain: var(--tile-fibre); --grain-size: 260px 260px; --grain-k: 1.9; }
+.g-laid    { --grain: repeating-linear-gradient(0deg, color-mix(in srgb, black 60%, transparent) 0 1px, transparent 1px 4px);
+  --grain-2: repeating-linear-gradient(90deg, transparent 0 94px, color-mix(in srgb, black 70%, transparent) 94px 95px, transparent 95px 96px); --grain-k: 0.6; }
+.g-weave   { --grain: repeating-linear-gradient(0deg, color-mix(in srgb, black 70%, transparent) 0 1px, transparent 1px 3px, color-mix(in srgb, black 35%, transparent) 3px 4px, transparent 4px 6px);
+  --grain-2: repeating-linear-gradient(90deg, color-mix(in srgb, black 60%, transparent) 0 1px, transparent 1px 3px, black 3px 4px, transparent 4px 5px);
+  --grain-3: var(--tile-fibre); --grain-3-size: 260px 260px; --grain-k: 0.9; }
+.g-wood    { --grain: var(--tile-wood); --grain-size: 480px 160px; --grain-k: 2.2; }
+.g-brushed { --grain: var(--tile-brushed); --grain-size: 480px 240px; --grain-k: 2.6; }
+.g-speckle { --grain: var(--tile-speckle); --grain-size: 220px 220px; --grain-2: var(--tile-vein); --grain-2-size: 560px 380px; --grain-k: 3; }
+.g-graph   { --grain-ink: var(--line); --grain-op: 0.85;
+  --grain: repeating-linear-gradient(0deg, black 0 1px, transparent 1px 18px); --grain-2: repeating-linear-gradient(90deg, black 0 1px, transparent 1px 18px);
+}
 
-  /* ---------------------------------------------------------------- 7. metal and dark glass */
-  .mg { --metal-hi: #fff2b8; --metal: #e2ad3b; --metal-lo: #8a5c14; --metal-dark: #3a2405;
-    --glass: rgb(22 10 20 / 0.92); --ink: #f7efe1; --head: #f4c75a; --head-edge: #2a1206; --btn: #8d1d18; --btn-hi: #b5332a; --btn-ink: #ffdc7a;
-    background: linear-gradient(180deg, #f2a65a 0%, #c8553d 45%, #5b1f2b 100%); }
-  .mg-pane { position: relative; width: min(100%, 24rem); margin: 9px; padding: 1.5rem; background: var(--glass); color: var(--ink); border-radius: 6px;
-    box-shadow: 0 0 0 3px var(--metal-dark), 0 0 0 7px var(--metal), 0 0 0 9px var(--metal-dark), inset 0 0 0 1px rgb(255 255 255 / 0.12), 0 10px 20px rgb(0 0 0 / 0.6); }
-  .mg-plate { display: inline-block; margin: 0 0 1rem; padding: 0.25rem 1rem; border-radius: 4px; color: var(--metal-dark); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.875rem;
-    background: radial-gradient(circle at 8px 50%, var(--metal-dark) 0 2px, transparent 2.5px), radial-gradient(circle at calc(100% - 8px) 50%, var(--metal-dark) 0 2px, transparent 2.5px),
-      linear-gradient(170deg, var(--metal-hi), var(--metal) 30%, #c9932e 60%, var(--metal-hi)); box-shadow: 0 0 0 2px var(--metal-dark); }
-  .mg-pane h3 { font-size: 1.75rem; color: var(--head); text-shadow: 0 2px 0 var(--head-edge), 0 0 2px var(--head-edge); }
-  .mg-pane button { margin: 5px; border-radius: 8px; border: 3px solid var(--metal-dark); background: linear-gradient(var(--btn-hi), var(--btn) 60%); color: var(--btn-ink); text-shadow: 0 1px 0 #000;
-    box-shadow: 0 0 0 3px var(--metal), 0 0 0 5px var(--metal-dark), inset 0 2px 0 rgb(255 255 255 / 0.35), inset 0 -4px 0 rgb(0 0 0 / 0.35); }
-  @media (prefers-reduced-motion: no-preference) { .mg-pane button:active { translate: 0 2px; } }
+/* ---------- wear: age and handling, kept to the edges and corners ---------- */
+.w-soft-edges { --wear: linear-gradient(90deg, black, transparent 1.75rem, transparent calc(100% - 1.75rem), black);
+  --wear-2: linear-gradient(black, transparent 1.5rem, transparent calc(100% - 1.5rem), black);
+  /* on a dark sheet dirt hardly shows; the worn edge is rubbed paler instead, in the texture colour */
+  --worn: light-dark(transparent, rgb(var(--texture-rgb) / calc(var(--texture-strength) * 1.8)));
+  --wear-lit: linear-gradient(90deg, var(--worn), transparent 1.5rem, transparent calc(100% - 1.5rem), var(--worn)),
+    linear-gradient(var(--worn), transparent 1.25rem, transparent calc(100% - 1.25rem), var(--worn)); }
+.w-creased { --wear: linear-gradient(90deg, transparent calc(64% - 9px), color-mix(in srgb, black 30%, transparent) calc(64% - 1px), black 64%, transparent calc(64% + 1.5px));
+  --wear-2: linear-gradient(180deg, transparent calc(46% - 9px), color-mix(in srgb, black 30%, transparent) calc(46% - 1px), black 46%, transparent calc(46% + 1.5px)); }
+.w-stained { --wear: radial-gradient(circle at calc(100% - 2.75rem) calc(100% - 2.5rem), transparent 1.85rem, color-mix(in srgb, black 55%, transparent) 1.95rem, black 2.05rem, transparent 2.2rem);
+  --wear-2: radial-gradient(ellipse 6rem 3.5rem at 100% 0, black, transparent); }
+.w-scuffed { --wear: var(--tile-scuff); --wear-size: 300px 300px; --wear-repeat: repeat;
+  --wear-2: radial-gradient(circle at 0 0, black, transparent 2.5rem), radial-gradient(circle at 100% 100%, black, transparent 2.5rem); }
 
-  :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+/* ---------- ink: how the marks sit. Headings and short labels only: reading text stays printed ---------- */
+.i-stamped h3 { --stamp: var(--tile-knock) 0 0 / 200px 200px, linear-gradient(100deg, black 30%, color-mix(in srgb, black 55%, transparent) 75%, black);
+  -webkit-mask: var(--stamp); mask: var(--stamp); -webkit-mask-composite: source-in; mask-composite: intersect; rotate: -1.5deg; transform-origin: 0 50%; letter-spacing: 0.04em; }
+.i-chalk h3 { -webkit-mask: var(--tile-chalk) 0 0 / 160px 160px; mask: var(--tile-chalk) 0 0 / 160px 160px; letter-spacing: 0.02em; }
+.i-pencil h3 { color: var(--ink-soft); -webkit-mask: var(--tile-pencil) 0 0 / 120px 120px; mask: var(--tile-pencil) 0 0 / 120px 120px;
+  text-decoration: underline 2px color-mix(in oklab, var(--ink-soft) 60%, transparent); text-underline-offset: 0.2em; }
+/* pressed in: the wall of the dent on the light's side is in shade, the far lip catches the light, and the paper
+   round each letter is pushed down a little (a faint halo). The offsets follow the light part's --hx and --hy.
+   The ink is a touch heavier, as pressed ink spreads. */
+.i-letterpress .sheet h3, .i-letterpress .sheet p { -webkit-text-stroke: 0.25px currentColor; text-shadow:
+  calc(var(--hx) * -0.6px) calc(var(--hy) * -1px) 0 light-dark(color-mix(in oklab, var(--ink) 45%, transparent), color-mix(in oklab, rgb(var(--shadow-rgb)) 90%, transparent)),
+  calc(var(--hx) * 0.6px) calc(var(--hy) * 1px) 0 light-dark(var(--surface-raised), color-mix(in oklab, var(--ink) 22%, transparent)),
+  0 0 3px light-dark(color-mix(in oklab, var(--ink) 16%, transparent), color-mix(in oklab, rgb(var(--shadow-rgb)) 70%, transparent)); }
+.i-letterpress .mat { --sheet: color-mix(in oklab, var(--surface) 88%, var(--fibre)); }   /* a lip needs a sheet a step below the brightest white */
+
+/* ---------- fixing: how a sheet is laid on. Each casts the light part's low shadow, as a filter ---------- */
+.fix { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.fix > * { position: absolute; display: block; }
+.f-tape .sheet { filter: var(--drop-low); }
+.f-tape .mat { box-shadow: var(--edge-lit); --tilt: -0.8deg; }
+.tape { width: 5.5rem; height: 1.6rem; top: -0.15rem; background: color-mix(in oklab, var(--twine) 45%, transparent);
+  clip-path: polygon(0 12%, 4% 0, 8% 14%, 12% 2%, 16% 12%, 20% 0, 80% 0, 84% 10%, 88% 0, 92% 12%, 96% 2%, 100% 10%, 100% 88%, 96% 100%, 92% 86%, 88% 98%, 84% 88%, 80% 100%, 20% 100%, 16% 90%, 12% 100%, 8% 88%, 4% 100%, 0 90%); }
+.tape-l { left: -1.6rem; rotate: -38deg; }
+.tape-r { right: -1.6rem; rotate: 35deg; }
+.f-pins .mat { --tilt: 0.7deg; }
+.pin { top: 0.4rem; width: 1.6rem; height: 1.6rem; color: var(--metal, var(--mark)); filter: var(--drop-low); }
+.pin:first-child { left: 0.7rem; } .pin:last-child { right: 0.7rem; }
+.clip { top: -1.6rem; left: 50%; translate: -50% 0; width: 5.25rem; color: var(--metal-deep, color-mix(in oklab, var(--ink) 82%, var(--surface))); filter: var(--drop-low); }
+.f-clips .sheet { padding-top: 2.25rem; }
+.f-rivets .fix { --rv: var(--metal, var(--ink-soft)); --rv-hi: var(--metal-lit, var(--surface-raised)); --rv-lo: var(--metal-deep, var(--ink));
+  background: radial-gradient(circle at 0.8rem 0.8rem, var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at calc(100% - 0.8rem) 0.8rem, var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at 0.8rem calc(100% - 0.8rem), var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px),
+    radial-gradient(circle at calc(100% - 0.8rem) calc(100% - 0.8rem), var(--rv-hi) 0 1px, var(--rv) 3px 5px, var(--rv-lo) 5.5px 6.5px, transparent 7px); }
+.f-string .sheet { padding-top: 2.4rem; }
+.f-string .mat { --tilt: -1.2deg; --tilt-at: 50% 1.1rem; }
+.rail { top: -2.6rem; left: -3rem; right: -6rem; height: 0.7rem; border-radius: 3px; box-shadow: var(--shadow-low);
+  background: repeating-linear-gradient(179deg, transparent 0 2px, color-mix(in oklab, rgb(var(--shadow-rgb)) 30%, transparent) 2px 3px), color-mix(in oklab, var(--brown) 75%, rgb(var(--shadow-rgb))); }
+.string { left: 50%; top: -2rem; width: 2px; height: 2.75rem; translate: -50% 0; background: var(--twine); }
+.hole { left: 50%; top: 0.55rem; width: 1.2rem; height: 1.2rem; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(circle, var(--ground) 0 0.24rem, color-mix(in oklab, var(--twine) 60%, var(--sheet, var(--surface))) 0.26rem 0.52rem, transparent 0.55rem); }
+
+/* on a phone the paper turns half as far */
+@media (max-width: 30rem) { .mat { rotate: calc(var(--tilt, 0deg) / 2); } }
+
+/* ---------- a row of tags on string: one rail per row, whatever the number of columns ---------- */
+/* Each tag draws its own length of rail, as wide as its column plus half the gap each side, so the lengths meet in a
+   row and every row has its rail. A tag is at least 15rem wide, so a phone shows one per row. */
+.rows { padding: 1.5rem 1.25rem 1.75rem; }
+.rows > p { margin: 0 0 0.5rem; max-width: 54ch; color: var(--on-ground); }
+.tags { --gap: 1.25rem; list-style: none; margin: 0; padding: 3rem 0 0; display: grid; gap: 3.75rem var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); }
+.tags .sheet { max-width: none; margin: 0; padding: 2.4rem 1.25rem 1.25rem; }
+.tags .sheet h3 { font-size: 1.25rem; }
+.tags .rail { left: calc(var(--gap) / -2); right: calc(var(--gap) / -2); border-radius: 0; }
+.tags .sheet:nth-child(2n) .mat { --tilt: 1deg; }
+.tags .sheet:nth-child(3n) .mat { --tilt: -0.5deg; }
+
+/* forced colours: masks, gradients and shadows go; the sheet keeps a plain edge so it is still a sheet */
+@media (forced-colors: active) { .mat { border: 1px solid CanvasText; } .mat::before, .mat::after, .fix { display: none; } .sheet h3 { -webkit-mask: none; mask: none; } }
 </style>
 </head>
 <body>
-<main class="page">
-  <h1>Materials: the options</h1>
-  <p>What a page is made of: the stuff its panels, sheets and repeated items look like. Each box shows one option from <code>style-part-materials.md</code>, drawn in its own CSS. A site picks one.</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="pin" viewBox="0 0 24 24"><circle cx="12" cy="11" r="8" fill="currentColor"/><circle cx="12" cy="11" r="8" fill="none" style="stroke: var(--metal-deep, var(--ink))" stroke-opacity="0.6"/><ellipse cx="9.2" cy="8" rx="2.6" ry="2" style="fill: var(--metal-lit, var(--surface-raised))"/></symbol>
+  <symbol id="clip" viewBox="0 0 64 44"><path d="M17 20L11 3h16l-4 17M47 20l6-17H37l4 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 18h34l7 24H8Z" fill="currentColor"/><path d="M14 23h36" style="stroke: var(--metal-lit, var(--surface-raised))" stroke-opacity="0.6" stroke-width="1.5"/></symbol>
+</svg>
+<main>
+<h1>Materials: the layers</h1>
+<p class="intro">Every option of every layer, then every starting point, each on a light page and a dark one. Each swatch is one sheet with a heading, a line of text, a line of soft text and a button, so the material is the only thing that changes. Built from the shared colour names only: no sheet has a border (that is frames) and every shadow is the light part's.</p>
+<h2 class="layer">Sheet</h2>
+<p class="layer-note">What the surfaces with words are made of. Each is shown with the grain it is usually seen with (named under its title), so it reads as itself.</p>
+<section class="swatch" data-option="sheet:plain">
+<div class="ground s-plain g-none f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Plain</h3><p class="id">sheet: plain</p><p>No material: one flat colour, the surface and nothing else.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:fine-paper">
+<div class="ground s-fine-paper g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Fine paper</h3><p class="id">sheet: fine-paper</p><p class="shown">shown with grain: fibre</p><p>A good sheet: bright, even, a faint cloud in it held to the light.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read the issue</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:card">
+<div class="ground s-card g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Card</h3><p class="id">sheet: card</p><p class="shown">shown with grain: fibre</p><p>Thick, matte card with a little colour in it: a label, a tag, a notice.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Pin it up</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:kraft">
+<div class="ground s-kraft g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Kraft</h3><p class="id">sheet: kraft</p><p class="shown">shown with grain: fibre</p><p>Brown paper: a parcel, a bag, a price tag. Words on it are heavier.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Add to bag</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:parchment">
+<div class="ground s-parchment g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Parchment</h3><p class="id">sheet: parchment</p><p class="shown">shown with grain: fibre</p><p>Old skin-paper, warm and uneven, with slow stains in it.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Unroll it</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:canvas">
+<div class="ground s-canvas g-weave f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Canvas</h3><p class="id">sheet: canvas</p><p class="shown">shown with grain: weave</p><p>Unbleached cloth: an awning, a banner, a stall's cover.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Book a stall</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:glass">
+<div class="ground s-glass g-none f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Glass</h3><p class="id">sheet: glass</p><p>Smoked glass over the world behind: it blurs what shows through.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Enter</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="sheet:metal">
+<div class="ground s-metal g-brushed f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Metal</h3><p class="id">sheet: metal</p><p class="shown">shown with grain: brushed</p><p>A brushed plate: a sheen across it and fine streaks one way.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Engage</button>
+</article>
+</div>
+</section>
+<h2 class="layer">Grain</h2>
+<p class="layer-note">The fine texture on the sheet, seen close up. Shown on fine paper, except weave (on canvas), wood (on kraft), brushed (on metal) and speckle (on plain).</p>
+<section class="swatch" data-option="grain:none">
+<div class="ground s-fine-paper g-none f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>None</h3><p class="id">grain: none</p><p class="shown">shown on sheet: fine-paper</p><p>No fine texture: the sheet is smooth.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:fibre">
+<div class="ground s-fine-paper g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Fibre</h3><p class="id">grain: fibre</p><p class="shown">shown on sheet: fine-paper</p><p>Specks and short fibres, as in any paper made from pulp.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:laid">
+<div class="ground s-fine-paper g-laid f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Laid</h3><p class="id">grain: laid</p><p class="shown">shown on sheet: fine-paper</p><p>Fine lines close together and a few far apart, as in hand-made paper.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:weave">
+<div class="ground s-canvas g-weave f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Weave</h3><p class="id">grain: weave</p><p class="shown">shown on sheet: canvas</p><p>Threads crossing: linen, canvas, book cloth.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:wood">
+<div class="ground s-kraft g-wood f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Wood</h3><p class="id">grain: wood</p><p class="shown">shown on sheet: kraft</p><p>Long streaks along the board, closer in places.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:brushed">
+<div class="ground s-metal g-brushed f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Brushed</h3><p class="id">grain: brushed</p><p class="shown">shown on sheet: metal</p><p>Fine straight streaks one way: brushed steel or tin.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:speckle">
+<div class="ground s-plain g-speckle f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Speckle</h3><p class="id">grain: speckle</p><p class="shown">shown on sheet: plain</p><p>Sparse flecks: stone, slate, terrazzo, or frost on glass.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="grain:graph">
+<div class="ground s-fine-paper g-graph f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Graph</h3><p class="id">grain: graph</p><p class="shown">shown on sheet: fine-paper</p><p>A printed grid in the line colour: a notebook or a chart.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<h2 class="layer">Fixing</h2>
+<p class="layer-note">How a sheet is laid on. The paper may turn a little; the words never do.</p>
+<section class="swatch" data-option="fixing:none">
+<div class="ground s-plain g-none f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>None</h3><p class="id">fixing: none</p><p>The sheet lies flat and square: nothing holds it.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="fixing:tape">
+<div class="ground s-plain g-none f-tape w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="tape tape-l"></i><i class="tape tape-r"></i></span>
+<h3>Tape</h3><p class="id">fixing: tape</p><p>Two strips of tape across the corners; the paper a little crooked.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Stick it in</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="fixing:pins">
+<div class="ground s-plain g-none f-pins w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg></span>
+<h3>Pins</h3><p class="id">fixing: pins</p><p>Two pushpins at the top: a notice on a board.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Pin it up</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="fixing:clips">
+<div class="ground s-plain g-none f-clips w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><svg class="clip" viewBox="0 0 64 44" aria-hidden="true" focusable="false"><use href="#clip"/></svg></span>
+<h3>Clips</h3><p class="id">fixing: clips</p><p>A bulldog clip at the top: a list on a clipboard.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Sign the list</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="fixing:rivets">
+<div class="ground s-plain g-none f-rivets w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"></span>
+<h3>Rivets</h3><p class="id">fixing: rivets</p><p>A rivet in each corner: a plate fixed to a wall or a machine.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Engage</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="fixing:string">
+<div class="ground s-plain g-none f-string w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span>
+<h3>String</h3><p class="id">fixing: string</p><p>A tag on a string from a rail, through a punched, ringed hole.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Take a tag</button>
+</article>
+</div>
+</section>
+<h2 class="layer">Wear</h2>
+<p class="layer-note">Age and handling. Shown on fine paper with fibre. Wear stays at the edges and corners, away from the words.</p>
+<section class="swatch" data-option="wear:none">
+<div class="ground s-fine-paper g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>None</h3><p class="id">wear: none</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>New: nothing has happened to it yet.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="wear:soft-edges">
+<div class="ground s-fine-paper g-fibre f-none w-soft-edges i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Soft edges</h3><p class="id">wear: soft-edges</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Edges gone darker with age and hands, the middle still clean.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="wear:creased">
+<div class="ground s-fine-paper g-fibre f-none w-creased i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Creased</h3><p class="id">wear: creased</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Folded once each way and opened out again.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="wear:stained">
+<div class="ground s-fine-paper g-fibre f-none w-stained i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Stained</h3><p class="id">wear: stained</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>A cup ring in one corner and a blot in another.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="wear:scuffed">
+<div class="ground s-fine-paper g-fibre f-none w-scuffed i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Scuffed</h3><p class="id">wear: scuffed</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Fine scratches, worst near the corners.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<h2 class="layer">Ink</h2>
+<p class="layer-note">How the marks sit on the sheet. Only headings and short labels change; reading text stays printed. Shown on fine paper with fibre, except chalk (on plain with speckle: a slate).</p>
+<section class="swatch" data-option="ink:printed">
+<div class="ground s-fine-paper g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Printed</h3><p class="id">ink: printed</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Clean, even ink: the words as set.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="ink:stamped">
+<div class="ground s-fine-paper g-fibre f-none w-none i-stamped">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Stamped</h3><p class="id">ink: stamped</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Headings rubber-stamped: a little tilted, ink that missed in places.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="ink:letterpress">
+<div class="ground s-fine-paper g-fibre f-none w-none i-letterpress">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Letterpress</h3><p class="id">ink: letterpress</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Words pressed into the sheet: a lit edge inside every letter.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="ink:chalk">
+<div class="ground s-plain g-speckle f-none w-none i-chalk">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Chalk</h3><p class="id">ink: chalk</p><p class="shown">shown on sheet: plain; grain: speckle</p><p>Headings in chalk: rough, broken strokes.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="ink:pencil">
+<div class="ground s-fine-paper g-fibre f-none w-none i-pencil">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Pencil</h3><p class="id">ink: pencil</p><p class="shown">shown on sheet: fine-paper; grain: fibre</p><p>Headings in soft pencil, underlined by hand.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read on</button>
+</article>
+</div>
+</section>
+<h2 class="layer">Starting points</h2>
+<p class="layer-note">Saved sets of picks; any layer not named is at its default (plain, no grain, no fixing, no wear, printed).</p>
+<section class="swatch" data-option="start:fine-paper">
+<div class="ground s-fine-paper g-fibre f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Fine paper</h3><p class="id">sheet: fine-paper; grain: fibre</p><p>Quiet, printed, careful: a good sheet on a desk.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read the issue</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:paper-and-tape">
+<div class="ground s-fine-paper g-fibre f-tape w-none i-pencil">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="tape tape-l"></i><i class="tape tape-r"></i></span>
+<h3>Paper and tape</h3><p class="id">sheet: fine-paper; grain: fibre; fixing: tape; ink: pencil</p><p>Made at a kitchen table by one person.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Order one</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:cut-paper-on-felt">
+<div class="ground s-card g-none f-pins w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg></span>
+<h3>Cut paper on felt</h3><p class="id">sheet: card; fixing: pins</p><p>A club's notice board: card pinned up a little crooked.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Sign up</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:parchment-and-ink">
+<div class="ground s-parchment g-fibre f-none w-soft-edges i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Parchment and ink</h3><p class="id">sheet: parchment; grain: fibre; wear: soft-edges</p><p>Old, hand-written, a little worn at the edges.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Read the scroll</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:stone-and-chalk">
+<div class="ground s-plain g-speckle f-none w-scuffed i-chalk">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Stone and chalk</h3><p class="id">sheet: plain; grain: speckle; wear: scuffed; ink: chalk</p><p>A slate someone has written on.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Enter</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:wood-and-canvas">
+<div class="ground s-canvas g-weave f-string w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span>
+<h3>Wood and canvas</h3><p class="id">sheet: canvas; grain: weave; fixing: string</p><p>A market stall: canvas tags hung from an oak rail.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Visit the stall</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:metal-and-dark-glass">
+<div class="ground s-glass g-none f-rivets w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"></span>
+<h3>Metal and dark glass</h3><p class="id">sheet: glass; fixing: rivets</p><p>A game's interface: smoked glass in riveted metal.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Claim</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:warm">
+<div class="ground s-card g-fibre f-tape w-none i-stamped">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="tape tape-l"></i><i class="tape tape-r"></i></span>
+<h3>Warm</h3><p class="id">sheet: card; grain: fibre; fixing: tape; ink: stamped</p><p>Somebody's hand is visible: card, tape, a stamp.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Join in</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<div class="ground s-parchment g-fibre f-pins w-stained i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg><svg class="pin" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#pin"/></svg></span>
+<h3>Sorcery</h3><p class="id">sheet: parchment; grain: fibre; fixing: pins; wear: stained</p><p>Stained parchment nailed up in a dark room.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Enter</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<div class="ground s-glass g-speckle f-rivets w-scuffed i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"></span>
+<h3>Gilded dark</h3><p class="id">sheet: glass; grain: speckle; fixing: rivets; wear: scuffed</p><p>Battered glass panes in riveted frames.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Play</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<div class="ground s-kraft g-fibre f-string w-none i-stamped">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span>
+<h3>Lantern fair</h3><p class="id">sheet: kraft; grain: fibre; fixing: string; ink: stamped</p><p>Brown paper tags on string at a night market.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Book a stall</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<div class="ground s-fine-paper g-laid f-none w-none i-letterpress">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Almanac plate</h3><p class="id">sheet: fine-paper; grain: laid; ink: letterpress</p><p>A printed plate from an old almanac, pressed into laid paper.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Come and look</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes">
+<div class="ground s-card g-none f-none w-none i-printed">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span>
+<h3>Catalogue of glazes</h3><p class="id">sheet: card</p><p>A museum label: plain matte card, nothing else.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">See the pots</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<div class="ground s-fine-paper g-graph f-clips w-creased i-pencil">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><svg class="clip" viewBox="0 0 64 44" aria-hidden="true" focusable="false"><use href="#clip"/></svg></span>
+<h3>Field journal</h3><p class="id">sheet: fine-paper; grain: graph; fixing: clips; wear: creased; ink: pencil</p><p>A notebook page clipped to a board, folded in a pocket.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Join a walk</button>
+</article>
+</div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<div class="ground s-card g-fibre f-string w-scuffed i-stamped">
+<span class="behind" aria-hidden="true"></span>
+<article class="sheet">
+<span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span>
+<h3>Repair cafe</h3><p class="id">sheet: card; grain: fibre; fixing: string; wear: scuffed; ink: stamped</p><p>Manila repair tags, handled and stamped.</p><p class="soft">Soft text sits here too, at 4.5 to 1.</p><button class="btn" type="button">Bring it in</button>
+</article>
+</div>
+</section>
 
-  <div class="book">
-
-    <section class="swatch" data-option="fine-paper">
-      <h2>Fine paper <code>fine-paper</code></h2>
-      <div class="stage fp">
-        <div class="fp-sheet">
-          <p class="fp-label">No. 143 · Spring</p>
-          <h3>Rain on the tin roof</h3>
-          <p>A clean sheet on a grained page, one soft shadow, ink-dark words.</p>
-          <button type="button">Read the poem</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="paper-and-tape">
-      <h2>Paper and tape <code>paper-and-tape</code></h2>
-      <div class="stage pt">
-        <div class="pt-card">
-          <h3>Lavender and oat</h3>
-          <p>A recipe card taped to the page. The card leans; the words do not.</p>
-          <div class="pt-row"><span class="pt-price">$9</span><button type="button">Add to basket</button></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="cut-paper-on-felt">
-      <h2>Cut paper on felt <code>cut-paper-on-felt</code></h2>
-      <div class="stage cf">
-        <div class="cf-notice">
-          <svg class="decor cf-pin" viewBox="0 0 28 32" aria-hidden="true" focusable="false"><ellipse cx="17" cy="23" rx="8" ry="4" fill="rgb(10 18 50 / 0.3)"/><circle cx="14" cy="13" r="10" fill="#c9321e"/><circle cx="10.5" cy="9.5" r="3" fill="rgb(255 255 255 / 0.55)"/></svg>
-          <h3>Pancake breakfast</h3>
-          <p>A notice of coloured paper, cut by hand and pinned a little crooked.</p>
-          <button type="button">I can help</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="parchment-and-ink">
-      <h2>Parchment and ink <code>parchment-and-ink</code></h2>
-      <div class="stage pi">
-        <div class="pi-sheet">
-          <p class="pi-tag">Where we stand</p>
-          <h3>Our stall this autumn</h3>
-          <p>An old sheet, torn and stained at the edges, written in dark ink with a red first letter.</p>
-          <button type="button">See the dates</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="stone-and-chalk">
-      <h2>Stone and chalk <code>stone-and-chalk</code></h2>
-      <div class="stage sc">
-        <svg class="decor sc-mark one" viewBox="0 0 72 40" aria-hidden="true" focusable="false"><path d="M6 6v28M16 5v29M26 6v28M36 5v29M2 28L42 10M52 20h16M62 12l7 8l-7 8"/></svg>
-        <svg class="decor sc-mark two" viewBox="0 0 56 40" aria-hidden="true" focusable="false"><path d="M4 34L28 6L52 34ZM16 34V24h24v10"/></svg>
-        <div class="sc-slab">
-          <h3>The ledger</h3>
-          <p>A wall of dressed stone with chalk marks; the words sit on a calm, plain slab.</p>
-          <button type="button">Open the ledger</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="wood-and-canvas">
-      <h2>Wood and canvas <code>wood-and-canvas</code></h2>
-      <div class="stage wc">
-        <div class="wc-valance decor" aria-hidden="true"></div>
-        <div class="wc-inner">
-          <div class="wc-plank"><h3>The Lantern Stall</h3></div>
-          <div class="wc-rail">
-            <div class="wc-tag">
-              <span class="decor wc-eyelet" aria-hidden="true"></span>
-              <strong>Oak walking stick</strong>
-              <p>A tag on string from the stall's oak rail, under a striped canvas edge.</p>
-              <button type="button">$165 · Add</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="swatch" data-option="metal-and-dark-glass">
-      <h2>Metal and dark glass <code>metal-and-dark-glass</code></h2>
-      <div class="stage mg">
-        <div class="mg-pane">
-          <p class="mg-plate">Quest log</p>
-          <h3>Choose your side</h3>
-          <p>A dark, nearly solid pane edged in bands of metal, a riveted name plate, a button set in a metal ring.</p>
-          <button type="button">Begin the quest</button>
-        </div>
-      </div>
-    </section>
-
-  </div>
+<h2 class="layer">A row of tags on string</h2>
+<p class="layer-note">Where the rail goes: one rail across the top of every row of tags. At this width the tags go as many to a row as fit at 15rem or more; on a phone, one to a row, each with its own length of rail.</p>
+<div class="pair">
+<div class="mode-light rows s-canvas g-weave f-string ground"><ul class="tags"><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Honey</h3><p>Two hives on the allotment.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Bread</h3><p>Sourdough, baked at four.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Soap</h3><p>Goat's milk and lavender.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Candles</h3><p>Beeswax, hand-dipped.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Jam</h3><p>Damson and plum.</p></li></ul></div>
+<div class="mode-dark rows s-canvas g-weave f-string ground"><ul class="tags"><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Honey</h3><p>Two hives on the allotment.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Bread</h3><p>Sourdough, baked at four.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Soap</h3><p>Goat's milk and lavender.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Candles</h3><p>Beeswax, hand-dipped.</p></li><li class="sheet"><span class="mat" aria-hidden="true"></span><span class="fix" aria-hidden="true"><i class="rail"></i><i class="string"></i><i class="hole"></i></span><h3>Jam</h3><p>Damson and plum.</p></li></ul></div>
+</div>
 </main>
-
-<script>
-run(async () => {
-  const ids = [...document.querySelectorAll('.swatch')].map((s) => s.dataset.option);
-  const empty = ids.filter((id) => { const r = document.querySelector('[data-option="' + id + '"]').getBoundingClientRect(); return r.width < 50 || r.height < 50; });
-  return { pass: ids.length >= 4 && !empty.length, detail: ids.length + ' options shown: ' + ids.join(', ') + (empty.length ? '; drawn too small or empty: ' + empty.join(', ') : '') };
-});
-</script>
+<script>run(swatchTest);</script>
 </body>
 </html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Corners and shapes: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/shapes.py from source/shapes-template.html: edit those, then run python3 shapes.py ../shapes.html in
+   source/. Every colour below is a shared colour name (tokens.css). Masks are written in black and transparent: a mask
+   uses only the alpha, never the colour. Borders belong to the frames part and shadows to the light part: this page
+   borrows the light part's "warm" start (top left, paper lift) so sheets and tags lie on the page, and draws no border
+   round any sheet. The only edges drawn here are the edges of controls, which every part gives in the shared names. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 80rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.25rem; font-size: 1.5rem; line-height: 1.2; }
+.layer-note { max-width: 56ch; margin: 0 0 0.75rem; color: var(--ink-soft); }
+.pair { margin-bottom: 1.5rem; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- the light, borrowed from the light part (shadows: paper-lift, direction: top-left) ---------- */
+.ground { --lx: 0.5; --ly: 1; --hx: 1; --hy: 1; --shade: rgb(var(--shadow-rgb)); --dx: calc(var(--lx) * 1px); --dy: calc(var(--ly) * 1px);
+  --shadow-low: calc(var(--dx) * 0.5) var(--dy) 1px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent),
+    calc(var(--dx) * 2) calc(var(--dy) * 4) 7px -2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.7) * 100%), transparent);
+  --drop-low: drop-shadow(calc(var(--dx) * 0.5) var(--dy) 0.5px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 1.1) * 100%), transparent))
+    drop-shadow(calc(var(--dx) * 2) calc(var(--dy) * 3) 2px color-mix(in oklab, var(--shade) calc(min(1, var(--shadow-strength) * 0.6) * 100%), transparent));
+  --edge-lit: inset calc(var(--hx) * 1px) calc(var(--hy) * 1px) 0 light-dark(transparent, color-mix(in oklab, var(--ink) 12%, transparent)); }
+
+/* ---------- every swatch: one sheet on the ground, holding a picture, two labels, a field, a button, a tick box ---------- */
+.swatch { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip; container-type: inline-size; }
+.ground { position: relative; isolation: isolate; padding: 1.75rem 1.25rem; background: var(--ground); color: var(--on-ground); }
+.sheet { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1.25rem; align-items: start; padding: 1.25rem;
+  background: var(--surface); color: var(--ink); border-radius: var(--radius-large); corner-shape: var(--corner-shape, round);
+  box-shadow: var(--shadow-low), var(--edge-lit); }
+@container (max-width: 27rem) { .sheet { grid-template-columns: minmax(0, 1fr); } .sheet > .pic { width: 7rem; } }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 0.875rem; }
+.words { min-width: 0; }
+
+/* the picture: a small night view drawn once (#view, outside the swatches), coloured by the band names */
+.pic { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; }
+.pic svg { display: block; width: 100%; height: 100%; }
+.v-sky { fill: color-mix(in oklab, var(--band-3) 88%, var(--on-band)); } .v-far { fill: color-mix(in oklab, var(--band-2) 70%, var(--band-3)); } .v-near { fill: var(--band-2); }
+.v-front { fill: var(--band-1); } .v-moon { fill: var(--on-band); } .v-star { fill: color-mix(in oklab, var(--on-band) 70%, transparent); }
+
+/* labels: two small things that name or count, never pressed */
+.labels { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.625rem; margin: 0 0 0.75rem; min-height: 2rem; }
+.label { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center;
+  font: 700 0.875rem/1.2 system-ui, sans-serif; letter-spacing: 0.02em; padding: 0.25rem 0.625rem; color: var(--ink); }
+.label::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tag-fill); }
+.l1 { --tag-fill: color-mix(in oklab, var(--mark) 24%, var(--surface)); }
+.l2 { --tag-fill: var(--band-2); color: var(--on-band); }
+
+/* the form: a field, the main button, a tick box and a choice */
+.form { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; margin: 0 0 0.5rem; }
+.fld { display: grid; gap: 0.25rem; flex: 1 1 10rem; min-width: 0; font: 0.875rem/1.3 system-ui, sans-serif; color: var(--ink-soft); }
+.fld input { min-height: 44px; width: 100%; padding: 0 0.75rem; font: 1rem/1 system-ui, sans-serif; color: var(--ink); background: var(--surface-raised);
+  border: 2px solid var(--ink-soft); border-radius: var(--radius-field, var(--radius)); corner-shape: var(--corner-shape, round); }
+.fld input.shown-focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+.btn { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 1.25rem;
+  border: 2px solid var(--accent-edge); border-radius: var(--radius-control, var(--radius)); corner-shape: var(--corner-shape, round);
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-low); }
+.ticks { display: flex; flex-wrap: wrap; gap: 0 1.25rem; font: 0.9375rem/1.3 system-ui, sans-serif; }
+.ticks label { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; cursor: pointer; }
+.ticks input { appearance: none; margin: 0; width: 1.25rem; height: 1.25rem; flex: none; border: 2px solid var(--ink-soft); background: var(--surface-raised); }
+.ticks input[type="checkbox"] { border-radius: var(--radius-check, 3px); corner-shape: var(--corner-shape, round); }
+.ticks input[type="radio"] { border-radius: 50%; }
+.ticks input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent-edge); }
+.ticks input[type="checkbox"]:checked::after { content: ""; display: block; width: 100%; height: 100%; background: var(--on-accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat; }
+.ticks input[type="radio"]:checked { border-color: var(--accent-edge); background: radial-gradient(circle, var(--accent) 0 42%, var(--surface-raised) 46%); }
+@media (forced-colors: active) { .label { border: 1px solid; } }   /* a shape drawn by a background vanishes in forced colours: keep an edge */
+
+/* ================= corners: the radius of every box that is not a special shape ================= */
+.co-sharp    { --radius-small: 0px; --radius: 0px; --radius-large: 0px; --radius-check: 0px; }
+.co-slight   { --radius-small: 2px; --radius: 3px; --radius-large: 4px; --radius-check: 2px; }
+.co-soft     { --radius-small: 4px; --radius: 6px; --radius-large: 10px; --radius-check: 3px; }
+.co-round    { --radius-small: 8px; --radius: 12px; --radius-large: 20px; --radius-check: 5px; }
+.co-hand-cut { --radius-small: 2px 7px 3px 6px / 6px 2px 7px 3px; --radius: 3px 12px 5px 10px / 10px 4px 13px 5px;
+  --radius-large: 4px 22px 8px 18px / 18px 6px 24px 9px; --radius-check: 2px 5px 2px 4px; }
+.co-cut      { --radius-small: 4px; --radius: 8px; --radius-large: 14px; --radius-check: 3px; --corner-shape: bevel; }
+
+/* ================= controls: the outline of buttons and fields ================= */
+.ct-plain { --radius-control: var(--radius); --radius-field: var(--radius); }
+.ct-pill  { --radius-control: 999px; --radius-field: var(--radius); }
+/* ticket and tag: the shape is drawn on two layers behind the words, the edge (::before) and the fill (::after, 2px in),
+   so the edge follows the bites and the point. The button itself is never clipped: it is the whole box that is pressed,
+   and its focus ring is not cut off. Its own border stays, transparent, so forced colours still draw an edge round it. */
+.ct-ticket .btn, .ct-tag .btn { background: none; border-color: transparent; box-shadow: none; }
+.ct-tag .btn { filter: var(--drop-low); }   /* a ticket lies flat: a drop shadow fills its small bites and they read as holes */
+.ct-ticket .btn::before, .ct-ticket .btn::after, .ct-tag .btn::before, .ct-tag .btn::after { content: ""; position: absolute; z-index: -1; }
+.ct-ticket .btn::before, .ct-tag .btn::before { inset: -2px; background: var(--accent-edge); }
+.ct-ticket .btn::after, .ct-tag .btn::after { inset: 0; background: var(--accent); }
+.ct-ticket { --radius-control: var(--radius-small); --radius-field: var(--radius); --bite: 0.6rem; }
+.ct-ticket .btn { padding-inline: 1.75rem; }
+.ct-ticket .btn::before { border-radius: var(--radius-small);
+  mask: radial-gradient(circle var(--bite) at 0 50%, transparent 97%, black) left / 51% 100% no-repeat,
+        radial-gradient(circle var(--bite) at 100% 50%, transparent 97%, black) right / 51% 100% no-repeat; }
+.ct-ticket .btn::after { border-radius: var(--radius-small);
+  mask: radial-gradient(circle calc(var(--bite) + 2px) at -2px 50%, transparent 97%, black) left / 51% 100% no-repeat,
+        radial-gradient(circle calc(var(--bite) + 2px) at calc(100% + 2px) 50%, transparent 97%, black) right / 51% 100% no-repeat; }
+.ct-tag { --radius-control: var(--radius-small); --radius-field: var(--radius); --point: 0.9rem; }
+.ct-tag .btn { padding-inline: calc(var(--point) + 1.1rem) 1.25rem; }
+.ct-tag .btn::before { clip-path: polygon(var(--point) 0, 100% 0, 100% 100%, var(--point) 100%, 0 50%);
+  mask: radial-gradient(circle 0.22rem at calc(var(--point) + 0.15rem) 50%, transparent 95%, black); }
+.ct-tag .btn::after { clip-path: polygon(calc(var(--point) - 1px) 0, 100% 0, 100% 100%, calc(var(--point) - 1px) 100%, 0 50%);
+  mask: radial-gradient(circle calc(0.22rem + 2px) at calc(var(--point) + 0.15rem - 2px) 50%, transparent 95%, black); }
+
+/* ================= labels: tags and badges ================= */
+.la-plain .label::before { border-radius: var(--radius-small); corner-shape: var(--corner-shape, round); }
+.la-pill .label { padding-inline: 0.75rem; }
+.la-pill .label::before { border-radius: 999px; }
+/* the luggage tag: two corners cut off at one end and a hole punched through, so the ground shows in it */
+.la-luggage-tag .label { padding: 0.3rem 0.75rem 0.3rem 1.5rem; filter: var(--drop-low); rotate: -2deg; }
+.la-luggage-tag .label + .label { rotate: 1.5deg; }
+.la-luggage-tag .label::before { clip-path: polygon(0.55rem 0, 100% 0, 100% 100%, 0.55rem 100%, 0 calc(100% - 0.55rem), 0 0.55rem);
+  mask: radial-gradient(circle 0.2rem at 0.7rem 50%, transparent 92%, black); }
+/* the hanging tag: upright, shoulders cut, the hole at the top; the same cut, larger, makes a card */
+.la-hanging-tag .labels { align-items: start; }
+.la-hanging-tag .label { flex-direction: column; min-width: 4.75rem; padding: 1.2rem 0.6rem 0.5rem; filter: var(--drop-low); rotate: -2.5deg; transform-origin: 50% 0.5rem; }
+.la-hanging-tag .label + .label { rotate: 2deg; }
+.la-hanging-tag .label::before { clip-path: polygon(22% 0, 78% 0, 100% 0.9rem, 100% 100%, 0 100%, 0 0.9rem);
+  mask: radial-gradient(circle 0.2rem at 50% 0.5rem, transparent 92%, black); }
+/* the ticket: a half-circle bitten out of each end */
+.la-ticket .label { padding-inline: 0.95rem; filter: var(--drop-low); }
+.la-ticket .label::before { border-radius: var(--radius-small);
+  mask: radial-gradient(circle 0.42rem at 0 50%, transparent 96%, black) left / 51% 100% no-repeat,
+        radial-gradient(circle 0.42rem at 100% 50%, transparent 96%, black) right / 51% 100% no-repeat; }
+/* the ribbon: a strip with a V cut into each end */
+.la-ribbon .label { padding-inline: 1.15rem; filter: var(--drop-low); }
+.la-ribbon .label::before { clip-path: polygon(0 0, 100% 0, calc(100% - 0.55rem) 50%, 100% 100%, 0 100%, 0.55rem 50%); }
+/* the seal: a round, slightly uneven stamp, turned a little */
+.la-seal .label { width: 3.75rem; aspect-ratio: 1; padding: 0.25rem; text-align: center; line-height: 1.05; rotate: -8deg; filter: var(--drop-low); }
+.la-seal .label + .label { width: 3.25rem; rotate: 6deg; }
+.la-seal .label::before { border-radius: 52% 48% 50% 47% / 47% 53% 46% 54%; }
+
+/* ================= pictures: the outline a picture is cut to ================= */
+.pi-plain .pic      { border-radius: var(--radius-small); corner-shape: var(--corner-shape, round); }
+.pi-rounded .pic    { border-radius: 1.25rem; }
+.pi-circle .pic     { aspect-ratio: 1; border-radius: 50%; }
+.pi-arch .pic       { border-radius: 999px 999px var(--radius-small) var(--radius-small); }
+.pi-cut-corner .pic { clip-path: polygon(1.5rem 0, 100% 0, 100% calc(100% - 1.5rem), calc(100% - 1.5rem) 100%, 0 100%, 0 1.5rem); }
+.pi-pebble .pic     { aspect-ratio: 1 / 1.05; border-radius: 55% 45% 52% 48% / 46% 54% 46% 54%; rotate: -4deg; }
+</style>
+</head>
+<body class="mode-light">
+
+<!-- the picture: a small view at night, drawn once and used by every swatch, coloured by the band names -->
+<svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+  <defs><symbol id="view" viewBox="0 0 120 150" preserveAspectRatio="xMidYMid slice">
+    <rect class="v-sky" width="120" height="150"/>
+    <circle class="v-moon" cx="76" cy="44" r="11"/>
+    <circle class="v-star" cx="22" cy="22" r="1.4"/><circle class="v-star" cx="48" cy="12" r="1.1"/><circle class="v-star" cx="34" cy="46" r="1"/><circle class="v-star" cx="106" cy="62" r="1.2"/>
+    <path class="v-far" d="M0 92 Q22 70 44 84 T86 78 T120 86 V150 H0Z"/>
+    <path class="v-near" d="M0 112 Q30 92 62 106 T120 100 V150 H0Z"/>
+    <path class="v-front" d="M0 132 Q40 118 76 128 T120 126 V150 H0Z"/>
+  </symbol></defs>
+</svg>
+
+<main>
+<h1>Corners and shapes: the layers</h1>
+<p class="intro">Four layers, each switched on its own: the corners of every box, the outline of buttons and fields, the shape of tags and badges, and the shape a picture is cut to. Every option is shown on a light page (left) and the same CSS on a dark one (right). Each swatch holds the same things, so only the shapes change: a sheet, a picture, two labels, a field (drawn as if it had the keyboard, so its focus ring shows), the main button, a tick box and a round choice. Colour, borders, shadows and type are fixed, borrowed from the other parts.</p>
+
+{{SWATCHES}}
+</main>
+
+<script>run(swatchTest);</script>
+</body>
+</html>

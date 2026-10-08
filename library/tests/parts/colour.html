@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colour: the layers</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="../harness.js"></script>
+<script src="swatches.js"></script>
+<style>
+/* Built by source/colour.py from source/colour-template.html: edit those, then run python3 colour.py ../colour.html
+   in source/. The colour part is the one part that writes raw colours. Its swatches set the shared names themselves
+   (they override tokens.css), so the light/dark pairing of the other books is replaced by the tone: each option is
+   drawn at every tone, and each tone and starting point beside the other look a site would switch to. */
+*, *::before, *::after { box-sizing: border-box; }
+img, svg { display: block; max-width: 100%; height: auto; }
+body { margin: 0; padding: 1.5rem 1rem 3rem; font: 17px/1.5 Georgia, 'Times New Roman', serif; overflow-wrap: break-word; }
+main { max-width: 96rem; margin-inline: auto; }
+h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem); line-height: 1.1; }
+.intro { max-width: 56ch; margin: 0 0 1rem; }
+h2.layer { margin: 2.5rem 0 0.75rem; font-size: 1.5rem; line-height: 1.2; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.tones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+.twos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr)); column-gap: 1.5rem; }   /* a swatch and its other look, two to a line */
+.twos .tones { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr)); }
+
+/* ---- the sums: lightness from the tone, chroma from the strength and the option, hue from the neutrals or the accent ---- */
+.tone-light, .tone-toned, .tone-mid, .tone-dark, .tone-lamplit {
+  --ground: oklch(var(--l-ground) calc(var(--n-c) * var(--k-ground) * var(--k-ground-strength)) var(--g-h));
+  --surface: oklch(var(--l-surface) calc(var(--s-c) * var(--k-sheet)) var(--s-h));
+  --surface-raised: oklch(var(--l-raised) calc(var(--s-c) * var(--k-sheet) * 0.3) var(--s-h));
+  --ink: oklch(var(--l-ink) calc(var(--s-c) * 1.5) var(--s-h));
+  --ink-soft: oklch(var(--l-soft) calc(var(--s-c) * 2) var(--s-h));
+  --line: oklch(var(--l-line) calc(var(--s-c) * 2.5) var(--s-h));
+  --accent: oklch(var(--l-accent) calc(var(--c-accent) * var(--k)) var(--h-accent));
+  --on-accent: oklch(var(--l-on-accent) var(--c-on-accent) var(--h-accent));
+  --accent-hover: oklch(var(--l-hover) calc(var(--c-hover) * var(--k)) var(--h-accent));   /* a pointer over it */
+  --accent-pressed: oklch(var(--l-pressed) calc(var(--c-pressed) * var(--k)) var(--h-accent));   /* while pressed */
+  --accent-edge: oklch(var(--l-edge) calc(var(--c-edge) * var(--k)) var(--h-accent));   /* the edge of a control in the accent */
+  --focus: oklch(var(--l-focus) var(--c-focus) var(--focus-h, var(--h-accent)));
+  --mark: oklch(var(--l-mark) calc(var(--mark-c) * var(--k)) var(--n-h));
+  --band-1: oklch(var(--l-band) calc(var(--b1-c) * var(--k)) var(--b1-h));
+  --band-2: oklch(var(--l-band) calc(var(--b2-c) * var(--k)) var(--b2-h));
+  --band-3: oklch(var(--l-band) calc(var(--b3-c) * var(--k)) var(--b3-h));
+  --on-band: oklch(var(--l-on-band) 0.01 var(--n-h));
+  --metal: oklch(calc(var(--l-metal) + var(--metal-dl)) var(--c-metal) var(--m-h));   /* metal and gilt: rings, studs, plates */
+  --metal-deep: oklch(calc(var(--l-metal) + var(--metal-dl) - 0.24) var(--c-metal-deep) var(--m-h));
+  --metal-lit: oklch(min(0.95, calc(var(--l-metal) + var(--metal-dl) + 0.2)) var(--c-metal-lit) var(--m-h));
+  --on-metal: oklch(var(--l-on-metal) 0.01 var(--m-h));
+  --earth: oklch(var(--l-earth) var(--c-earth) 68);   /* kraft, card, cork, wood, leather */
+  --on-earth: oklch(var(--l-on-earth) 0.01 68);
+  --texture-rgb: from oklch(var(--l-texture) calc(var(--n-c) * 2) var(--n-h)) r g b;   /* three numbers, for rgb(var(--texture-rgb) / a) */
+  --shadow-rgb: from oklch(var(--l-shadow) calc(var(--n-c) * 2) var(--n-h)) r g b;
+  --scrim: rgb(var(--shadow-rgb) / var(--scrim-a));
+  background: var(--ground); color: var(--on-ground);
+}
+
+/* ---- tone: how light each role is ---- */
+.tone-light { color-scheme: light;
+  --l-ground: 0.965; --g-h: var(--n-h); --l-surface: 0.99; --l-raised: 0.997; --l-ink: 0.23; --l-soft: 0.46; --l-line: 0.86;
+  --l-accent: var(--accent-l-light, 0.5); --c-accent: var(--accent-c-light); --h-accent: var(--accent-h-light, var(--a-h));
+  --l-on-accent: var(--on-accent-l-light, 0.98); --c-on-accent: 0.008; --l-edge: var(--edge-l-light, var(--l-accent)); --c-edge: var(--edge-c-light, var(--c-accent)); --l-focus: 0.42; --c-focus: var(--focus-c-light);
+  --l-mark: 0.52; --l-band: var(--band-l-light, 0.42); --l-on-band: var(--on-band-l-light, 0.965); --l-texture: 0.3; --l-shadow: 0.25;
+  --k-ground: 1; --k-ground-strength: 1; --k-sheet: 0.3; --s-h: var(--n-h); --s-c: var(--n-c);
+  --on-ground: var(--ink);
+  --danger: oklch(0.5 0.16 27); --success: oklch(0.5 0.132 150); --warning: oklch(0.5 0.104 70);
+  --l-hover: calc(var(--l-accent) + var(--step-light, -0.05)); --l-pressed: calc(var(--l-accent) + 2 * var(--step-light, -0.05)); --c-hover: var(--hover-c-light, var(--c-accent)); --c-pressed: var(--pressed-c-light, var(--c-accent)); --dark: 0;
+  --l-metal: 0.7; --c-metal: var(--metal-c-light); --c-metal-deep: var(--metal-deep-c-light); --c-metal-lit: var(--metal-lit-c-light); --l-on-metal: var(--on-metal-l-light);
+  --l-earth: 0.7; --c-earth: 0.08; --l-on-earth: 0.18;
+  --scrim-a: 0.45; --texture-strength: 0.1; --shadow-strength: 0.18; }
+.tone-toned { color-scheme: light;
+  --l-ground: 0.89; --g-h: var(--n-h); --l-surface: 0.972; --l-raised: 0.99; --l-ink: 0.22; --l-soft: 0.44; --l-line: 0.79;
+  --l-accent: var(--accent-l-toned, 0.47); --c-accent: var(--accent-c-toned); --h-accent: var(--accent-h-toned, var(--a-h));
+  --l-on-accent: var(--on-accent-l-toned, 0.98); --c-on-accent: 0.008; --l-edge: var(--edge-l-toned, var(--l-accent)); --c-edge: var(--edge-c-toned, var(--c-accent)); --l-focus: 0.36; --c-focus: var(--focus-c-toned);
+  --l-mark: 0.48; --l-band: var(--band-l-toned, 0.4); --l-on-band: var(--on-band-l-toned, 0.965); --l-texture: 0.3; --l-shadow: 0.25;
+  --k-ground: 1.8; --k-ground-strength: 1; --k-sheet: 0.8; --s-h: var(--n-h); --s-c: var(--n-c);
+  --on-ground: var(--ink);
+  --danger: oklch(0.47 0.16 27); --success: oklch(0.47 0.124 150); --warning: oklch(0.47 0.098 70);
+  --l-hover: calc(var(--l-accent) + var(--step-toned, -0.05)); --l-pressed: calc(var(--l-accent) + 2 * var(--step-toned, -0.05)); --c-hover: var(--hover-c-toned, var(--c-accent)); --c-pressed: var(--pressed-c-toned, var(--c-accent)); --dark: 0;
+  --l-metal: 0.68; --c-metal: var(--metal-c-toned); --c-metal-deep: var(--metal-deep-c-toned); --c-metal-lit: var(--metal-lit-c-toned); --l-on-metal: var(--on-metal-l-toned);
+  --l-earth: 0.67; --c-earth: 0.08; --l-on-earth: 0.18;
+  --scrim-a: 0.45; --texture-strength: 0.11; --shadow-strength: 0.18; }
+.tone-mid { color-scheme: light;
+  --l-ground: var(--mid-l, 0.75); --g-h: var(--mid-h, var(--n-h)); --l-surface: 0.96; --l-raised: 0.98; --l-ink: 0.2; --l-soft: 0.42; --l-line: 0.7;
+  --l-accent: var(--accent-l-mid, 0.37); --c-accent: var(--accent-c-mid); --h-accent: var(--accent-h-mid, var(--a-h));
+  --l-on-accent: var(--on-accent-l-mid, 0.98); --c-on-accent: 0.008; --l-edge: var(--edge-l-mid, var(--l-accent)); --c-edge: var(--edge-c-mid, var(--c-accent)); --l-focus: 0.25; --c-focus: var(--focus-c-mid);
+  --l-mark: 0.36; --l-band: var(--band-l-mid, 0.36); --l-on-band: var(--on-band-l-mid, 0.965); --l-texture: 0.25; --l-shadow: 0.22;
+  --k-ground: var(--mid-k, 5); --k-ground-strength: var(--k-mid-ground); --k-sheet: 1; --s-h: var(--n-h); --s-c: var(--n-c);
+  --on-ground: var(--ink);
+  --danger: oklch(0.46 0.16 27); --success: oklch(0.46 0.122 150); --warning: oklch(0.46 0.096 70);
+  --l-hover: calc(var(--l-accent) + var(--step-mid, -0.05)); --l-pressed: calc(var(--l-accent) + 2 * var(--step-mid, -0.05)); --c-hover: var(--hover-c-mid, var(--c-accent)); --c-pressed: var(--pressed-c-mid, var(--c-accent)); --dark: 0;
+  --l-metal: 0.63; --c-metal: var(--metal-c-mid); --c-metal-deep: var(--metal-deep-c-mid); --c-metal-lit: var(--metal-lit-c-mid); --l-on-metal: var(--on-metal-l-mid);
+  --l-earth: 0.6; --c-earth: 0.08; --l-on-earth: 0.18;
+  --scrim-a: 0.5; --texture-strength: 0.12; --shadow-strength: 0.22; }
+.tone-dark { color-scheme: dark;
+  --l-ground: 0.19; --g-h: var(--n-h); --l-surface: 0.235; --l-raised: 0.29; --l-ink: 0.93; --l-soft: 0.79; --l-line: 0.4;
+  --l-accent: var(--accent-l-dark, 0.72); --c-accent: var(--accent-c-dark); --h-accent: var(--accent-h-dark, var(--a-h));
+  --l-on-accent: var(--on-accent-l-dark, 0.2); --c-on-accent: 0.008; --l-edge: var(--edge-l-dark, var(--l-accent)); --c-edge: var(--edge-c-dark, var(--c-accent)); --l-focus: 0.88; --c-focus: var(--focus-c-dark);
+  --l-mark: 0.76; --l-band: var(--band-l-dark, 0.31); --l-on-band: var(--on-band-l-dark, 0.95); --l-texture: 0.92; --l-shadow: 0.08;
+  --k-ground: 1.6; --k-ground-strength: 1; --k-sheet: 1.4; --s-h: var(--n-h); --s-c: var(--n-c);
+  --on-ground: var(--ink);
+  --danger: oklch(0.8 0.11 27); --success: oklch(0.8 0.16 150); --warning: oklch(0.8 0.156 70);
+  --l-hover: calc(var(--l-accent) + var(--step-dark, 0.05)); --l-pressed: calc(var(--l-accent) + 2 * var(--step-dark, 0.05)); --c-hover: var(--hover-c-dark, var(--c-accent)); --c-pressed: var(--pressed-c-dark, var(--c-accent)); --dark: 1;
+  --l-metal: 0.74; --c-metal: var(--metal-c-dark); --c-metal-deep: var(--metal-deep-c-dark); --c-metal-lit: var(--metal-lit-c-dark); --l-on-metal: var(--on-metal-l-dark);
+  --l-earth: 0.36; --c-earth: 0.05; --l-on-earth: 0.96;
+  --scrim-a: 0.6; --texture-strength: 0.16; --shadow-strength: 0.45; }
+.tone-lamplit { color-scheme: dark;
+  --l-ground: 0.19; --g-h: var(--n-h); --l-surface: 0.8; --l-raised: 0.86; --l-ink: 0.2; --l-soft: 0.37; --l-line: 0.56;
+  --l-accent: var(--accent-l-lamplit, 0.3); --c-accent: var(--accent-c-lamplit); --h-accent: var(--accent-h-lamplit, var(--a-h));
+  --l-on-accent: var(--on-accent-l-lamplit, 0.85); --c-on-accent: calc(var(--on-accent-c-lamplit, 0.008) * var(--k)); --l-edge: var(--edge-l-lamplit, var(--l-accent)); --c-edge: var(--edge-c-lamplit, var(--c-accent)); --l-focus: 0.88; --c-focus: var(--focus-c-lamplit);
+  --l-mark: 0.76; --l-band: var(--band-l-lamplit, 0.31); --l-on-band: var(--on-band-l-lamplit, 0.95); --l-texture: 0.92; --l-shadow: 0.08;
+  --k-ground: 1.8; --k-ground-strength: 1; --k-sheet: 3.2; --s-h: 75; --s-c: 0.022;
+  --on-ground: oklch(0.91 0.02 75);
+  --danger: oklch(0.4 0.156 27); --success: oklch(0.4 0.106 150); --warning: oklch(0.4 0.083 70);
+  --l-hover: calc(var(--l-accent) + var(--step-lamplit, 0.06)); --l-pressed: calc(var(--l-accent) + 2 * var(--step-lamplit, 0.06)); --c-hover: var(--hover-c-lamplit, var(--c-accent)); --c-pressed: var(--pressed-c-lamplit, var(--c-accent)); --dark: 1;
+  --l-metal: 0.74; --c-metal: var(--metal-c-lamplit); --c-metal-deep: var(--metal-deep-c-lamplit); --c-metal-lit: var(--metal-lit-c-lamplit); --l-on-metal: var(--on-metal-l-lamplit);
+  --l-earth: 0.68; --c-earth: 0.08; --l-on-earth: 0.18;
+  --scrim-a: 0.6; --texture-strength: 0.16; --shadow-strength: 0.45; }
+
+/* ---- neutrals: the hue in the greys, and how much ---- */
+.neutrals-paper { --n-h: 80; --n-c: 0.012; --mark-c: 0.072; }
+.neutrals-stone { --n-h: 250; --n-c: 0.007; --mark-c: 0.098; }
+.neutrals-sage { --n-h: 150; --n-c: 0.011; --mark-c: 0.095; }
+.neutrals-clay { --n-h: 55; --n-c: 0.016; --mark-c: 0.086; }
+.neutrals-night { --n-h: 275; --n-c: 0.014; --mark-c: 0.11; --mid-l: 0.72; --mid-k: 2.6; --mid-h: 252; }
+.neutrals-wine { --n-h: 15; --n-c: 0.015; --mark-c: 0.11; --mid-l: 0.66; --mid-k: 2.7; --mid-h: 22; }
+.neutrals-marigold { --n-h: 85; --n-c: 0.016; --mark-c: 0.071; --mid-l: 0.81; --mid-k: 6.5; --mid-h: 80; }
+
+/* ---- accent: a hue, and the most chroma it can hold at each tone's lightness ---- */
+.accent-brick { --a-h: 35;
+  --accent-l-dark: 0.64; --accent-h-dark: 44; --accent-h-lamplit: 44;
+  --accent-c-light: 0.168; --accent-c-toned: 0.158; --accent-c-mid: 0.125; --accent-c-dark: 0.15; --accent-c-lamplit: 0.084;
+  --focus-c-light: 0.141; --focus-c-toned: 0.121; --focus-c-mid: 0.084; --focus-c-dark: 0.065; --focus-c-lamplit: 0.065;
+  --hover-c-light: 0.152; --pressed-c-light: 0.135; --hover-c-toned: 0.141; --pressed-c-toned: 0.125; --hover-c-mid: 0.108; --pressed-c-mid: 0.091;
+  --hover-c-dark: 0.15; --pressed-c-dark: 0.15; --hover-c-lamplit: 0.084; --pressed-c-lamplit: 0.084;
+  --edge-l-lamplit: 0.64; --edge-c-lamplit: 0.15; --on-accent-c-lamplit: 0.084; }
+.accent-amber { --a-h: 72;
+  --accent-l-light: 0.81; --accent-l-toned: 0.81; --accent-l-mid: 0.81; --accent-l-dark: 0.8; --accent-h-light: 80; --accent-h-toned: 80; --accent-h-mid: 80; --on-accent-l-light: 0.22; --on-accent-l-toned: 0.22; --on-accent-l-mid: 0.22;
+  --accent-c-light: 0.161; --accent-c-toned: 0.161; --accent-c-mid: 0.161; --accent-c-dark: 0.161; --accent-c-lamplit: 0.062;
+  --focus-c-light: 0.084; --focus-c-toned: 0.072; --focus-c-mid: 0.05; --focus-c-dark: 0.092; --focus-c-lamplit: 0.092;
+  --hover-c-light: 0.151; --pressed-c-light: 0.141; --hover-c-toned: 0.151; --pressed-c-toned: 0.141; --hover-c-mid: 0.151; --pressed-c-mid: 0.141;
+  --hover-c-dark: 0.117; --pressed-c-dark: 0.075; --hover-c-lamplit: 0.062; --pressed-c-lamplit: 0.062;
+  --edge-l-light: 0.42; --edge-c-light: 0.084; --edge-l-toned: 0.38; --edge-c-toned: 0.076; --edge-l-mid: 0.3; --edge-c-mid: 0.06; --edge-l-lamplit: 0.8; --edge-c-lamplit: 0.161; --on-accent-c-lamplit: 0.117; }
+.accent-forest { --a-h: 155;
+  --accent-l-dark: 0.66; --accent-h-dark: 135; --accent-h-lamplit: 135;
+  --accent-c-light: 0.119; --accent-c-toned: 0.112; --accent-c-mid: 0.088; --accent-c-dark: 0.13; --accent-c-lamplit: 0.084;
+  --focus-c-light: 0.1; --focus-c-toned: 0.085; --focus-c-mid: 0.059; --focus-c-dark: 0.15; --focus-c-lamplit: 0.15;
+  --hover-c-light: 0.107; --pressed-c-light: 0.095; --hover-c-toned: 0.1; --pressed-c-toned: 0.088; --hover-c-mid: 0.076; --pressed-c-mid: 0.064;
+  --hover-c-dark: 0.13; --pressed-c-dark: 0.13; --hover-c-lamplit: 0.084; --pressed-c-lamplit: 0.084;
+  --edge-l-lamplit: 0.66; --edge-c-lamplit: 0.13; --on-accent-c-lamplit: 0.15; }
+.accent-kingfisher { --a-h: 220;
+  --accent-c-light: 0.087; --accent-c-toned: 0.082; --accent-c-mid: 0.065; --accent-c-dark: 0.126; --accent-c-lamplit: 0.052;
+  --focus-c-light: 0.073; --focus-c-toned: 0.063; --focus-c-mid: 0.044; --focus-c-dark: 0.083; --focus-c-lamplit: 0.083;
+  --hover-c-light: 0.079; --pressed-c-light: 0.07; --hover-c-toned: 0.073; --pressed-c-toned: 0.065; --hover-c-mid: 0.056; --pressed-c-mid: 0.047;
+  --hover-c-dark: 0.126; --pressed-c-dark: 0.126; --hover-c-lamplit: 0.052; --pressed-c-lamplit: 0.052;
+  --edge-l-lamplit: 0.72; --edge-c-lamplit: 0.126; --on-accent-c-lamplit: 0.105; }
+.accent-cobalt { --a-h: 262;
+  --accent-c-light: 0.19; --accent-c-toned: 0.19; --accent-c-mid: 0.164; --accent-c-dark: 0.139; --accent-c-lamplit: 0.133;
+  --focus-c-light: 0.15; --focus-c-toned: 0.15; --focus-c-mid: 0.111; --focus-c-dark: 0.056; --focus-c-lamplit: 0.056;
+  --hover-c-light: 0.19; --pressed-c-light: 0.178; --hover-c-toned: 0.186; --pressed-c-toned: 0.164; --hover-c-mid: 0.142; --pressed-c-mid: 0.12;
+  --hover-c-dark: 0.112; --pressed-c-dark: 0.086; --hover-c-lamplit: 0.133; --pressed-c-lamplit: 0.133;
+  --edge-l-lamplit: 0.72; --edge-c-lamplit: 0.139; --on-accent-c-lamplit: 0.071; }
+.accent-plum { --a-h: 330;
+  --accent-c-light: 0.19; --accent-c-toned: 0.19; --accent-c-mid: 0.162; --accent-c-dark: 0.19; --accent-c-lamplit: 0.131;
+  --focus-c-light: 0.15; --focus-c-toned: 0.15; --focus-c-mid: 0.109; --focus-c-dark: 0.1; --focus-c-lamplit: 0.1;
+  --hover-c-light: 0.19; --pressed-c-light: 0.175; --hover-c-toned: 0.184; --pressed-c-toned: 0.162; --hover-c-mid: 0.14; --pressed-c-mid: 0.118;
+  --hover-c-dark: 0.19; --pressed-c-dark: 0.159; --hover-c-lamplit: 0.131; --pressed-c-lamplit: 0.131;
+  --edge-l-lamplit: 0.72; --edge-c-lamplit: 0.19; --on-accent-c-lamplit: 0.128; }
+.accent-ink { --a-h: var(--n-h); --focus-h: 262; --accent-l-light: 0.27; --accent-l-toned: 0.26; --accent-l-mid: 0.24; --accent-l-dark: 0.93; --accent-l-lamplit: 0.27;
+  --accent-c-light: calc(var(--n-c) * 1.5 / var(--k)); --accent-c-toned: calc(var(--n-c) * 1.5 / var(--k)); --accent-c-mid: calc(var(--n-c) * 1.5 / var(--k)); --accent-c-dark: calc(var(--n-c) * 1.5 / var(--k)); --accent-c-lamplit: calc(var(--n-c) * 1.5 / var(--k));
+  --focus-c-light: 0.15; --focus-c-toned: 0.15; --focus-c-mid: 0.111; --focus-c-dark: 0.056; --focus-c-lamplit: 0.056; --step-dark: -0.05;
+  --edge-l-lamplit: 0.93; --edge-c-lamplit: calc(var(--n-c) * 1.5 / var(--k)); }
+
+/* ---- strength: how much of that chroma is used (and how coloured a mid page's ground is) ---- */
+.strength-muted { --k: 0.45; --k-mid-ground: 0.7; }
+.strength-natural { --k: 0.7; --k-mid-ground: 1; }
+.strength-vivid { --k: 1; --k-mid-ground: 1.5; }
+
+/* ---- bands: three strong grounds for whole bands, and the words on them ---- */
+.bands-none { --b1-h: var(--a-h); --b2-h: var(--n-h); --b3-h: calc(var(--a-h) + 180); --b1-c: 0.05; --b2-c: 0.05; --b3-c: 0.05; }   /* none drawn on the page, but a quiet trio for parts that need three colours */
+.bands-poster { --b1-h: 20; --b1-c: 0.12; --b2-h: 150; --b2-c: 0.082; --b3-h: 268; --b3-c: 0.13; }
+.bands-earth { --b1-h: 45; --b1-c: 0.085; --b2-h: 110; --b2-c: 0.065; --b3-h: 62; --b3-c: 0.068; }
+.bands-jewel { --b1-h: 330; --b1-c: 0.13; --b2-h: 200; --b2-c: 0.051; --b3-h: 262; --b3-c: 0.13; }
+.bands-pale { --b1-h: 230; --b1-c: 0.026; --b2-h: 95; --b2-c: 0.059; --b3-h: 160; --b3-c: 0.065;
+  --band-l-light: 0.93; --on-band-l-light: 0.23; --band-l-toned: 0.955; --on-band-l-toned: 0.22; --band-l-mid: 0.93; --on-band-l-mid: 0.2; --band-l-dark: 0.3; --on-band-l-dark: 0.95; --band-l-lamplit: 0.3; --on-band-l-lamplit: 0.95; }
+
+/* ---- metal: the colour of metal and gilt, its shade and its highlight ---- */
+.metal-gold { --m-h: 80; --metal-dl: 0;
+  --metal-c-light: 0.139; --metal-deep-c-light: 0.091; --metal-lit-c-light: 0.09; --metal-c-toned: 0.135; --metal-deep-c-toned: 0.087; --metal-lit-c-toned: 0.09; --metal-c-mid: 0.125; --metal-deep-c-mid: 0.078; --metal-lit-c-mid: 0.09;
+  --metal-c-dark: 0.147; --metal-deep-c-dark: 0.099; --metal-lit-c-dark: 0.053; --metal-c-lamplit: 0.147; --metal-deep-c-lamplit: 0.099; --metal-lit-c-lamplit: 0.053;
+  --on-metal-l-light: 0.18; --on-metal-l-toned: 0.18; --on-metal-l-mid: 0.18; --on-metal-l-dark: 0.18; --on-metal-l-lamplit: 0.18; }
+.metal-brass { --m-h: 90; --metal-dl: -0.03;
+  --metal-c-light: 0.1; --metal-deep-c-light: 0.084; --metal-lit-c-light: 0.06; --metal-c-toned: 0.1; --metal-deep-c-toned: 0.08; --metal-lit-c-toned: 0.06; --metal-c-mid: 0.1; --metal-deep-c-mid: 0.071; --metal-lit-c-mid: 0.06;
+  --metal-c-dark: 0.1; --metal-deep-c-dark: 0.085; --metal-lit-c-dark: 0.06; --metal-c-lamplit: 0.1; --metal-deep-c-lamplit: 0.085; --metal-lit-c-lamplit: 0.06;
+  --on-metal-l-light: 0.18; --on-metal-l-toned: 0.18; --on-metal-l-mid: 0.18; --on-metal-l-dark: 0.18; --on-metal-l-lamplit: 0.18; }
+.metal-silver { --m-h: 250; --metal-dl: 0.05;
+  --metal-c-light: 0.012; --metal-deep-c-light: 0.01; --metal-lit-c-light: 0.007; --metal-c-toned: 0.012; --metal-deep-c-toned: 0.01; --metal-lit-c-toned: 0.007; --metal-c-mid: 0.012; --metal-deep-c-mid: 0.01; --metal-lit-c-mid: 0.007;
+  --metal-c-dark: 0.012; --metal-deep-c-dark: 0.01; --metal-lit-c-dark: 0.007; --metal-c-lamplit: 0.012; --metal-deep-c-lamplit: 0.01; --metal-lit-c-lamplit: 0.007;
+  --on-metal-l-light: 0.18; --on-metal-l-toned: 0.18; --on-metal-l-mid: 0.18; --on-metal-l-dark: 0.18; --on-metal-l-lamplit: 0.18; }
+.metal-iron { --m-h: 245; --metal-dl: -0.22;
+  --metal-c-light: 0.018; --metal-deep-c-light: 0.015; --metal-lit-c-light: 0.011; --metal-c-toned: 0.018; --metal-deep-c-toned: 0.015; --metal-lit-c-toned: 0.011; --metal-c-mid: 0.018; --metal-deep-c-mid: 0.015; --metal-lit-c-mid: 0.011;
+  --metal-c-dark: 0.018; --metal-deep-c-dark: 0.015; --metal-lit-c-dark: 0.011; --metal-c-lamplit: 0.018; --metal-deep-c-lamplit: 0.015; --metal-lit-c-lamplit: 0.011;
+  --on-metal-l-light: 0.96; --on-metal-l-toned: 0.96; --on-metal-l-mid: 0.96; --on-metal-l-dark: 0.96; --on-metal-l-lamplit: 0.96; }
+
+/* ---------- every swatch: a small page drawn only with the shared names it has just set ---------- */
+.swatch { margin: 0; padding: 0.75rem 0.75rem 0; border: 1px solid var(--line); border-radius: 6px; overflow: clip;
+  display: flex; flex-direction: column; gap: 0.75rem; }
+.copy { margin: 0; font: 700 0.875rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--on-ground); }
+.sheet { padding: 1rem; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; }
+.sheet h3 { margin: 0; font-size: 1.375rem; line-height: 1.2; }
+.sheet .id { margin: 0.125rem 0 0.5rem; font: 1rem/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); }
+.sheet p { margin: 0 0 0.75rem; }
+.sheet hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 0.75rem; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--accent-edge); border-radius: 4px;
+  font: 700 1rem/1 system-ui, sans-serif; cursor: pointer; background: var(--accent); color: var(--on-accent); }
+.btn:hover { background: var(--accent-hover); } .btn:active { background: var(--accent-pressed); }
+.chips { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0.75rem 0 0 !important; font: 0.875rem/1.3 system-ui, sans-serif; }
+.chip { padding: 0.125rem 0.5rem; border: 1px solid currentColor; border-radius: 999px; background: var(--surface); }
+.chip.danger { color: var(--danger); } .chip.success { color: var(--success); } .chip.warning { color: var(--warning); }
+.under { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.ring { padding: 0.25rem 0.625rem; outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 3px;
+  font: 700 0.875rem/1.3 system-ui, sans-serif; color: var(--on-ground); }
+.mark { width: 7rem; fill: none; stroke: var(--mark); stroke-width: 3; stroke-linecap: round; }
+.mark circle { fill: var(--mark); stroke: none; }
+.mats { display: flex; gap: 0.5rem; font: 700 0.875rem/1.3 system-ui, sans-serif; }
+.mats span { padding: 0.375rem 0.75rem; border-radius: 3px; }
+.plate { background: var(--metal); color: var(--on-metal); border: 2px solid var(--metal-deep);
+  box-shadow: inset 0 3px 0 var(--metal-lit), inset 0 -3px 0 color-mix(in oklab, var(--metal-deep) 60%, var(--metal)); }   /* a metal plate: highlight above, shade below */
+.tag { background: var(--earth); color: var(--on-earth); }   /* a kraft tag */
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 -0.75rem; }
+.strip span { padding: 0.75rem 0.5rem; font: 700 0.9375rem/1.2 system-ui, sans-serif; color: var(--on-band); }
+.strip .b1 { background: var(--band-1); } .strip .b2 { background: var(--band-2); } .strip .b3 { background: var(--band-3); }
+.bands-none .strip { visibility: hidden; height: 0.75rem; }
+.bands-none .strip span { display: none; }
+#probe { position: absolute; left: -9999px; top: 0; width: 1px; overflow: hidden; }
+</style>
+</head>
+<body class="mode-light">
+<main>
+<h1>Colour: the layers</h1>
+<p class="intro">Five layers: tone, neutrals, accent, strength and bands. Every option is drawn at all five tones (light, toned, mid, dark, lamplit) with the other layers at their defaults, because tone takes the place of the light and dark pages of the other books. Each tone and each starting point is shown beside the look a site would switch to (its other look: the same picks with the tone changed). The test at the foot works out the contrast of every combination of the layers.</p>
+
+<h2 class="layer">Tone</h2>
+<section class="swatch" data-option="tone:light">
+<p class="copy"></p>
+<div class="sheet"><h3>Light</h3><p class="id">tone: light</p><p>A pale paper page: the most common, and the easiest to read.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="tone:toned">
+<p class="copy"></p>
+<div class="sheet"><h3>Toned</h3><p class="id">tone: toned</p><p>Toned paper: cream, bisque or notebook, a step down from white.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="tone:mid">
+<p class="copy"></p>
+<div class="sheet"><h3>Mid</h3><p class="id">tone: mid</p><p>The ground is a colour: kraft, clay, a painted board.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="tone:dark">
+<p class="copy"></p>
+<div class="sheet"><h3>Dark</h3><p class="id">tone: dark</p><p>A dark room with a colour of its own; the sheets are dark too.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="tone:lamplit">
+<p class="copy"></p>
+<div class="sheet"><h3>Lamplit</h3><p class="id">tone: lamplit</p><p>A dark room, and the words on warm paper held up to a lamp.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Neutrals</h2>
+<section class="swatch" data-option="neutrals:paper">
+<p class="copy"></p>
+<div class="sheet"><h3>Paper</h3><p class="id">neutrals: paper</p><p>Warm cream and brown-black ink.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:stone">
+<p class="copy"></p>
+<div class="sheet"><h3>Stone</h3><p class="id">neutrals: stone</p><p>Cool, nearly plain grey.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:sage">
+<p class="copy"></p>
+<div class="sheet"><h3>Sage</h3><p class="id">neutrals: sage</p><p>Grey-green, with green-black ink.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:clay">
+<p class="copy"></p>
+<div class="sheet"><h3>Clay</h3><p class="id">neutrals: clay</p><p>Bisque and terracotta; brown ink.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:night">
+<p class="copy"></p>
+<div class="sheet"><h3>Night</h3><p class="id">neutrals: night</p><p>Blue-grey by day, night blue in the dark.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:wine">
+<p class="copy"></p>
+<div class="sheet"><h3>Wine</h3><p class="id">neutrals: wine</p><p>A blush of red; oxblood in the dark.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="neutrals:marigold">
+<p class="copy"></p>
+<div class="sheet"><h3>Marigold</h3><p class="id">neutrals: marigold</p><p>Butter paper; a sunflower board at mid.</p><hr>
+<button class="btn" type="button">Read on</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Accent</h2>
+<section class="swatch" data-option="accent:brick">
+<p class="copy"></p>
+<div class="sheet"><h3>Brick</h3><p class="id">accent: brick</p><p>Rust and seal red.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:amber">
+<p class="copy"></p>
+<div class="sheet"><h3>Amber</h3><p class="id">accent: amber</p><p>Gold at every tone, with dark words on it.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:forest">
+<p class="copy"></p>
+<div class="sheet"><h3>Forest</h3><p class="id">accent: forest</p><p>Deep green.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:kingfisher">
+<p class="copy"></p>
+<div class="sheet"><h3>Kingfisher</h3><p class="id">accent: kingfisher</p><p>Teal-blue.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:cobalt">
+<p class="copy"></p>
+<div class="sheet"><h3>Cobalt</h3><p class="id">accent: cobalt</p><p>Printer's blue; ice blue in the dark.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:plum">
+<p class="copy"></p>
+<div class="sheet"><h3>Plum</h3><p class="id">accent: plum</p><p>Red-violet.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="accent:ink">
+<p class="copy"></p>
+<div class="sheet"><h3>Ink</h3><p class="id">accent: ink</p><p>The ink itself: black buttons, white words.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Strength</h2>
+<section class="swatch" data-option="strength:muted">
+<p class="copy"></p>
+<div class="sheet"><h3>Muted</h3><p class="id">strength: muted</p><p>Under half the colour there is room for.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="strength:natural">
+<p class="copy"></p>
+<div class="sheet"><h3>Natural</h3><p class="id">strength: natural</p><p>Most of it.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="strength:vivid">
+<p class="copy"></p>
+<div class="sheet"><h3>Vivid</h3><p class="id">strength: vivid</p><p>All of it, and a mid page's ground turns bold.</p><hr>
+<button class="btn" type="button">Book</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Bands</h2>
+<section class="swatch" data-option="bands:none">
+<p class="copy"></p>
+<div class="sheet"><h3>None</h3><p class="id">bands: none</p><p>No bands: a band is the ground.</p><hr>
+<button class="btn" type="button">Join in</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="bands:poster">
+<p class="copy"></p>
+<div class="sheet"><h3>Poster</h3><p class="id">bands: poster</p><p>Madder red, forest and night.</p><hr>
+<button class="btn" type="button">Join in</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="bands:earth">
+<p class="copy"></p>
+<div class="sheet"><h3>Earth</h3><p class="id">bands: earth</p><p>Terracotta, olive and umber.</p><hr>
+<button class="btn" type="button">Join in</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="bands:jewel">
+<p class="copy"></p>
+<div class="sheet"><h3>Jewel</h3><p class="id">bands: jewel</p><p>Plum, teal and sapphire.</p><hr>
+<button class="btn" type="button">Join in</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="bands:pale">
+<p class="copy"></p>
+<div class="sheet"><h3>Pale</h3><p class="id">bands: pale</p><p>Sky, butter and mint, with dark words.</p><hr>
+<button class="btn" type="button">Join in</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Metal</h2>
+<section class="swatch" data-option="metal:gold">
+<p class="copy"></p>
+<div class="sheet"><h3>Gold</h3><p class="id">metal: gold</p><p>Warm, strong gilt.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="metal:brass">
+<p class="copy"></p>
+<div class="sheet"><h3>Brass</h3><p class="id">metal: brass</p><p>A greener, quieter gold.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="metal:silver">
+<p class="copy"></p>
+<div class="sheet"><h3>Silver</h3><p class="id">metal: silver</p><p>Pale, cool and nearly grey.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="metal:iron">
+<p class="copy"></p>
+<div class="sheet"><h3>Iron</h3><p class="id">metal: iron</p><p>Dark blue-grey, with pale words.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<h2 class="layer">Starting points</h2>
+<section class="swatch" data-option="start:warm">
+<p class="copy"></p>
+<div class="sheet"><h3>Warm</h3><p class="id">tone: light; neutrals: paper; accent: brick; strength: vivid; bands: poster</p><p>Cream paper, a bold red, and deep bands.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:artistic">
+<p class="copy"></p>
+<div class="sheet"><h3>Artistic</h3><p class="id">tone: light; neutrals: stone; accent: brick; strength: natural; bands: none</p><p>Grey paper and one seal red.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:professional">
+<p class="copy"></p>
+<div class="sheet"><h3>Professional</h3><p class="id">tone: light; neutrals: stone; accent: kingfisher; strength: muted; bands: none</p><p>Cool white and a quiet teal-blue.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:civic">
+<p class="copy"></p>
+<div class="sheet"><h3>Civic</h3><p class="id">tone: light; neutrals: stone; accent: forest; strength: natural; bands: none</p><p>Plain, cool and clear, with a green go button.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:sorcery">
+<p class="copy"></p>
+<div class="sheet"><h3>Sorcery</h3><p class="id">tone: lamplit; neutrals: night; accent: amber; strength: natural; bands: none</p><p>Night-blue room, parchment, one lamp of gold.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:gilded-dark">
+<p class="copy"></p>
+<div class="sheet"><h3>Gilded dark</h3><p class="id">tone: dark; neutrals: paper; accent: amber; strength: vivid; bands: jewel</p><p>Dark brown panes, bright gold, jewel bands.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:lantern-fair">
+<p class="copy"></p>
+<div class="sheet"><h3>Lantern fair</h3><p class="id">tone: lamplit; neutrals: wine; accent: amber; strength: natural; bands: poster</p><p>Oxblood night, canvas, lantern amber.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:almanac-plate">
+<p class="copy"></p>
+<div class="sheet"><h3>Almanac plate</h3><p class="id">tone: light; neutrals: night; accent: brick; strength: natural; bands: none; metal: brass</p><p>Blue-grey star-chart paper, a red torch.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:catalogue-of-glazes">
+<p class="copy"></p>
+<div class="sheet"><h3>Catalogue of glazes</h3><p class="id">tone: toned; neutrals: clay; accent: brick; strength: muted; bands: none</p><p>Bisque paper and iron red.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:field-journal">
+<p class="copy"></p>
+<div class="sheet"><h3>Field journal</h3><p class="id">tone: toned; neutrals: sage; accent: kingfisher; strength: natural; bands: none</p><p>Notebook paper, green ink, kingfisher.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+<section class="swatch" data-option="start:repair-cafe">
+<p class="copy"></p>
+<div class="sheet"><h3>Repair café</h3><p class="id">tone: mid; neutrals: marigold; accent: ink; strength: vivid; bands: poster; metal: iron</p><p>A sunflower board and black buttons.</p><hr>
+<button class="btn" type="button">Enter</button>
+<p class="chips"><span class="chip danger">&#x2715; Full</span> <span class="chip success">&#x2713; Booked</span> <span class="chip warning">! Two left</span></p></div>
+<div class="under"><span class="ring">Focus</span><svg class="mark" viewBox="0 0 120 40" aria-hidden="true" focusable="false"><path d="M4 28C20 6 30 36 46 18S74 4 86 22S108 34 116 10"/><circle cx="58" cy="32" r="3"/></svg></div>
+<div class="mats"><span class="plate">Metal</span><span class="tag">Kraft</span></div>
+<div class="strip"><span class="b1">Band</span><span class="b2">Band</span><span class="b3">Band</span></div>
+</section>
+
+</main>
+
+<script>
+const LAYERS = {"tone": ["light", "toned", "mid", "dark", "lamplit"], "neutrals": ["paper", "stone", "sage", "clay", "night", "wine", "marigold"], "accent": ["brick", "amber", "forest", "kingfisher", "cobalt", "plum", "ink"], "strength": ["muted", "natural", "vivid"], "bands": ["none", "poster", "earth", "jewel", "pale"], "metal": ["gold", "brass", "silver", "iron"]};
+const DEFAULTS = {"tone": "light", "neutrals": "paper", "accent": "brick", "strength": "natural", "bands": "none", "metal": "gold"};
+const STARTS = {"warm": {"tone": "light", "neutrals": "paper", "accent": "brick", "strength": "vivid", "bands": "poster"}, "artistic": {"tone": "light", "neutrals": "stone", "accent": "brick", "strength": "natural", "bands": "none"}, "professional": {"tone": "light", "neutrals": "stone", "accent": "kingfisher", "strength": "muted", "bands": "none"}, "civic": {"tone": "light", "neutrals": "stone", "accent": "forest", "strength": "natural", "bands": "none"}, "sorcery": {"tone": "lamplit", "neutrals": "night", "accent": "amber", "strength": "natural", "bands": "none"}, "gilded-dark": {"tone": "dark", "neutrals": "paper", "accent": "amber", "strength": "vivid", "bands": "jewel"}, "lantern-fair": {"tone": "lamplit", "neutrals": "wine", "accent": "amber", "strength": "natural", "bands": "poster"}, "almanac-plate": {"tone": "light", "neutrals": "night", "accent": "brick", "strength": "natural", "bands": "none", "metal": "brass"}, "catalogue-of-glazes": {"tone": "toned", "neutrals": "clay", "accent": "brick", "strength": "muted", "bands": "none"}, "field-journal": {"tone": "toned", "neutrals": "sage", "accent": "kingfisher", "strength": "natural", "bands": "none"}, "repair-cafe": {"tone": "mid", "neutrals": "marigold", "accent": "ink", "strength": "vivid", "bands": "poster", "metal": "iron"}};
+const TONES = LAYERS.tone;
+const PARTNER = { light: 'dark', toned: 'dark', mid: 'dark', dark: 'light', lamplit: 'light' };
+const polarity = (t) => (t === 'dark' || t === 'lamplit' ? 'dark' : 'light');
+const classesOf = (picks) => Object.entries(picks).map(([layer, id]) => layer + '-' + id).join(' ');
+function picksFor(option) {
+  const [layer, id] = option.split(':');
+  return layer === 'start' ? { ...DEFAULTS, ...STARTS[id] } : { ...DEFAULTS, [layer]: id };
+}
+
+/* Each swatch is written once; here it is copied, once for each tone, or for its own tone and its other look.
+   Each copy gets a data-mode, so swatches.js leaves it alone and swatchTest() finds a light and a dark one. */
+function copyByTone() {
+  for (const sw of [...document.querySelectorAll('.swatch:not([data-mode])')]) {
+    const layer = sw.dataset.option.split(':')[0];
+    const picks = picksFor(sw.dataset.option);
+    const own = layer === 'tone' || layer === 'start';
+    const tones = own ? [picks.tone, PARTNER[picks.tone]] : TONES;
+    const row = document.createElement('div');
+    row.className = 'tones';
+    if (own) {   // keep a swatch and its other look together, two pairs to a line on a wide screen
+      let twos = sw.previousElementSibling;
+      if (!twos || !twos.classList.contains('twos')) { twos = document.createElement('div'); twos.className = 'twos'; sw.before(twos); }
+      twos.append(row);
+      row.append(sw);
+    } else sw.before(row);
+    tones.forEach((tone, i) => {
+      const el = i === 0 ? sw : sw.cloneNode(true);
+      el.className = 'swatch ' + classesOf({ ...picks, tone });
+      el.dataset.mode = own ? polarity(tone) : tone;
+      el.querySelector('.copy').textContent = own ? (i === 0 ? tone + ', as picked' : 'its other look: ' + tone) : 'tone: ' + tone;
+      if (i) el.setAttribute('aria-label', 'The same picks at tone ' + tone);
+      row.append(el);
+    });
+  }
+}
+
+/* What the browser paints for any CSS colour, as sRGB bytes: drawn on a canvas and read back. */
+const ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true });
+const painted = new Map();
+function rgbOf(css) {
+  if (!painted.has(css)) {
+    ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = '#000'; ctx.fillStyle = css; ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    painted.set(css, [d[0], d[1], d[2]]);
+  }
+  return painted.get(css);
+}
+function lum([r, g, b]) {
+  const f = (x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+/* Whether an oklch() colour is inside sRGB: outside it, browsers cut it back in different ways. */
+function outside(css) {
+  const m = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)/.exec(css);
+  if (!m) return false;
+  const [L, C, h] = m.slice(1).map(Number), a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, mm = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s,
+          -0.0041960863 * l - 0.7034186147 * mm + 1.7076147010 * s].some((x) => x < -0.002 || x > 1.002);
+}
+
+const NAMES = ['ground', 'surface', 'surface-raised', 'ink', 'ink-soft', 'line', 'accent', 'on-accent', 'accent-edge', 'accent-hover', 'accent-pressed', 'mark', 'focus',
+  'danger', 'success', 'warning', 'band-1', 'band-2', 'band-3', 'on-band', 'on-ground',
+  'metal', 'metal-deep', 'metal-lit', 'on-metal', 'earth', 'on-earth'];
+const PAIRS = [['on-ground', 'ground', 4.5], ['ink', 'surface', 4.5], ['ink-soft', 'surface', 4.5], ['ink', 'surface-raised', 4.5],
+  ['on-accent', 'accent', 4.5], ['on-accent', 'accent-hover', 4.5], ['on-accent', 'accent-pressed', 4.5], ['accent', 'ground', 3], ['accent', 'surface', 3], ['on-band', 'band-1', 4.5], ['on-band', 'band-2', 4.5], ['on-band', 'band-3', 4.5],
+  ['focus', 'ground', 3], ['danger', 'surface', 4.5], ['success', 'surface', 4.5], ['warning', 'surface', 4.5],
+  ['on-metal', 'metal', 4.5], ['on-earth', 'earth', 4.5]];
+const probe = document.createElement('div');
+probe.id = 'probe';
+probe.setAttribute('aria-hidden', 'true');
+for (const name of NAMES) { const s = document.createElement('i'); s.style.color = 'var(--' + name + ')'; probe.append(s); }
+const tex = document.createElement('i'); tex.style.backgroundColor = 'rgb(var(--texture-rgb) / 1)'; probe.append(tex);
+
+/* Every shared name a set of picks gives, as written by the browser (oklch) and as painted (sRGB bytes). */
+function colours(cls) {
+  probe.className = cls;
+  const out = {};
+  [...probe.children].slice(0, NAMES.length).forEach((s, i) => { const css = getComputedStyle(s).color; out[NAMES[i]] = { css, rgb: rgbOf(css) }; });
+  out.texture = getComputedStyle(tex).backgroundColor;
+  return out;
+}
+
+/* The page checker reads only rgb() colours, so each drawn swatch is given the colours it already shows, as rgb():
+   the same colours, written so audit can measure them. The sums above are what made them. */
+function pin() {
+  for (const sw of document.querySelectorAll('.swatch')) {
+    const c = colours(sw.className.replace(/\bswatch\b/, ''));
+    for (const name of NAMES) sw.style.setProperty('--' + name, 'rgb(' + c[name].rgb.join(' ') + ')');
+  }
+}
+
+function contrastGrid() {
+  const combos = [[]];
+  for (const layer of Object.keys(LAYERS)) {
+    const next = [];
+    for (const c of combos) for (const id of LAYERS[layer]) next.push([...c, layer + '-' + id]);
+    combos.splice(0, combos.length, ...next);
+  }
+  const misses = [], gamut = new Set(), worst = {};
+  let noTexture = 0;
+  for (const c of combos) {
+    const col = colours(c.join(' '));
+    for (const name of NAMES) if (outside(col[name].css)) gamut.add(name + ' at ' + c.join(' '));
+    if (!/^color\(srgb|^rgb/.test(col.texture)) noTexture++;
+    for (const [fg, bg, need] of PAIRS) {
+      /* a control stands off what it sits on by its fill or by its edge, so the accent takes the better of the two */
+      const r = fg === 'accent' ? Math.max(ratio(col.accent.rgb, col[bg].rgb), ratio(col['accent-edge'].rgb, col[bg].rgb))
+        : ratio(col[fg].rgb, col[bg].rgb), key = fg + '/' + bg;
+      if (!worst[key] || r < worst[key][0]) worst[key] = [r, c.join(' ')];
+      if (r < need) misses.push(key + ' ' + r.toFixed(2) + ' at ' + c.join(' '));
+    }
+  }
+  const low = Object.entries(worst).map(([k, [r]]) => k + ' ' + r.toFixed(2)).join(', ');
+  return { pass: !misses.length && !gamut.size && !noTexture,
+           detail: combos.length + ' combinations of the layers checked, ' + combos.length * PAIRS.length + ' pairs; lowest: ' + low
+             + (misses.length ? '; UNDER THE MINIMUM (' + misses.length + '): ' + misses.slice(0, 6).join('; ') : '')
+             + (gamut.size ? '; OUTSIDE sRGB (' + gamut.size + '): ' + [...gamut].slice(0, 4).join('; ') : '')
+             + (noTexture ? '; --texture-rgb did not resolve in ' + noTexture : '') };
+}
+
+copyByTone();
+document.body.append(probe);
+pin();
+run(async () => {
+  const shown = await swatchTest();
+  const grid = contrastGrid();
+  return { pass: shown.pass && grid.pass, detail: shown.detail + '. ' + grid.detail };
+});
+</script>
+</body>
+</html>

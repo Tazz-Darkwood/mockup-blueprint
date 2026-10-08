@@ -1,0 +1,44 @@
+Where every font file in this folder came from (checked 2026-10-07)
+
+All fourteen files are Google Fonts families, downloaded from Fontsource's copy of them
+(https://cdn.jsdelivr.net/fontsource/fonts/<id>/<file>). Fontsource packages the Google Fonts
+collection for self-hosting; its API lists each of these with "type": "google",
+"source": "https://github.com/google/fonts" and "license": "OFL-1.1"
+(https://api.fontsource.org/v1/fonts/<id>). Each file below except one was compared byte for byte
+(SHA-1) with a fresh download from that address on 2026-10-07 and is identical.
+Every family is under the SIL Open Font License 1.1; its licence file is beside it (OFL-*.txt).
+
+file                                              bytes  Fontsource source (id : file)                         version  axes             Reserved Font Name
+source-sans-3-latin-wght-normal.woff2             28740  source-sans-3:vf  latin-wght-normal                  v19      wght 200-900     'Source' (Adobe)
+karla-latin-wght-normal.woff2                     32116  karla:vf  latin-wght-normal                          v33      wght 200-800     none
+figtree-latin-wght-normal.woff2                   20156  figtree:vf  latin-wght-normal                        v9       wght 300-900     none
+alegreya-latin-wght-normal.woff2                  43476  alegreya:vf  latin-wght-normal                       v41      wght 400-900     none
+atkinson-hyperlegible-next-latin-wght-normal.woff2 33996 atkinson-hyperlegible-next:vf  latin-wght-normal     v7       wght 200-800     none
+newsreader-latin-wght-normal.woff2                58084  newsreader:vf  latin-wght-normal                     v26      wght 200-800     none
+fraunces-latin-full-normal.woff2                 121016  fraunces:vf  latin-full-normal                       v38      opsz 9-144, wght 100-900, SOFT 0-100, WONK 0-1   none
+fraunces-latin-italic-soft100-opsz144.woff2       40376  MADE HERE from fraunces:vf latin-full-italic (149720 bytes), see below    wght 300-500     none
+bricolage-grotesque-latin-wght-normal.woff2       41344  bricolage-grotesque:vf  latin-wght-normal            v9       wght 200-800     none
+caprasimo-latin-400-normal.woff2                  20888  caprasimo  latin-400-normal                          v6       (one weight)     none
+league-gothic-latin-wdth-normal.woff2             18652  league-gothic:vf  latin-wdth-normal                  v13      wdth 75-100      none
+pirata-one-latin-400-normal.woff2                  8868  pirata-one  latin-400-normal                         v23      (one weight)     'Pirata'
+cinzel-decorative-latin-700-normal.woff2          15488  cinzel-decorative  latin-700-normal                  v19      (one weight)     'Cinzel'
+caveat-latin-wght-normal.woff2                    74932  caveat:vf  latin-wght-normal                         v23      wght 400-700     none
+                                         total   558132 bytes (545 KB)
+
+The one modified file. The Fraunces italic is used only for a few words of accent, always soft and
+large, so it was cut down with fontTools 4.66 (Fraunces has no Reserved Font Name, so a modified copy
+may keep its name under the OFL):
+    fonttools varLib.instancer fraunces-latin-full-italic.woff2 WONK=0 SOFT=100 opsz=144 wght=300:500
+then saved as woff2. 149720 -> 40376 bytes. It cannot show SOFT or opsz changing: pinned.
+
+Not subset further. Fontsource's latin files already hold only the latin block (U+0000-00FF and
+common punctuation); cutting them to Basic Latin plus Latin-1 saved only 2 to 9 per cent
+(Karla 32116 -> 29708, Caveat 74932 -> 72708), and an unmodified file can be checked against its
+source by its hash. Three families have Reserved Font Names (Source, Pirata, Cinzel): under the OFL
+FAQ (2.6) subsetting is modification, and a modified copy may not keep a reserved name, so those
+three must never be subset or instanced here.
+
+Removed on 2026-10-07 with the layered lettering part: Young Serif and Signika (no longer drawn in
+the swatch book; both are still named in style-part-lettering.md as faces of their kind).
+Renamed to Fontsource's own file names so each can be traced: karla-wght-normal, alegreya-latin,
+pirata-one-latin, CinzelDecorative-700, caveat-wght-normal.
